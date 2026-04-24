@@ -199,6 +199,11 @@ pnpm dev
 | **API文档** | http://localhost:8080/swagger-ui.html | Swagger文档 |
 | **代码片段** | http://localhost:8080/snippets | 代码片段管理 |
 
+<img width="1281" height="941" alt="image" src="https://github.com/user-attachments/assets/c40465bc-9689-4220-a395-533775c2ce5e" />
+<img width="1281" height="941" alt="image" src="https://github.com/user-attachments/assets/d74ccdaa-2b33-4561-bd78-dc7052880592" />
+<img width="1281" height="941" alt="image" src="https://github.com/user-attachments/assets/319afd3d-fe7f-422d-bda5-655fc30ee913" />
+
+
 ### 默认登录账号
 
 | 用户名 | 密码 | 角色 |
