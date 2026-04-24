@@ -9,8 +9,9 @@
   <img src="https://img.shields.io/badge/TypeScript-5.3-blue" alt="TypeScript">
   <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License">
 </p>
+简体中文
 
-简体中文 | [English](./README_EN.md)
+> 说明：本项目除了这一行文字之外，代码和文档均由AI生成。
 
 ## 📖 项目简介
 
