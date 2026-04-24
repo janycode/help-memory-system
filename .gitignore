@@ -1,0 +1,53 @@
+# 助记单系统 - Git Ignore 配置
+
+## 后端编译文件
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+## 前端依赖和构建
+node_modules/
+dist/
+.DS_Store
+*.local
+
+## IDE配置
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+## 数据库文件
+# 注意：H2数据库文件在开发时需要保留，但上线时可以排除
+# backend/data/*.mv.db
+# backend/data/*.trace.db
+
+## 日志文件
+logs/
+*.log
+
+## 环境配置
+.env
+.env.local
+.env.*.local
+
+## Maven wrapper
+.mvn/
+mvnw
+mvnw.cmd
+
+## 临时文件
+*.tmp
+*.bak
+*.orig
+
+## 系统文件
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
