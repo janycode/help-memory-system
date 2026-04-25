@@ -20,7 +20,7 @@ jobs:
           cache-dependency-path: backend/pom.xml  # 指定后端pom.xml路径
 
       - name: 后端Maven构建打包
-        run: cd backend && mvn clean package -DskipTests
+        run: mvn clean package -DskipTests
         working-directory: ./backend  # 进入后端目录执行构建
 
       # ========== 第二步：构建前端 ==========
