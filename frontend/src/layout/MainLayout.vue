@@ -119,6 +119,12 @@
       <el-main class="content">
         <router-view />
       </el-main>
+
+      <!-- 底部 -->
+      <el-footer class="footer">
+        <span class="motto">🎯 代码千行，注释一行</span>
+        <span class="copyright">© 2026 Help Memory System. All Rights Reserved.</span>
+      </el-footer>
     </el-container>
   </el-container>
 </template>
@@ -337,5 +343,31 @@ html.dark .username {
 
 html.dark .content {
   background-color: #141414;
+}
+
+.footer {
+  height: 40px;
+  background-color: #fff;
+  border-top: 1px solid #dcdfe6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  font-size: 12px;
+  color: #909399;
+}
+
+html.dark .footer {
+  background-color: #1d1e1f;
+  border-top-color: #333;
+  color: #666;
+}
+
+.motto {
+  font-weight: 500;
+}
+
+.copyright {
+  opacity: 0.8;
 }
 </style>
