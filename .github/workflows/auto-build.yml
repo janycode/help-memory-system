@@ -28,11 +28,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'  # 前端npm缓存（适配frontend目录）
-          cache-dependency-path: frontend/package-lock.json  # 指定前端lock文件路径
 
       - name: 前端安装依赖并构建
-        run: npm ci && npm run build
+        run: npm i && npm run build
         working-directory: ./frontend  # 进入前端目录执行构建
 
       # ========== 第三步：上传构建产物 ==========
