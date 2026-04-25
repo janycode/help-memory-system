@@ -26,9 +26,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
+          cache: 'npm'
       - name: 前端构建
-        run: cd frontend && pnpm ci && pnpm run build
+        run: cd frontend && npm ci && npm run build
 
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
