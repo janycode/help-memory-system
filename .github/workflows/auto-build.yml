@@ -21,6 +21,13 @@ jobs:
       - name: Maven构建打包
         run: cd backend && mvn clean package -DskipTests
 
+      - name: 上传后端构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: 项目构建包
+          path: target/*.jar
+          retention-days: 30
+
       # 前端项目用这个配置，注释掉上面的Java配置
       - name: 配置Node.js
         uses: actions/setup-node@v4
@@ -28,13 +35,13 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - name: 前端构建
-        run: cd frontend && npm ci && npm run build
+        run: cd ../frontend && npm ci && npm run build
 
-      - name: 上传构建产物
+      - name: 上传后端构建产物
         uses: actions/upload-artifact@v4
         with:
           name: 项目构建包
-          path: target/*.jar  # 前端项目改为 dist/
+          path: dist/
           retention-days: 30
 
       - name: 微信通知构建成功
