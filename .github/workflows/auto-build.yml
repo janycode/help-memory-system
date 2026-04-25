@@ -1,0 +1,62 @@
+name: AI自动构建打包
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      # Java项目用这个配置，前端项目注释掉这段，用下面的Node配置
+      - name: 配置JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Maven构建打包
+        run: mvn clean package -DskipTests
+
+      # 前端项目用这个配置，注释掉上面的Java配置
+      - name: 配置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - name: 前端构建
+        run: pnpm ci && pnpm run build
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: 项目构建包
+          path: target/*.jar  # 前端项目改为 dist/
+          retention-days: 30
+
+      - name: 微信通知构建成功
+        if: success()
+        run: |
+          curl -X POST https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=6bf7080b-cc5a-47ba-a96f-e7bd4949da7b \
+          -H "Content-Type: application/json" \
+          -d '{
+            "msgtype": "markdown",
+            "markdown": {
+              "content": "## ✅ GitHub自动构建完成\n**项目**：${{ github.repository }}\n**Commit**：${{ github.sha }}\n**构建产物下载**：[点击下载](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n"
+            }
+          }'
+
+      - name: 微信通知构建失败
+        if: failure()
+        run: |
+          curl -X POST https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=6bf7080b-cc5a-47ba-a96f-e7bd4949da7b \
+          -H "Content-Type: application/json" \
+          -d '{
+            "msgtype": "markdown",
+            "markdown": {
+              "content": "## ❌ GitHub自动构建失败\n**项目**：${{ github.repository }}\n**Commit**：${{ github.sha }}\n**查看日志**：[点击查看](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n"
+            }
+          }'
