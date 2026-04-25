@@ -19,7 +19,7 @@ jobs:
           cache: maven
 
       - name: Maven构建打包
-        run: mvn clean package -DskipTests
+        run: cd backend && mvn clean package -DskipTests
 
       # 前端项目用这个配置，注释掉上面的Java配置
       - name: 配置Node.js
@@ -28,7 +28,7 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
       - name: 前端构建
-        run: pnpm ci && pnpm run build
+        run: cd frontend && pnpm ci && pnpm run build
 
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
