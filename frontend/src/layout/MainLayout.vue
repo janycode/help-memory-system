@@ -122,7 +122,7 @@
 
       <!-- 底部 -->
       <el-footer class="footer">
-        <span class="motto">🎯 代码千行，注释一行</span>
+        <span class="motto">💪 日拱一卒，功不唐捐</span>
         <span class="copyright">© 2026 Help Memory System. All Rights Reserved.</span>
       </el-footer>
     </el-container>

@@ -49,6 +49,11 @@
       <div class="login-footer">
         <p>首次使用？请联系管理员创建账户</p>
       </div>
+
+      <div class="login-bottom-footer">
+        <span class="motto">💪 日拱一卒，功不唐捐</span>
+        <span class="copyright">© 2026 Help Memory System. All Rights Reserved.</span>
+      </div>
     </div>
   </div>
 </template>
@@ -189,6 +194,26 @@ onUnmounted(() => {
 
 .login-footer p {
   margin: 0;
+}
+
+.login-bottom-footer {
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #909399;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.login-bottom-footer .motto {
+  font-weight: 500;
+}
+
+.login-bottom-footer .copyright {
+  opacity: 0.8;
 }
 
 /* 响应式设计 */

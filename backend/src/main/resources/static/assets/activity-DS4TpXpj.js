@@ -1,1 +1,0 @@
-import{r as e}from"./index-CXh81jd3.js";const r={getActivities(t){return e.get("/activities",{params:t})},getRecentActivities(t=10){return e.get("/activities/recent",{params:{limit:t}})},getMyActivities(){return e.get("/activities/my")},getActivitiesByModule(t){return e.get(`/activities/module/${t}`)}};export{r as a};
