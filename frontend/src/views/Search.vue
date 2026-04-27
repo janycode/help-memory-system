@@ -146,27 +146,88 @@
     <el-dialog
       v-model="environmentDialogVisible"
       title="环境详情"
-      width="600px"
+      width="700px"
       destroy-on-close
     >
-      <el-form :model="selectedEnvironment" label-width="100px">
-        <el-form-item label="环境名称">
-          <el-input v-model="selectedEnvironment.name" disabled />
-        </el-form-item>
-        <el-form-item label="环境类型">
-          <el-input v-model="selectedEnvironment.type" disabled />
-        </el-form-item>
+      <el-form :model="selectedEnvironment" label-width="120px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="环境名称">
+              <el-input v-model="selectedEnvironment.name" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="环境类型">
+              <el-input v-model="selectedEnvironment.type" disabled />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="访问地址">
           <el-input v-model="selectedEnvironment.url" disabled />
         </el-form-item>
-        <el-form-item label="用户名">
-          <el-input v-model="selectedEnvironment.username" disabled />
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="用户名">
+              <el-input v-model="selectedEnvironment.username" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="密码">
+              <el-input v-model="selectedEnvironment.password" disabled type="password" show-password />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <!-- 数据库连接信息 -->
+        <el-divider>数据库连接</el-divider>
+        <el-form-item label="数据库地址">
+          <el-input v-model="selectedEnvironment.databaseUrl" disabled />
         </el-form-item>
-        <el-form-item label="密码">
-          <el-input v-model="selectedEnvironment.password" disabled type="password" show-password />
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="数据库用户名">
+              <el-input v-model="selectedEnvironment.databaseUsername" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="数据库密码">
+              <el-input v-model="selectedEnvironment.databasePassword" disabled type="password" show-password />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <!-- Redis连接信息 -->
+        <el-divider>Redis连接</el-divider>
+        <el-form-item label="Redis地址">
+          <el-input v-model="selectedEnvironment.redisUrl" disabled />
+        </el-form-item>
+        <el-form-item label="Redis密码">
+          <el-input v-model="selectedEnvironment.redisPassword" disabled type="password" show-password />
+        </el-form-item>
+
+        <!-- 消息队列连接信息 -->
+        <el-divider>消息队列连接</el-divider>
+        <el-form-item label="MQ地址">
+          <el-input v-model="selectedEnvironment.mqUrl" disabled />
+        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="MQ用户名">
+              <el-input v-model="selectedEnvironment.mqUsername" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="MQ密码">
+              <el-input v-model="selectedEnvironment.mqPassword" disabled type="password" show-password />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="备注">
+          <el-input v-model="selectedEnvironment.notes" type="textarea" :rows="2" disabled />
         </el-form-item>
         <el-form-item label="描述">
-          <el-input v-model="selectedEnvironment.description" type="textarea" :rows="3" disabled />
+          <el-input v-model="selectedEnvironment.description" type="textarea" :rows="2" disabled />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -213,30 +274,42 @@
     <el-dialog
       v-model="componentDialogVisible"
       title="技术组件详情"
-      width="600px"
+      width="700px"
       destroy-on-close
     >
-      <el-form :model="selectedComponent" label-width="100px">
-        <el-form-item label="组件名称">
-          <el-input v-model="selectedComponent.name" disabled />
-        </el-form-item>
-        <el-form-item label="组件类型">
-          <el-input v-model="selectedComponent.category" disabled />
-        </el-form-item>
+      <el-form :model="selectedComponent" label-width="120px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="组件名称">
+              <el-input v-model="selectedComponent.name" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="组件类型">
+              <el-input v-model="selectedComponent.category" disabled />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="访问地址">
           <el-input v-model="selectedComponent.url" disabled />
         </el-form-item>
-        <el-form-item label="用户名">
-          <el-input v-model="selectedComponent.username" disabled />
-        </el-form-item>
-        <el-form-item label="密码">
-          <el-input v-model="selectedComponent.password" disabled type="password" show-password />
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="用户名">
+              <el-input v-model="selectedComponent.username" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="密码">
+              <el-input v-model="selectedComponent.password" disabled type="password" show-password />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="版本">
           <el-input v-model="selectedComponent.version" disabled />
         </el-form-item>
         <el-form-item label="配置信息">
-          <el-input v-model="selectedComponent.configuration" type="textarea" :rows="3" disabled />
+          <el-input v-model="selectedComponent.configuration" type="textarea" :rows="4" disabled />
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="selectedComponent.notes" type="textarea" :rows="2" disabled />
@@ -254,21 +327,39 @@
     <el-dialog
       v-model="processDialogVisible"
       title="业务流程详情"
-      width="700px"
+      width="800px"
       destroy-on-close
     >
-      <el-form :model="selectedProcess" label-width="100px">
-        <el-form-item label="流程名称">
-          <el-input v-model="selectedProcess.name" disabled />
-        </el-form-item>
-        <el-form-item label="流程类型">
-          <el-input v-model="selectedProcess.category" disabled />
-        </el-form-item>
-        <el-form-item label="优先级">
-          <el-tag :type="getPriorityType(selectedProcess.priority)">{{ getPriorityText(selectedProcess.priority) }}</el-tag>
+      <el-form :model="selectedProcess" label-width="120px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="流程名称">
+              <el-input v-model="selectedProcess.name" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="流程类型">
+              <el-input v-model="selectedProcess.category" disabled />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="环境类型">
+              <el-input v-model="selectedProcess.environmentType" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="优先级">
+              <el-tag :type="getPriorityType(selectedProcess.priority)">{{ getPriorityText(selectedProcess.priority) }}</el-tag>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="流程说明">
+          <el-input v-model="selectedProcess.description" type="textarea" :rows="2" disabled />
         </el-form-item>
         <el-form-item label="流程步骤">
-          <el-input v-model="selectedProcess.steps" type="textarea" :rows="4" disabled />
+          <el-input v-model="selectedProcess.steps" type="textarea" :rows="5" disabled />
         </el-form-item>
         <el-form-item label="注意事项">
           <el-input v-model="selectedProcess.precautions" type="textarea" :rows="3" disabled />
@@ -278,9 +369,6 @@
         </el-form-item>
         <el-form-item label="相关文档">
           <el-input v-model="selectedProcess.relatedDocuments" type="textarea" :rows="2" disabled />
-        </el-form-item>
-        <el-form-item label="流程说明">
-          <el-input v-model="selectedProcess.description" type="textarea" :rows="2" disabled />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -292,16 +380,22 @@
     <el-dialog
       v-model="projectDialogVisible"
       title="代码仓库详情"
-      width="600px"
+      width="700px"
       destroy-on-close
     >
-      <el-form :model="selectedProject" label-width="100px">
-        <el-form-item label="项目名称">
-          <el-input v-model="selectedProject.name" disabled />
-        </el-form-item>
-        <el-form-item label="项目全称">
-          <el-input v-model="selectedProject.projectFullName" disabled />
-        </el-form-item>
+      <el-form :model="selectedProject" label-width="120px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="项目名称">
+              <el-input v-model="selectedProject.name" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="项目全称">
+              <el-input v-model="selectedProject.projectFullName" disabled />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="代码仓库">
           <el-input v-model="selectedProject.codeRepository" disabled />
         </el-form-item>
@@ -311,14 +405,20 @@
         <el-form-item label="部署路径">
           <el-input v-model="selectedProject.deploymentPath" disabled />
         </el-form-item>
-        <el-form-item label="端口">
-          <el-input v-model="selectedProject.port" disabled />
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="端口">
+              <el-input v-model="selectedProject.port" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="项目状态">
+              <el-input v-model="selectedProject.status" disabled />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="团队成员">
           <el-input v-model="selectedProject.teamMembers" type="textarea" :rows="3" disabled />
-        </el-form-item>
-        <el-form-item label="项目状态">
-          <el-input v-model="selectedProject.status" disabled />
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="selectedProject.notes" type="textarea" :rows="2" disabled />
@@ -481,44 +581,60 @@ const copyToClipboard = async (text: string) => {
 
 const copyEnvironmentInfo = async (env: Environment) => {
   const info = `
-${env.name}-${env.type}
-地址: \`${env.url || '-'}\`
-账号: ${env.username || '-'}
+环境名称: ${env.name}
+环境类型: ${env.type}
+访问地址: \`${env.url || '-'}\`
+用户名: ${env.username || '-'}
 密码: ${env.password || '-'}
+数据库地址: \`${env.databaseUrl || '-'}\`
+数据库用户名: ${env.databaseUsername || '-'}
+数据库密码: ${env.databasePassword || '-'}
+Redis地址: \`${env.redisUrl || '-'}\`
+Redis密码: ${env.redisPassword || '-'}
+MQ地址: \`${env.mqUrl || '-'}\`
+MQ用户名: ${env.mqUsername || '-'}
+MQ密码: ${env.mqPassword || '-'}
+备注: ${env.notes || '-'}
+描述: ${env.description || '-'}
   `.trim()
   await copyToClipboard(info)
 }
 
 const copySnippetInfo = async (snippet: CodeSnippet) => {
   const info = `
-${snippet.title}
-语言: ${getLanguageLabel(snippet.language)}
+标题: ${snippet.title}
+编程语言: ${getLanguageLabel(snippet.language)}
 描述: ${snippet.description || '-'}
-代码: ${snippet.code}
 标签: ${snippet.tags || '-'}
+代码:
+${snippet.code}
   `.trim()
   await copyToClipboard(info)
 }
 
 const copyComponentInfo = async (component: TechnicalComponent) => {
   const info = `
-${component.name}-${component.category}
-地址: \`${component.url || '-'}\`
-账号: ${component.username || '-'}
+组件名称: ${component.name}
+组件类型: ${component.category}
+访问地址: \`${component.url || '-'}\`
+用户名: ${component.username || '-'}
 密码: ${component.password || '-'}
 版本: ${component.version || '-'}
-配置: ${component.configuration || '-'}
+配置信息: ${component.configuration || '-'}
 备注: ${component.notes || '-'}
+描述: ${component.description || '-'}
   `.trim()
   await copyToClipboard(info)
 }
 
 const copyProcessInfo = async (process: BusinessProcess) => {
   const info = `
-${process.name}-${process.category}
+流程名称: ${process.name}
+流程类型: ${process.category}
+环境类型: ${process.environmentType || '不区分环境'}
 优先级: ${getPriorityText(process.priority)}
-描述: ${process.description || '-'}
-步骤: ${process.steps || '-'}
+流程说明: ${process.description || '-'}
+流程步骤: ${process.steps || '-'}
 注意事项: ${process.precautions || '-'}
 检查清单: ${process.checklist || '-'}
 相关文档: ${process.relatedDocuments || '-'}
@@ -528,15 +644,16 @@ ${process.name}-${process.category}
 
 const copyProjectInfo = async (project: Repository) => {
   const info = `
-${project.name}
+项目名称: ${project.name}
 项目全称: ${project.projectFullName || '-'}
 代码仓库: \`${project.codeRepository || '-'}\`
 文档路径: \`${project.documentPath || '-'}\`
 部署路径: \`${project.deploymentPath || '-'}\`
 端口: ${project.port || '-'}
 团队成员: ${project.teamMembers || '-'}
-状态: ${project.status || '-'}
+项目状态: ${project.status || '-'}
 备注: ${project.notes || '-'}
+描述: ${project.description || '-'}
   `.trim()
   await copyToClipboard(info)
 }
