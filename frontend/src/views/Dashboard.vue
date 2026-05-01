@@ -53,114 +53,94 @@
         </div>
       </el-card>
 
-      <el-row :gutter="16" class="stats-row">
-        <el-col :span="4.8">
-          <el-card class="stat-card" @click="navigateTo('/environments')">
-            <div class="stat-content">
-              <div class="stat-icon environment">
-                <el-icon><Monitor /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ stats.environments }}</div>
-                <div class="stat-label">环境</div>
-              </div>
+      <div class="stats-row">
+        <el-card class="stat-card" @click="navigateTo('/environments')">
+          <div class="stat-content">
+            <div class="stat-icon environment">
+              <el-icon><Monitor /></el-icon>
             </div>
-          </el-card>
-        </el-col>
+            <div class="stat-info">
+              <div class="stat-number">{{ stats.environments }}</div>
+              <div class="stat-label">环境</div>
+            </div>
+          </div>
+        </el-card>
 
-        <el-col :span="4.8">
-          <el-card class="stat-card" @click="navigateTo('/components')">
-            <div class="stat-content">
-              <div class="stat-icon component">
-                <el-icon><Cpu /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ stats.components }}</div>
-                <div class="stat-label">组件</div>
-              </div>
+        <el-card class="stat-card" @click="navigateTo('/components')">
+          <div class="stat-content">
+            <div class="stat-icon component">
+              <el-icon><Cpu /></el-icon>
             </div>
-          </el-card>
-        </el-col>
+            <div class="stat-info">
+              <div class="stat-number">{{ stats.components }}</div>
+              <div class="stat-label">组件</div>
+            </div>
+          </div>
+        </el-card>
 
-        <el-col :span="4.8">
-          <el-card class="stat-card" @click="navigateTo('/processes')">
-            <div class="stat-content">
-              <div class="stat-icon process">
-                <el-icon><Document /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ stats.processes }}</div>
-                <div class="stat-label">流程</div>
-              </div>
+        <el-card class="stat-card" @click="navigateTo('/processes')">
+          <div class="stat-content">
+            <div class="stat-icon process">
+              <el-icon><Document /></el-icon>
             </div>
-          </el-card>
-        </el-col>
+            <div class="stat-info">
+              <div class="stat-number">{{ stats.processes }}</div>
+              <div class="stat-label">流程</div>
+            </div>
+          </div>
+        </el-card>
 
-        <el-col :span="4.8">
-          <el-card class="stat-card" @click="navigateTo('/repositories')">
-            <div class="stat-content">
-              <div class="stat-icon project">
-                <el-icon><Folder /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ stats.projects }}</div>
-                <div class="stat-label">仓库</div>
-              </div>
+        <el-card class="stat-card" @click="navigateTo('/repositories')">
+          <div class="stat-content">
+            <div class="stat-icon project">
+              <el-icon><Folder /></el-icon>
             </div>
-          </el-card>
-        </el-col>
+            <div class="stat-info">
+              <div class="stat-number">{{ stats.projects }}</div>
+              <div class="stat-label">仓库</div>
+            </div>
+          </div>
+        </el-card>
 
-        <el-col :span="4.8">
-          <el-card class="stat-card" @click="navigateTo('/snippets')">
-            <div class="stat-content">
-              <div class="stat-icon snippet">
-                <el-icon><Document /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ stats.snippets }}</div>
-                <div class="stat-label">代码片段</div>
-              </div>
+        <el-card class="stat-card" @click="navigateTo('/snippets')">
+          <div class="stat-content">
+            <div class="stat-icon snippet">
+              <el-icon><Document /></el-icon>
             </div>
-          </el-card>
-        </el-col>
-      </el-row>
+            <div class="stat-info">
+              <div class="stat-number">{{ stats.snippets }}</div>
+              <div class="stat-label">代码片段</div>
+            </div>
+          </div>
+        </el-card>
+      </div>
 
       <el-card class="quick-actions">
         <div class="card-header">
           <h3>快速操作</h3>
         </div>
-        <el-row :gutter="16">
-          <el-col :span="4.8">
-            <el-button type="primary" class="action-button" @click="showAddEnvironmentDialog">
-              <el-icon><Plus /></el-icon>
-              添加环境信息
-            </el-button>
-          </el-col>
-          <el-col :span="4.8">
-            <el-button type="success" class="action-button" @click="showAddComponentDialog">
-              <el-icon><Plus /></el-icon>
-              添加技术组件
-            </el-button>
-          </el-col>
-          <el-col :span="4.8">
-            <el-button type="warning" class="action-button" @click="showAddProcessDialog">
-              <el-icon><Plus /></el-icon>
-              添加业务流程
-            </el-button>
-          </el-col>
-          <el-col :span="4.8">
-            <el-button type="info" class="action-button" @click="showAddProjectDialog">
-              <el-icon><Plus /></el-icon>
-              添加代码仓库
-            </el-button>
-          </el-col>
-          <el-col :span="4.8">
-            <el-button type="danger" class="action-button" @click="showAddSnippetDialog">
-              <el-icon><Plus /></el-icon>
-              添加代码片段
-            </el-button>
-          </el-col>
-        </el-row>
+        <div class="action-buttons">
+          <el-button type="primary" class="action-button" @click="showAddEnvironmentDialog">
+            <el-icon><Plus /></el-icon>
+            添加环境信息
+          </el-button>
+          <el-button type="success" class="action-button" @click="showAddComponentDialog">
+            <el-icon><Plus /></el-icon>
+            添加技术组件
+          </el-button>
+          <el-button type="warning" class="action-button" @click="showAddProcessDialog">
+            <el-icon><Plus /></el-icon>
+            添加业务流程
+          </el-button>
+          <el-button type="info" class="action-button" @click="showAddProjectDialog">
+            <el-icon><Plus /></el-icon>
+            添加代码仓库
+          </el-button>
+          <el-button type="danger" class="action-button" @click="showAddSnippetDialog">
+            <el-icon><Plus /></el-icon>
+            添加代码片段
+          </el-button>
+        </div>
       </el-card>
 
       <!-- 环境新增弹窗 -->
@@ -917,12 +897,16 @@ onUnmounted(() => {
 }
 
 .stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
   margin-bottom: 24px;
-  flex-wrap: nowrap;
 }
 
-.stats-row .el-col {
-  min-width: 0;
+.stats-row .stat-card {
+  flex: 1;
+  max-width: 200px;
+  min-width: 140px;
 }
 
 .global-search-card {
@@ -1110,22 +1094,21 @@ onUnmounted(() => {
   margin-bottom: 24px;
 }
 
-.quick-actions .el-row {
-  flex-wrap: nowrap;
-}
-
-.quick-actions .el-col {
-  min-width: 0;
+.quick-actions .action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .action-button {
-  width: 100%;
+  min-width: 140px;
   height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .recent-activities {
@@ -1161,12 +1144,18 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
-  .stats-row .el-col {
-    margin-bottom: 16px;
+  .stats-row {
+    flex-wrap: wrap;
   }
-
-  .quick-actions .el-col {
-    margin-bottom: 12px;
+  .stats-row .stat-card {
+    flex: 1 1 calc(33% - 16px);
+    max-width: none;
+  }
+  .quick-actions .action-buttons {
+    flex-wrap: wrap;
+  }
+  .action-button {
+    flex: 1 1 calc(33% - 16px);
   }
 }
 </style>
