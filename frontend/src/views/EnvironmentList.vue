@@ -112,19 +112,28 @@
         <el-form-item label="访问地址" prop="url">
           <el-input v-model="formData.url" placeholder="请输入访问地址" :disabled="viewMode" />
         </el-form-item>
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="formData.username" placeholder="请输入用户名" :disabled="viewMode" />
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input
-            v-model="formData.password"
-            type="password"
-            placeholder="请输入密码"
-            show-password
-            :disabled="viewMode"
-            v-if="!viewMode"
-          />
-          <PasswordDisplay v-else :password="formData.password || ''" />
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="用户名" prop="username">
+              <el-input v-model="formData.username" placeholder="请输入用户名" :disabled="viewMode" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="密码" prop="password">
+              <el-input
+                v-model="formData.password"
+                type="password"
+                placeholder="请输入密码"
+                show-password
+                :disabled="viewMode"
+                v-if="!viewMode"
+              />
+              <PasswordDisplay v-else :password="formData.password || ''" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="备注" prop="notes">
+          <el-input v-model="formData.notes" type="textarea" :rows="2" placeholder="请输入备注" :disabled="viewMode" />
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input v-model="formData.description" type="textarea" :rows="3" placeholder="请输入描述" :disabled="viewMode" />
@@ -181,7 +190,16 @@ const formData = reactive({
   url: '',
   username: '',
   password: '',
-  description: ''
+  description: '',
+  notes: '',
+  databaseUrl: '',
+  databaseUsername: '',
+  databasePassword: '',
+  redisUrl: '',
+  redisPassword: '',
+  mqUrl: '',
+  mqUsername: '',
+  mqPassword: ''
 })
 
 const rules = {
@@ -273,7 +291,16 @@ const handleAdd = () => {
     url: '',
     username: '',
     password: '',
-    description: ''
+    description: '',
+    notes: '',
+    databaseUrl: '',
+    databaseUsername: '',
+    databasePassword: '',
+    redisUrl: '',
+    redisPassword: '',
+    mqUrl: '',
+    mqUsername: '',
+    mqPassword: ''
   })
   dialogVisible.value = true
 }
@@ -288,7 +315,16 @@ const handleView = (row: Environment) => {
     url: row.url,
     username: row.username,
     password: row.password,
-    description: row.description
+    description: row.description,
+    notes: row.notes || '',
+    databaseUrl: row.databaseUrl || '',
+    databaseUsername: row.databaseUsername || '',
+    databasePassword: row.databasePassword || '',
+    redisUrl: row.redisUrl || '',
+    redisPassword: row.redisPassword || '',
+    mqUrl: row.mqUrl || '',
+    mqUsername: row.mqUsername || '',
+    mqPassword: row.mqPassword || ''
   })
   dialogVisible.value = true
 }
@@ -303,7 +339,16 @@ const handleEdit = (row: Environment) => {
     url: row.url,
     username: row.username,
     password: row.password,
-    description: row.description
+    description: row.description,
+    notes: row.notes || '',
+    databaseUrl: row.databaseUrl || '',
+    databaseUsername: row.databaseUsername || '',
+    databasePassword: row.databasePassword || '',
+    redisUrl: row.redisUrl || '',
+    redisPassword: row.redisPassword || '',
+    mqUrl: row.mqUrl || '',
+    mqUsername: row.mqUsername || '',
+    mqPassword: row.mqPassword || ''
   })
   dialogVisible.value = true
 }

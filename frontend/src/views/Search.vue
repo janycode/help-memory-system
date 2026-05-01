@@ -173,56 +173,10 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="密码">
-              <el-input v-model="selectedEnvironment.password" disabled type="password" show-password />
+              <PasswordDisplay :password="selectedEnvironment.password || ''" />
             </el-form-item>
           </el-col>
         </el-row>
-
-        <!-- 数据库连接信息 -->
-        <el-divider>数据库连接</el-divider>
-        <el-form-item label="数据库地址">
-          <el-input v-model="selectedEnvironment.databaseUrl" disabled />
-        </el-form-item>
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="数据库用户名">
-              <el-input v-model="selectedEnvironment.databaseUsername" disabled />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="数据库密码">
-              <el-input v-model="selectedEnvironment.databasePassword" disabled type="password" show-password />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <!-- Redis连接信息 -->
-        <el-divider>Redis连接</el-divider>
-        <el-form-item label="Redis地址">
-          <el-input v-model="selectedEnvironment.redisUrl" disabled />
-        </el-form-item>
-        <el-form-item label="Redis密码">
-          <el-input v-model="selectedEnvironment.redisPassword" disabled type="password" show-password />
-        </el-form-item>
-
-        <!-- 消息队列连接信息 -->
-        <el-divider>消息队列连接</el-divider>
-        <el-form-item label="MQ地址">
-          <el-input v-model="selectedEnvironment.mqUrl" disabled />
-        </el-form-item>
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="MQ用户名">
-              <el-input v-model="selectedEnvironment.mqUsername" disabled />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="MQ密码">
-              <el-input v-model="selectedEnvironment.mqPassword" disabled type="password" show-password />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
         <el-form-item label="备注">
           <el-input v-model="selectedEnvironment.notes" type="textarea" :rows="2" disabled />
         </el-form-item>
@@ -359,7 +313,7 @@
           <el-input v-model="selectedProcess.description" type="textarea" :rows="2" disabled />
         </el-form-item>
         <el-form-item label="流程步骤">
-          <el-input v-model="selectedProcess.steps" type="textarea" :rows="5" disabled />
+          <el-input v-model="selectedProcess.processFlow" type="textarea" :rows="5" disabled />
         </el-form-item>
         <el-form-item label="注意事项">
           <el-input v-model="selectedProcess.precautions" type="textarea" :rows="3" disabled />
@@ -447,6 +401,7 @@ import type { CodeSnippet } from '@/types/snippet'
 import type { TechnicalComponent } from '@/types/component'
 import type { BusinessProcess } from '@/types/process'
 import type { Repository } from '@/types/project'
+import PasswordDisplay from '@/components/PasswordDisplay.vue'
 
 const route = useRoute()
 const searchStore = useSearchStore()

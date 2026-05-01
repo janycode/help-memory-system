@@ -114,11 +114,26 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="代码仓库" prop="codeRepository">
-          <el-input v-model="formData.codeRepository" placeholder="请输入代码仓库地址" :disabled="viewMode" />
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="代码仓库" prop="codeRepository">
+              <el-input v-model="formData.codeRepository" placeholder="请输入代码仓库地址" :disabled="viewMode" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="部署路径" prop="deploymentPath">
+              <el-input v-model="formData.deploymentPath" placeholder="请输入部署路径" :disabled="viewMode" />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="文档位置" prop="documentPath">
           <el-input v-model="formData.documentPath" placeholder="请输入文档位置" :disabled="viewMode" />
+        </el-form-item>
+        <el-form-item label="团队成员" prop="teamMembers">
+          <el-input v-model="formData.teamMembers" type="textarea" :rows="2" placeholder="请输入团队成员" :disabled="viewMode" />
+        </el-form-item>
+        <el-form-item label="备注" prop="notes">
+          <el-input v-model="formData.notes" type="textarea" :rows="2" placeholder="请输入备注" :disabled="viewMode" />
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input v-model="formData.description" type="textarea" :rows="3" placeholder="请输入描述" :disabled="viewMode" />
@@ -174,7 +189,10 @@ const formData = reactive({
   status: '',
   codeRepository: '',
   documentPath: '',
+  deploymentPath: '',
   port: '',
+  teamMembers: '',
+  notes: '',
   description: ''
 })
 
@@ -247,7 +265,10 @@ const handleAdd = () => {
     status: '',
     codeRepository: '',
     documentPath: '',
+    deploymentPath: '',
     port: '',
+    teamMembers: '',
+    notes: '',
     description: ''
   })
   dialogVisible.value = true
@@ -263,7 +284,10 @@ const handleView = (row: Repository) => {
     status: row.status,
     codeRepository: row.codeRepository,
     documentPath: row.documentPath,
+    deploymentPath: row.deploymentPath || '',
     port: row.port,
+    teamMembers: row.teamMembers || '',
+    notes: row.notes || '',
     description: row.description
   })
   dialogVisible.value = true
@@ -271,6 +295,7 @@ const handleView = (row: Repository) => {
 
 const handleEdit = (row: Repository) => {
   isEdit.value = true
+  viewMode.value = false
   Object.assign(formData, {
     id: row.id,
     name: row.name,
@@ -278,7 +303,10 @@ const handleEdit = (row: Repository) => {
     status: row.status,
     codeRepository: row.codeRepository,
     documentPath: row.documentPath,
+    deploymentPath: row.deploymentPath || '',
     port: row.port,
+    teamMembers: row.teamMembers || '',
+    notes: row.notes || '',
     description: row.description
   })
   dialogVisible.value = true

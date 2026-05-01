@@ -149,6 +149,12 @@
         <el-form-item label="注意事项" prop="precautions">
           <el-input v-model="formData.precautions" type="textarea" :rows="3" placeholder="请输入注意事项" :disabled="viewMode" />
         </el-form-item>
+        <el-form-item label="检查清单" prop="checklist">
+          <el-input v-model="formData.checklist" type="textarea" :rows="3" placeholder="请输入检查清单" :disabled="viewMode" />
+        </el-form-item>
+        <el-form-item label="相关文档" prop="relatedDocuments">
+          <el-input v-model="formData.relatedDocuments" type="textarea" :rows="2" placeholder="请输入相关文档链接" :disabled="viewMode" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false" v-if="!viewMode">取消</el-button>
@@ -206,7 +212,9 @@ const formData = reactive({
   priority: 0,
   description: '',
   processFlow: '',
-  precautions: ''
+  precautions: '',
+  checklist: '',
+  relatedDocuments: ''
 })
 
 const rules = {
@@ -361,7 +369,9 @@ const handleAdd = () => {
     priority: 0,
     description: '',
     processFlow: '',
-    precautions: ''
+    precautions: '',
+    checklist: '',
+    relatedDocuments: ''
   })
   dialogVisible.value = true
 }
@@ -378,7 +388,9 @@ const handleView = (row: BusinessProcess) => {
     priority: row.priority,
     description: row.description,
     processFlow: row.processFlow,
-    precautions: row.precautions
+    precautions: row.precautions,
+    checklist: row.checklist || '',
+    relatedDocuments: row.relatedDocuments || ''
   })
   dialogVisible.value = true
 }
@@ -395,7 +407,9 @@ const handleEdit = (row: BusinessProcess) => {
     priority: row.priority,
     description: row.description,
     processFlow: row.processFlow,
-    precautions: row.precautions
+    precautions: row.precautions,
+    checklist: row.checklist || '',
+    relatedDocuments: row.relatedDocuments || ''
   })
   dialogVisible.value = true
 }
