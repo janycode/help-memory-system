@@ -1,81 +1,91 @@
 <template>
   <el-container class="main-layout">
-    <el-aside width="240px" class="sidebar">
+    <el-aside :width="isCollapsed ? '64px' : '220px'" class="sidebar" :class="{ collapsed: isCollapsed }">
       <div class="logo">
-        <h2>{{ systemTitle }}</h2>
+        <h2 v-if="!isCollapsed">{{ systemTitle }}</h2>
+        <span v-else class="logo-icon">{{ systemTitle.charAt(0) }}</span>
       </div>
       <el-menu
         :default-active="activeMenu"
         class="menu"
         router
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409EFF"
+        :collapse="isCollapsed"
       >
         <el-menu-item index="/">
           <el-icon><House /></el-icon>
-          <span>首页</span>
-        </el-menu-item>
-        <el-divider class="nav-divider" />
-
-        <el-menu-item index="/environments">
-          <el-icon><Monitor /></el-icon>
-          <span>环境管理</span>
+          <template #title>首页</template>
         </el-menu-item>
 
-        <el-menu-item index="/components">
-          <el-icon><Cpu /></el-icon>
-          <span>技术组件</span>
-        </el-menu-item>
+        <el-sub-menu index="biz">
+          <template #title>
+            <el-icon><Grid /></el-icon>
+            <span>业务管理</span>
+          </template>
+          <el-menu-item index="/environments">
+            <el-icon><Monitor /></el-icon>
+            环境管理
+          </el-menu-item>
+          <el-menu-item index="/components">
+            <el-icon><Cpu /></el-icon>
+            技术组件
+          </el-menu-item>
+          <el-menu-item index="/processes">
+            <el-icon><Document /></el-icon>
+            业务流程
+          </el-menu-item>
+          <el-menu-item index="/repositories">
+            <el-icon><Folder /></el-icon>
+            代码仓库
+          </el-menu-item>
+          <el-menu-item index="/snippets">
+            <el-icon><DocumentCopy /></el-icon>
+            代码片段
+          </el-menu-item>
+        </el-sub-menu>
 
-        <el-menu-item index="/processes">
-          <el-icon><Document /></el-icon>
-          <span>业务流程</span>
-        </el-menu-item>
+        <el-sub-menu index="sys">
+          <template #title>
+            <el-icon><Setting /></el-icon>
+            <span>系统管理</span>
+          </template>
+          <el-menu-item index="/dict">
+            <el-icon><Collection /></el-icon>
+            字典管理
+          </el-menu-item>
+          <el-menu-item v-if="userStore.isAdmin" index="/users">
+            <el-icon><User /></el-icon>
+            用户管理
+          </el-menu-item>
+          <el-menu-item v-if="userStore.isAdmin" index="/system">
+            <el-icon><Tools /></el-icon>
+            系统配置
+          </el-menu-item>
+        </el-sub-menu>
 
-        <el-menu-item index="/repositories">
-          <el-icon><Folder /></el-icon>
-          <span>代码仓库</span>
-        </el-menu-item>
-
-        <el-menu-item index="/snippets">
-          <el-icon><DocumentCopy /></el-icon>
-          <span>代码片段</span>
-        </el-menu-item>
-        <el-divider class="nav-divider" />
-
-        <el-menu-item index="/dict">
-          <el-icon><Setting /></el-icon>
-          <span>字典管理</span>
-        </el-menu-item>
-
-        <el-menu-item v-if="userStore.isAdmin" index="/users">
-          <el-icon><User /></el-icon>
-          <span>用户管理</span>
-        </el-menu-item>
-
-        <el-menu-item v-if="userStore.isAdmin" index="/system">
-          <el-icon><Setting /></el-icon>
-          <span>系统配置</span>
-        </el-menu-item>
-        <el-divider class="nav-divider" />
-
-        <el-menu-item index="/search">
-          <el-icon><Search /></el-icon>
-          <span>全局搜索</span>
-        </el-menu-item>
-
-        <el-menu-item index="/database">
-          <el-icon><DataBoard /></el-icon>
-          <span>本地数据库</span>
-        </el-menu-item>
+        <el-sub-menu index="tool">
+          <template #title>
+            <el-icon><DataBoard /></el-icon>
+            <span>工具</span>
+          </template>
+          <el-menu-item index="/search">
+            <el-icon><Search /></el-icon>
+            全局搜索
+          </el-menu-item>
+          <el-menu-item index="/database">
+            <el-icon><Coin /></el-icon>
+            本地数据库
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
 
     <el-container class="main-container">
       <el-header class="header">
         <div class="header-left">
-          <el-breadcrumb>
+          <el-button class="collapse-btn" text @click="toggleCollapse">
+            <el-icon :size="18"><Fold v-if="!isCollapsed" /><Expand v-else /></el-icon>
+          </el-button>
+          <el-breadcrumb separator="/">
             <el-breadcrumb-item
               v-for="item in breadcrumbs"
               :key="item.path"
@@ -88,7 +98,7 @@
 
         <div class="header-right">
           <el-tooltip :content="themeStore.isDark ? '切换亮色模式' : '切换暗色模式'">
-            <el-button class="theme-toggle" @click="themeStore.toggle" text>
+            <el-button class="theme-toggle" text @click="themeStore.toggle">
               <el-icon :size="18"><Moon v-if="!themeStore.isDark" /><Sunny v-else /></el-icon>
             </el-button>
           </el-tooltip>
@@ -120,7 +130,6 @@
         <router-view />
       </el-main>
 
-      <!-- 底部 -->
       <el-footer class="footer">
         <span class="motto">💪 日拱一卒，功不唐捐</span>
         <span class="copyright">© 2026 Help Memory System. All Rights Reserved.</span>
@@ -143,6 +152,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const themeStore = useThemeStore()
 const systemTitle = ref('助记单')
+const isCollapsed = ref(false)
 
 const activeMenu = computed(() => {
   const { path } = route
@@ -160,10 +170,13 @@ const activeMenu = computed(() => {
   return '/'
 })
 
+const toggleCollapse = () => {
+  isCollapsed.value = !isCollapsed.value
+}
+
 const userInitials = computed(() => {
   const user = userStore.currentUser
   if (!user) return 'U'
-
   const name = user.fullName || user.username || ''
   return name ? name.charAt(0).toUpperCase() : 'U'
 })
@@ -193,33 +206,26 @@ const fetchSystemTitle = async () => {
     if (response.data && response.data.configValue) {
       systemTitle.value = response.data.configValue
     } else {
-      // 默认值
       systemTitle.value = '新人筑基丹'
     }
   } catch (error) {
     console.error('获取系统标题失败:', error)
-    // 出错时使用默认值
     systemTitle.value = '新人筑基丹'
   }
 }
 
-// 全局快捷键
 useGlobalShortcuts()
 
-// 页面获得焦点时刷新配置
 const handlePageFocus = () => {
   fetchSystemTitle()
 }
 
 onMounted(() => {
   fetchSystemTitle()
-  
-  // 监听页面获得焦点事件
   window.addEventListener('focus', handlePageFocus)
 })
 
 onUnmounted(() => {
-  // 移除事件监听
   window.removeEventListener('focus', handlePageFocus)
 })
 </script>
@@ -229,86 +235,211 @@ onUnmounted(() => {
   height: 100vh;
 }
 
+/* ===== 侧边栏 ===== */
 .sidebar {
-  background-color: #304156;
+  background-color: var(--sidebar-bg);
   display: flex;
   flex-direction: column;
-}
-
-html.dark .sidebar {
-  background-color: #1d1e1f;
-}
-
-.logo {
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 1px solid #1f2d3d;
-}
-
-html.dark .logo {
-  border-bottom-color: #333;
-}
-
-.logo h2 {
-  color: #fff;
-  font-size: 18px;
-  margin: 0;
-}
-
-.menu {
-  flex: 1;
+  transition: width 0.28s ease;
+  overflow: hidden;
   border-right: none;
 }
 
-.nav-divider {
-  margin: 8px 0;
-  background-color: rgba(255, 255, 255, 0.1);
+html.dark .sidebar {
+  background-color: #0d1117;
 }
 
+.logo {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.logo h2 {
+  color: #ffffff;
+  font-size: 17px;
+  margin: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  letter-spacing: 0.5px;
+}
+
+.logo-icon {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* ===== 菜单样式 ===== */
+.menu {
+  flex: 1;
+  border-right: none !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 0;
+}
+
+.menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.menu::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+}
+
+/* 覆盖 Element Plus 菜单默认样式 */
+:deep(.el-menu) {
+  background-color: transparent !important;
+}
+
+:deep(.el-menu-item),
+:deep(.el-sub-menu__title) {
+  color: var(--sidebar-text) !important;
+  height: 44px;
+  line-height: 44px;
+  margin: 2px 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease !important;
+}
+
+:deep(.el-menu-item:hover),
+:deep(.el-sub-menu__title:hover) {
+  background-color: var(--sidebar-hover-bg) !important;
+  color: #ffffff !important;
+}
+
+:deep(.el-menu-item.is-active) {
+  background-color: var(--sidebar-active-bg) !important;
+  color: var(--sidebar-active-text) !important;
+  font-weight: 600;
+}
+
+:deep(.el-sub-menu.is-active > .el-sub-menu__title) {
+  color: #ffffff !important;
+}
+
+:deep(.el-sub-menu .el-menu) {
+  background-color: transparent !important;
+}
+
+:deep(.el-sub-menu .el-menu-item) {
+  height: 40px;
+  line-height: 40px;
+  min-width: auto !important;
+  padding-left: 52px !important;
+  margin: 1px 12px 1px 8px;
+  border-radius: 6px;
+}
+
+:deep(.el-sub-menu .el-menu-item:hover) {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+:deep(.el-sub-menu .el-menu-item.is-active) {
+  background-color: rgba(64, 158, 255, 0.12) !important;
+}
+
+:deep(.el-sub-menu__icon-arrow) {
+  color: var(--sidebar-text);
+}
+
+/* 折叠状态 */
+.sidebar.collapsed .logo {
+  justify-content: center;
+  padding: 0;
+}
+
+:deep(.el-menu--collapse) {
+  width: 64px;
+}
+
+:deep(.el-menu--collapse .el-menu-item),
+:deep(.el-menu--collapse .el-sub-menu__title) {
+  margin: 2px 8px;
+  padding: 0 !important;
+  justify-content: center;
+}
+
+:deep(.el-menu--collapse .el-sub-menu__icon-arrow) {
+  display: none;
+}
+
+/* ===== 主容器 ===== */
 .main-container {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
+/* ===== 头部 ===== */
 .header {
-  height: 60px;
-  background-color: #fff;
-  border-bottom: 1px solid #dcdfe6;
+  height: 56px;
+  background-color: var(--header-bg);
+  border-bottom: 1px solid #f0f0f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
+  flex-shrink: 0;
 }
 
 html.dark .header {
-  background-color: #1d1e1f;
-  border-bottom-color: #333;
+  background-color: #161618;
+  border-bottom-color: #2c2c2e;
 }
 
 .header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   flex: 1;
+  min-width: 0;
+}
+
+.collapse-btn {
+  border: none;
+  padding: 8px;
+  color: #606266;
+}
+
+.collapse-btn:hover {
+  color: #303133;
+  background-color: #f5f7fa;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .theme-toggle {
   border: none;
   font-size: 18px;
+  padding: 8px;
+  color: #606266;
+}
+
+.theme-toggle:hover {
+  color: #409eff;
+  background-color: #f5f7fa;
 }
 
 .user-info {
   display: flex;
   align-items: center;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 4px;
-  transition: background-color 0.3s;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background-color 0.25s;
+  gap: 6px;
 }
 
 .user-info:hover {
@@ -320,23 +451,28 @@ html.dark .user-info:hover {
 }
 
 .avatar {
-  margin-right: 8px;
-  background-color: #409eff;
+  background: linear-gradient(135deg, #409eff, #53a8ff) !important;
+  font-size: 13px;
+  flex-shrink: 0;
 }
 
 .username {
-  margin-right: 4px;
   font-size: 14px;
-  color: #606266;
+  color: #4e5969;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 html.dark .username {
   color: #a0a0a0;
 }
 
+/* ===== 内容区 ===== */
 .content {
   flex: 1;
-  background-color: #f5f7fa;
+  background-color: var(--content-bg);
   padding: 0;
   overflow: auto;
 }
@@ -345,29 +481,32 @@ html.dark .content {
   background-color: #141414;
 }
 
+/* ===== 底部 ===== */
 .footer {
-  height: 40px;
-  background-color: #fff;
-  border-top: 1px solid #dcdfe6;
+  height: 36px;
+  background-color: var(--header-bg);
+  border-top: 1px solid #f0f0f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 24px;
   font-size: 12px;
-  color: #909399;
+  color: #86909c;
+  flex-shrink: 0;
 }
 
 html.dark .footer {
-  background-color: #1d1e1f;
-  border-top-color: #333;
+  background-color: #161618;
+  border-top-color: #2c2c2e;
   color: #666;
 }
 
 .motto {
   font-weight: 500;
+  color: #4e5969;
 }
 
 .copyright {
-  opacity: 0.8;
+  opacity: 0.75;
 }
 </style>

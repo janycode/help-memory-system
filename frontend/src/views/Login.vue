@@ -77,7 +77,7 @@ const loginForm = reactive({
   password: ''
 })
 
-const loginRules = reactive<FormRules>({
+const loginRules: FormRules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
     { min: 3, message: '用户名至少3个字符', trigger: 'blur' }
@@ -86,11 +86,10 @@ const loginRules = reactive<FormRules>({
     { required: true, message: '请输入密码', trigger: 'blur' },
     { min: 6, message: '密码至少6个字符', trigger: 'blur' }
   ]
-})
+}
 
 const handleLogin = async () => {
   if (!loginFormRef.value) return
-
   await loginFormRef.value.validate(async (valid) => {
     if (valid) {
       loading.value = true
@@ -113,30 +112,23 @@ const fetchSystemConfig = async () => {
     if (response.data && response.data.configValue) {
       systemTitle.value = response.data.configValue + '系统'
     } else {
-      // 默认值
       systemTitle.value = '新人筑基丹系统'
     }
   } catch (error) {
-    console.error('获取系统配置失败:', error)
-    // 出错时使用默认值
     systemTitle.value = '新人筑基丹系统'
   }
 }
 
-// 页面获得焦点时刷新配置
 const handlePageFocus = () => {
   fetchSystemConfig()
 }
 
 onMounted(() => {
   fetchSystemConfig()
-  
-  // 监听页面获得焦点事件
   window.addEventListener('focus', handlePageFocus)
 })
 
 onUnmounted(() => {
-  // 移除事件监听
   window.removeEventListener('focus', handlePageFocus)
 })
 </script>
@@ -147,33 +139,66 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 背景装饰 */
+.login-container::before {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(64, 158, 255, 0.12) 0%, transparent 70%);
+  top: -150px;
+  right: -100px;
+  pointer-events: none;
+}
+
+.login-container::after {
+  content: '';
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(103, 194, 58, 0.08) 0%, transparent 70%);
+  bottom: -120px;
+  left: -80px;
+  pointer-events: none;
 }
 
 .login-box {
   width: 400px;
-  padding: 40px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  padding: 40px 36px;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 32px;
 }
 
 .login-header h1 {
-  font-size: 28px;
-  color: #303133;
+  font-size: 26px;
+  color: #1d2129;
   margin: 0 0 8px 0;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .login-header p {
-  color: #606266;
+  color: #86909c;
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .login-form {
@@ -184,12 +209,20 @@ onUnmounted(() => {
   width: 100%;
   height: 44px;
   font-size: 16px;
+  border-radius: 8px !important;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+/* 输入框圆角 */
+.login-form :deep(.el-input__wrapper) {
+  border-radius: 8px !important;
 }
 
 .login-footer {
   text-align: center;
-  color: #909399;
-  font-size: 14px;
+  color: #86909c;
+  font-size: 13px;
 }
 
 .login-footer p {
@@ -198,11 +231,11 @@ onUnmounted(() => {
 
 .login-bottom-footer {
   text-align: center;
-  padding-top: 16px;
+  padding-top: 18px;
   border-top: 1px solid #f0f0f0;
-  margin-top: 8px;
+  margin-top: 12px;
   font-size: 12px;
-  color: #909399;
+  color: #c0c4cc;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -210,18 +243,18 @@ onUnmounted(() => {
 
 .login-bottom-footer .motto {
   font-weight: 500;
+  color: #909399;
 }
 
 .login-bottom-footer .copyright {
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
-/* 响应式设计 */
 @media (max-width: 480px) {
   .login-box {
-    width: 90%;
+    width: 92%;
     margin: 20px;
-    padding: 30px 20px;
+    padding: 30px 24px;
   }
 
   .login-header h1 {
