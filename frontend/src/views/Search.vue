@@ -51,11 +51,17 @@
           <div class="item-desc">{{ item.description }}</div>
           <div class="item-details">
             <el-button type="primary" link @click="copyEnvironmentInfo(item)">文本复制</el-button>
-            <el-tag size="small" :type="item.status ? 'success' : 'danger'">
-              {{ item.status ? '启用' : '禁用' }}
+            <el-tag size="small" :type="item.active ? 'success' : 'danger'">
+              {{ item.active ? '启用' : '禁用' }}
             </el-tag>
             <el-tag size="small" class="ml-2">{{ item.type }}</el-tag>
             <span class="item-meta">创建时间: {{ formatDate(item.createdAt) }}</span>
+          </div>
+          <div class="item-fields">
+            <div v-for="field in getNonEmptyEnvironmentFields(item)" :key="field.key" class="field-item">
+              <span class="field-label">{{ field.label }}:</span>
+              <span class="field-value">{{ field.value }}</span>
+            </div>
           </div>
         </el-card>
       </div>
@@ -68,11 +74,17 @@
           <div class="item-desc">{{ item.description }}</div>
           <div class="item-details">
             <el-button type="primary" link @click="copyComponentInfo(item)">文本复制</el-button>
-            <el-tag size="small" :type="item.status ? 'success' : 'danger'">
-              {{ item.status ? '启用' : '禁用' }}
+            <el-tag size="small" :type="item.active ? 'success' : 'danger'">
+              {{ item.active ? '启用' : '禁用' }}
             </el-tag>
             <el-tag size="small" class="ml-2">{{ item.category }}</el-tag>
             <span class="item-meta">创建时间: {{ formatDate(item.createdAt) }}</span>
+          </div>
+          <div class="item-fields">
+            <div v-for="field in getNonEmptyComponentFields(item)" :key="field.key" class="field-item">
+              <span class="field-label">{{ field.label }}:</span>
+              <span class="field-value">{{ field.value }}</span>
+            </div>
           </div>
         </el-card>
       </div>
@@ -85,12 +97,18 @@
           <div class="item-desc">{{ item.description }}</div>
           <div class="item-details">
             <el-button type="primary" link @click="copyProcessInfo(item)">文本复制</el-button>
-            <el-tag size="small" :type="item.status ? 'success' : 'danger'">
-              {{ item.status ? '启用' : '禁用' }}
+            <el-tag size="small" :type="item.active ? 'success' : 'danger'">
+              {{ item.active ? '启用' : '禁用' }}
             </el-tag>
             <el-tag size="small" class="ml-2">{{ item.category }}</el-tag>
             <el-tag size="small" class="ml-2" :type="getPriorityType(item.priority)">{{ getPriorityText(item.priority) }}</el-tag>
             <span class="item-meta">创建时间: {{ formatDate(item.createdAt) }}</span>
+          </div>
+          <div class="item-fields">
+            <div v-for="field in getNonEmptyProcessFields(item)" :key="field.key" class="field-item">
+              <span class="field-label">{{ field.label }}:</span>
+              <span class="field-value">{{ field.value }}</span>
+            </div>
           </div>
         </el-card>
       </div>
@@ -118,6 +136,12 @@
             </el-tag>
             <span class="item-meta">创建时间: {{ formatDate(item.createdAt) }}</span>
           </div>
+          <div class="item-fields">
+            <div v-for="field in getNonEmptySnippetFields(item)" :key="field.key" class="field-item">
+              <span class="field-label">{{ field.label }}:</span>
+              <span class="field-value">{{ field.value }}</span>
+            </div>
+          </div>
         </el-card>
       </div>
 
@@ -129,11 +153,17 @@
           <div class="item-desc">{{ item.description }}</div>
           <div class="item-details">
             <el-button type="primary" link @click="copyProjectInfo(item)">文本复制</el-button>
-            <el-tag size="small" :type="item.status ? 'success' : 'danger'">
-              {{ item.status ? '启用' : '禁用' }}
+            <el-tag size="small" :type="item.active ? 'success' : 'danger'">
+              {{ item.active ? '启用' : '禁用' }}
             </el-tag>
-            <el-tag size="small" class="ml-2">{{ item.fullName }}</el-tag>
+            <el-tag size="small" class="ml-2">{{ item.projectFullName }}</el-tag>
             <span class="item-meta">创建时间: {{ formatDate(item.createdAt) }}</span>
+          </div>
+          <div class="item-fields">
+            <div v-for="field in getNonEmptyProjectFields(item)" :key="field.key" class="field-item">
+              <span class="field-label">{{ field.label }}:</span>
+              <span class="field-value">{{ field.value }}</span>
+            </div>
           </div>
         </el-card>
       </div>
@@ -613,6 +643,64 @@ const copyProjectInfo = async (project: Repository) => {
   await copyToClipboard(info)
 }
 
+// 获取环境非空字段
+const getNonEmptyEnvironmentFields = (env: Environment) => {
+  const fields = []
+  if (env.url) fields.push({ key: 'url', label: '访问地址', value: env.url })
+  if (env.username) fields.push({ key: 'username', label: '用户名', value: env.username })
+  if (env.databaseUrl) fields.push({ key: 'databaseUrl', label: '数据库地址', value: env.databaseUrl })
+  if (env.databaseUsername) fields.push({ key: 'databaseUsername', label: '数据库用户名', value: env.databaseUsername })
+  if (env.redisUrl) fields.push({ key: 'redisUrl', label: 'Redis地址', value: env.redisUrl })
+  if (env.mqUrl) fields.push({ key: 'mqUrl', label: 'MQ地址', value: env.mqUrl })
+  if (env.mqUsername) fields.push({ key: 'mqUsername', label: 'MQ用户名', value: env.mqUsername })
+  if (env.notes) fields.push({ key: 'notes', label: '备注', value: env.notes })
+  return fields
+}
+
+// 获取技术组件非空字段
+const getNonEmptyComponentFields = (component: TechnicalComponent) => {
+  const fields = []
+  if (component.url) fields.push({ key: 'url', label: '访问地址', value: component.url })
+  if (component.username) fields.push({ key: 'username', label: '用户名', value: component.username })
+  if (component.version) fields.push({ key: 'version', label: '版本', value: component.version })
+  if (component.configuration) fields.push({ key: 'configuration', label: '配置信息', value: component.configuration })
+  if (component.notes) fields.push({ key: 'notes', label: '备注', value: component.notes })
+  if (component.environmentType) fields.push({ key: 'environmentType', label: '环境类型', value: component.environmentType })
+  return fields
+}
+
+// 获取业务流程非空字段
+const getNonEmptyProcessFields = (process: BusinessProcess) => {
+  const fields = []
+  if (process.environmentType) fields.push({ key: 'environmentType', label: '环境类型', value: process.environmentType })
+  if (process.steps) fields.push({ key: 'steps', label: '流程步骤', value: process.steps })
+  if (process.precautions) fields.push({ key: 'precautions', label: '注意事项', value: process.precautions })
+  if (process.checklist) fields.push({ key: 'checklist', label: '检查清单', value: process.checklist })
+  if (process.relatedDocuments) fields.push({ key: 'relatedDocuments', label: '相关文档', value: process.relatedDocuments })
+  if (process.flowchartPath) fields.push({ key: 'flowchartPath', label: '流程图路径', value: process.flowchartPath })
+  return fields
+}
+
+// 获取代码片段非空字段
+const getNonEmptySnippetFields = (snippet: CodeSnippet) => {
+  const fields = []
+  if (snippet.tags) fields.push({ key: 'tags', label: '标签', value: snippet.tags })
+  return fields
+}
+
+// 获取项目非空字段
+const getNonEmptyProjectFields = (project: Repository) => {
+  const fields = []
+  if (project.codeRepository) fields.push({ key: 'codeRepository', label: '代码仓库', value: project.codeRepository })
+  if (project.documentPath) fields.push({ key: 'documentPath', label: '文档路径', value: project.documentPath })
+  if (project.deploymentPath) fields.push({ key: 'deploymentPath', label: '部署路径', value: project.deploymentPath })
+  if (project.port) fields.push({ key: 'port', label: '端口', value: project.port })
+  if (project.teamMembers) fields.push({ key: 'teamMembers', label: '团队成员', value: project.teamMembers })
+  if (project.status) fields.push({ key: 'status', label: '项目状态', value: project.status })
+  if (project.notes) fields.push({ key: 'notes', label: '备注', value: project.notes })
+  return fields
+}
+
 // 从URL参数中获取搜索关键词
 onMounted(() => {
   const urlKeyword = route.query.q as string
@@ -800,5 +888,31 @@ onMounted(() => {
 
 .ml-2 {
   margin-left: 8px;
+}
+
+.item-fields {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #ebeef5;
+}
+
+.field-item {
+  display: flex;
+  margin-bottom: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.field-label {
+  color: #606266;
+  font-weight: 500;
+  min-width: 80px;
+  margin-right: 8px;
+}
+
+.field-value {
+  color: #333;
+  flex: 1;
+  word-break: break-all;
 }
 </style>

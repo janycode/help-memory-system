@@ -1,7 +1,7 @@
 import type { Environment } from './environment'
 import type { TechnicalComponent } from './component'
 import type { BusinessProcess } from './process'
-import type { Project } from './project'
+import type { Repository } from './project'
 import type { CodeSnippet } from './snippet'
 
 // 从 request.ts 重新导出 PageResponse 类型
@@ -15,7 +15,7 @@ export interface SearchResult {
   environments: Environment[]
   components: TechnicalComponent[]
   processes: BusinessProcess[]
-  projects: Project[]
+  projects: Repository[]
   snippets: CodeSnippet[]
   total: number
 }
