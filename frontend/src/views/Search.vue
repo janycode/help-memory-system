@@ -255,7 +255,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="密码">
-              <el-input v-model="selectedComponent.password" disabled type="password" show-password />
+              <PasswordDisplay :password="selectedComponent.password || ''" />
             </el-form-item>
           </el-col>
         </el-row>
