@@ -1,55 +1,135 @@
 # 助记单系统 - Git Ignore 配置
 
-## 后端编译文件
+# ==================== 后端 (Spring Boot + Maven) ====================
+## 编译输出
 target/
 *.class
 *.jar
 *.war
 *.ear
-*.log
+*.nar
 
-## 前端依赖和构建
-node_modules/
-dist/
-.DS_Store
-*.local
-
-## IDE配置
-.idea/
-*.iml
-.vscode/
-*.swp
-*.swo
-*~
-
-## 数据库文件
-# 注意：H2数据库文件在开发时需要保留，但上线时可以排除
-# backend/data/*.mv.db
-# backend/data/*.trace.db
-
-## 日志文件
-logs/
-*.log
-
-## 环境配置
-.env
-.env.local
-.env.*.local
-
-## Maven wrapper
+## Maven
 .mvn/
 mvnw
 mvnw.cmd
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+## Spring Boot
+spring-boot-*.log
+application-local.yml
+application-dev.yml
+application-prod.yml
+
+## 前端构建产物（由Vite自动生成）
+backend/src/main/resources/static/
+
+## 数据库文件
+data/
+*.mv.db
+*.trace.db
+*.db
+
+# ==================== 前端 (Vue 3 + Vite + pnpm) ====================
+## 依赖
+node_modules/
+.pnpm-store/
+
+## 构建输出
+dist/
+dist-ssr/
+*.local
+
+## Vite
+.vite/
+.cache/
+
+## TypeScript
+*.tsbuildinfo
+
+## 测试覆盖率
+coverage/
+*.lcov
+
+## 环境变量
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ==================== IDE 和编辑器 ====================
+## IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+## VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+## Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+## NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# ==================== 临时和缓存文件 ====================
+## 日志
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 ## 临时文件
 *.tmp
 *.bak
-*.orig
+*.swp
+*.swo
+*~
+.DS_Store
 
-## 系统文件
+## 操作系统文件
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 
-.github/
+# ==================== 项目特定文件 ====================
+## 调试和测试文件
+debug-*.vue
+debug-*.html
+test-*.js
+Test*.java
+Check*.java
+
+## 容器相关
+.dockerignore
+docker.sh
+
+## 其他
+.claude/
+.trae/
