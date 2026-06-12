@@ -37,6 +37,12 @@
 - 🐳 **Docker 支持**：提供 Dockerfile，支持容器化部署
 - ⚙️ **CI/CD**：GitHub Actions 自动构建前后端，微信 Webhook 通知
 
+<img width="1921" height="1062" alt="image" src="https://github.com/user-attachments/assets/813ed7c4-5cda-4dec-aed6-0351cd7c49be" />
+<img width="1921" height="1062" alt="image" src="https://github.com/user-attachments/assets/eedbeed9-b74a-42aa-a6b0-3534aef6b4e8" />
+<img width="1921" height="1062" alt="image" src="https://github.com/user-attachments/assets/49e1888f-1193-47fe-99ae-93a92979cc5c" />
+<img width="1921" height="1062" alt="image" src="https://github.com/user-attachments/assets/be6d8810-de56-41f5-bc9a-073f83a3e4de" />
+
+
 ## 🛠️ 技术栈
 
 ### 后端技术
