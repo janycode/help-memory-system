@@ -5,6 +5,7 @@ import com.example.mynewwork.service.BusinessProcessService;
 import com.example.mynewwork.service.EnvironmentService;
 import com.example.mynewwork.service.ProjectService;
 import com.example.mynewwork.service.TechnicalComponentService;
+import com.example.mynewwork.service.IterationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Data;
@@ -35,6 +36,7 @@ public class SearchController {
     private final TechnicalComponentService technicalComponentService;
     private final BusinessProcessService businessProcessService;
     private final ProjectService projectService;
+    private final IterationService iterationService;
 
     /**
      * 全局搜索
@@ -50,10 +52,12 @@ public class SearchController {
         result.setComponents(technicalComponentService.searchByKeyword(q));
         result.setProcesses(businessProcessService.searchByKeyword(q));
         result.setProjects(projectService.searchByKeyword(q));
+        result.setIterations(iterationService.searchByKeyword(q));
         result.setTotal(result.getEnvironments().size()
                 + result.getComponents().size()
                 + result.getProcesses().size()
-                + result.getProjects().size());
+                + result.getProjects().size()
+                + result.getIterations().size());
 
         return ResponseEntity.ok(ApiResponse.success(result));
     }
@@ -68,6 +72,7 @@ public class SearchController {
         private List<?> components = new ArrayList<>();
         private List<?> processes = new ArrayList<>();
         private List<?> projects = new ArrayList<>();
+        private List<?> iterations = new ArrayList<>();
         private Integer total;
     }
 }

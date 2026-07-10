@@ -168,6 +168,27 @@
         </el-card>
       </div>
 
+      <!-- 迭代结果 -->
+      <div v-if="searchStore.searchResult.iterations && searchStore.searchResult.iterations.length" class="result-section">
+        <h3><el-icon><List /></el-icon> 迭代任务 ({{ searchStore.searchResult.iterations.length }})</h3>
+        <el-card v-for="item in searchStore.searchResult.iterations" :key="item.id" class="result-item">
+          <div class="item-title" @click="showIterationDetail(item)">{{ item.issueNumber }} - {{ item.title }}</div>
+          <div class="item-desc">{{ item.projectCode }}</div>
+          <div class="item-details">
+            <el-button type="primary" link @click="copyIterationInfo(item)">文本复制</el-button>
+            <el-tag size="small" :type="getIterationStatusType(item.status)">{{ getIterationStatusLabel(item.status) }}</el-tag>
+            <el-tag size="small" class="ml-2" :type="getIterationPriorityType(item.priority)">{{ getIterationPriorityLabel(item.priority) }}</el-tag>
+            <span class="item-meta">创建时间: {{ formatDate(item.createdAt) }}</span>
+          </div>
+          <div class="item-fields">
+            <div v-for="field in getNonEmptyIterationFields(item)" :key="field.key" class="field-item">
+              <span class="field-label">{{ field.label }}:</span>
+              <span class="field-value">{{ field.value }}</span>
+            </div>
+          </div>
+        </el-card>
+      </div>
+
       <!-- 无结果 -->
       <el-empty v-if="searchStore.searchResult.total === 0" description="未找到相关结果" />
     </div>
@@ -415,13 +436,75 @@
         <el-button @click="projectDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
+
+    <!-- 迭代详情对话框 -->
+    <el-dialog
+      v-model="iterationDialogVisible"
+      title="迭代任务详情"
+      width="800px"
+      destroy-on-close
+    >
+      <el-form :model="selectedIteration" label-width="120px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="Issue编号">
+              <el-input v-model="selectedIteration.issueNumber" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="项目代码">
+              <el-input v-model="selectedIteration.projectCode" disabled />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="任务标题">
+          <el-input v-model="selectedIteration.title" disabled />
+        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="状态">
+              <el-tag :type="getIterationStatusType(selectedIteration.status)">{{ getIterationStatusLabel(selectedIteration.status) }}</el-tag>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="优先级">
+              <el-tag :type="getIterationPriorityType(selectedIteration.priority)">{{ getIterationPriorityLabel(selectedIteration.priority) }}</el-tag>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="开发笔记">
+          <el-input v-model="selectedIteration.developmentNotes" type="textarea" :rows="3" disabled />
+        </el-form-item>
+        <el-form-item label="发布文档">
+          <el-input v-model="selectedIteration.releaseNotes" type="textarea" :rows="3" disabled />
+        </el-form-item>
+        <el-form-item label="影响范围">
+          <el-input v-model="selectedIteration.impactScope" type="textarea" :rows="3" disabled />
+        </el-form-item>
+        <el-form-item label="API文档">
+          <el-input v-model="selectedIteration.apiDocUrl" disabled />
+        </el-form-item>
+        <el-form-item label="流程图路径">
+          <el-input v-model="selectedIteration.flowchartPath" disabled />
+        </el-form-item>
+        <el-form-item label="本地目录">
+          <el-input v-model="selectedIteration.localDirPath" disabled />
+        </el-form-item>
+        <el-form-item label="待办事项">
+          <el-input v-model="selectedIteration.todos" type="textarea" :rows="2" disabled />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="iterationDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { Monitor, Connection, Document, Folder } from '@element-plus/icons-vue'
+import { Monitor, Connection, Document, Folder, List } from '@element-plus/icons-vue'
 import { useSearchStore } from '@/stores/search'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
@@ -431,6 +514,7 @@ import type { CodeSnippet } from '@/types/snippet'
 import type { TechnicalComponent } from '@/types/component'
 import type { BusinessProcess } from '@/types/process'
 import type { Repository } from '@/types/project'
+import type { Iteration } from '@/types/iteration'
 import PasswordDisplay from '@/components/PasswordDisplay.vue'
 
 const route = useRoute()
@@ -443,11 +527,13 @@ const snippetDialogVisible = ref(false)
 const componentDialogVisible = ref(false)
 const processDialogVisible = ref(false)
 const projectDialogVisible = ref(false)
+const iterationDialogVisible = ref(false)
 const selectedEnvironment = ref<Environment>({} as Environment)
 const selectedSnippet = ref<CodeSnippet>({} as CodeSnippet)
 const selectedComponent = ref<TechnicalComponent>({} as TechnicalComponent)
 const selectedProcess = ref<BusinessProcess>({} as BusinessProcess)
 const selectedProject = ref<Repository>({} as Repository)
+const selectedIteration = ref<Iteration>({} as Iteration)
 
 const handleSearch = () => {
   if (keyword.value.trim()) {
@@ -554,6 +640,11 @@ const showProjectDetail = (project: Repository) => {
   projectDialogVisible.value = true
 }
 
+const showIterationDetail = (iteration: Iteration) => {
+  selectedIteration.value = { ...iteration }
+  iterationDialogVisible.value = true
+}
+
 const copyToClipboard = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text)
@@ -641,6 +732,76 @@ const copyProjectInfo = async (project: Repository) => {
 描述: ${project.description || '-'}
   `.trim()
   await copyToClipboard(info)
+}
+
+const getIterationStatusType = (status: string) => {
+  const typeMap: Record<string, string> = {
+    TODO: 'info',
+    IN_PROGRESS: 'warning',
+    CODE_REVIEW: 'primary',
+    TESTING: 'success',
+    DONE: 'success'
+  }
+  return typeMap[status] || 'info'
+}
+
+const getIterationStatusLabel = (status: string) => {
+  const labelMap: Record<string, string> = {
+    TODO: '待开发',
+    IN_PROGRESS: '开发中',
+    CODE_REVIEW: '代码审查',
+    TESTING: '测试中',
+    DONE: '已完成'
+  }
+  return labelMap[status] || status
+}
+
+const getIterationPriorityType = (priority: string) => {
+  const typeMap: Record<string, string> = {
+    HIGH: 'danger',
+    MEDIUM: 'warning',
+    LOW: 'success'
+  }
+  return typeMap[priority] || 'info'
+}
+
+const getIterationPriorityLabel = (priority: string) => {
+  const labelMap: Record<string, string> = {
+    HIGH: '高优先级',
+    MEDIUM: '中优先级',
+    LOW: '低优先级'
+  }
+  return labelMap[priority] || priority
+}
+
+const copyIterationInfo = async (iteration: Iteration) => {
+  const info = `
+Issue编号: ${iteration.issueNumber}
+项目代码: ${iteration.projectCode}
+任务标题: ${iteration.title}
+状态: ${getIterationStatusLabel(iteration.status)}
+优先级: ${getIterationPriorityLabel(iteration.priority)}
+开发笔记: ${iteration.developmentNotes || '-'}
+发布文档: ${iteration.releaseNotes || '-'}
+影响范围: ${iteration.impactScope || '-'}
+API文档: ${iteration.apiDocUrl || '-'}
+流程图路径: ${iteration.flowchartPath || '-'}
+本地目录: ${iteration.localDirPath || '-'}
+待办事项: ${iteration.todos || '-'}
+  `.trim()
+  await copyToClipboard(info)
+}
+
+const getNonEmptyIterationFields = (iteration: Iteration) => {
+  const fields = []
+  if (iteration.developmentNotes) fields.push({ key: 'developmentNotes', label: '开发笔记', value: iteration.developmentNotes })
+  if (iteration.releaseNotes) fields.push({ key: 'releaseNotes', label: '发布文档', value: iteration.releaseNotes })
+  if (iteration.impactScope) fields.push({ key: 'impactScope', label: '影响范围', value: iteration.impactScope })
+  if (iteration.apiDocUrl) fields.push({ key: 'apiDocUrl', label: 'API文档', value: iteration.apiDocUrl })
+  if (iteration.flowchartPath) fields.push({ key: 'flowchartPath', label: '流程图路径', value: iteration.flowchartPath })
+  if (iteration.localDirPath) fields.push({ key: 'localDirPath', label: '本地目录', value: iteration.localDirPath })
+  if (iteration.todos) fields.push({ key: 'todos', label: '待办事项', value: iteration.todos })
+  return fields
 }
 
 // 获取环境非空字段

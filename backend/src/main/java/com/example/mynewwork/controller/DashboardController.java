@@ -6,6 +6,7 @@ import com.example.mynewwork.repository.EnvironmentRepository;
 import com.example.mynewwork.repository.ProjectRepository;
 import com.example.mynewwork.repository.TechnicalComponentRepository;
 import com.example.mynewwork.repository.BusinessProcessRepository;
+import com.example.mynewwork.repository.IterationRepository;
 import com.example.mynewwork.service.ActivityLogService;
 import com.example.mynewwork.model.entity.ActivityLog;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ public class DashboardController {
     private final TechnicalComponentRepository technicalComponentRepository;
     private final BusinessProcessRepository businessProcessRepository;
     private final ProjectRepository projectRepository;
+    private final IterationRepository iterationRepository;
     private final ActivityLogService activityLogService;
 
     /**
@@ -121,14 +123,16 @@ public class DashboardController {
             long componentCount = technicalComponentRepository.countByActiveTrue();
             long processCount = businessProcessRepository.countByActiveTrue();
             long projectCount = projectRepository.countByActiveTrue();
+            long iterationCount = iterationRepository.countByActiveTrue();
 
-            log.debug("统计数据 - 环境: {}, 组件: {}, 流程: {}, 项目: {}",
-                     environmentCount, componentCount, processCount, projectCount);
+            log.debug("统计数据 - 环境: {}, 组件: {}, 流程: {}, 项目: {}, 迭代: {}",
+                     environmentCount, componentCount, processCount, projectCount, iterationCount);
 
             stats.setEnvironments(environmentCount);
             stats.setComponents(componentCount);
             stats.setProcesses(processCount);
             stats.setProjects(projectCount);
+            stats.setIterations(iterationCount);
 
             return ResponseEntity.ok(ApiResponse.success(stats, "查询成功"));
         } catch (Exception e) {

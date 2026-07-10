@@ -16,6 +16,21 @@
           <template #title>首页</template>
         </el-menu-item>
 
+        <el-menu-item index="/iterations">
+          <el-icon><List /></el-icon>
+          <template #title>迭代管理</template>
+        </el-menu-item>
+
+        <el-menu-item index="/search">
+          <el-icon><Search /></el-icon>
+          <template #title>全局搜索</template>
+        </el-menu-item>
+
+        <el-menu-item index="/database">
+          <el-icon><Coin /></el-icon>
+          <template #title>本地数据库</template>
+        </el-menu-item>
+
         <el-sub-menu index="biz">
           <template #title>
             <el-icon><Grid /></el-icon>
@@ -59,21 +74,6 @@
           <el-menu-item v-if="userStore.isAdmin" index="/system">
             <el-icon><Tools /></el-icon>
             系统配置
-          </el-menu-item>
-        </el-sub-menu>
-
-        <el-sub-menu index="tool">
-          <template #title>
-            <el-icon><DataBoard /></el-icon>
-            <span>工具</span>
-          </template>
-          <el-menu-item index="/search">
-            <el-icon><Search /></el-icon>
-            全局搜索
-          </el-menu-item>
-          <el-menu-item index="/database">
-            <el-icon><Coin /></el-icon>
-            本地数据库
           </el-menu-item>
         </el-sub-menu>
       </el-menu>
@@ -152,7 +152,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const themeStore = useThemeStore()
 const systemTitle = ref('助记单')
-const isCollapsed = ref(false)
+const isCollapsed = ref(localStorage.getItem('sidebar-collapsed') === 'true')
 
 const activeMenu = computed(() => {
   const { path } = route
@@ -160,6 +160,7 @@ const activeMenu = computed(() => {
   if (path.startsWith('/components')) return '/components'
   if (path.startsWith('/processes')) return '/processes'
   if (path.startsWith('/repositories')) return '/repositories'
+  if (path.startsWith('/iterations')) return '/iterations'
   if (path.startsWith('/snippets')) return '/snippets'
   if (path.startsWith('/dict')) return '/dict'
   if (path.startsWith('/users')) return '/users'
@@ -172,6 +173,7 @@ const activeMenu = computed(() => {
 
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value
+  localStorage.setItem('sidebar-collapsed', String(isCollapsed.value))
 }
 
 const userInitials = computed(() => {

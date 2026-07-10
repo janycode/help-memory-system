@@ -3,6 +3,7 @@ import type { TechnicalComponent } from './component'
 import type { BusinessProcess } from './process'
 import type { Repository } from './project'
 import type { CodeSnippet } from './snippet'
+import type { Iteration } from './iteration'
 
 // 从 request.ts 重新导出 PageResponse 类型
 export type { PageResponse } from '@/api/request'
@@ -17,6 +18,7 @@ export interface SearchResult {
   processes: BusinessProcess[]
   projects: Repository[]
   snippets: CodeSnippet[]
+  iterations: Iteration[]
   total: number
 }
 

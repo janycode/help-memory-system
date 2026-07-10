@@ -66,6 +66,8 @@ public class DataInitializer implements CommandLineRunner {
         initDictType("process_category", "流程分类", "业务流程的分类管理");
         initDictType("environment_type", "环境类型", "环境配置的类型管理");
         initDictType("project_status", "项目状态", "项目的状态管理");
+        initDictType("iteration_status", "迭代状态", "迭代任务的状态管理");
+        initDictType("iteration_priority", "迭代优先级", "迭代任务的优先级管理");
 
         initDictDataIfEmpty("component_category", List.of(
                 dictItem("Database", "数据库", 1, "关系型和非关系型数据库"),
@@ -103,6 +105,20 @@ public class DataInitializer implements CommandLineRunner {
                 dictItem("released", "已发布", 4, "项目已发布上线"),
                 dictItem("maintenance", "维护中", 5, "项目处于维护阶段"),
                 dictItem("deprecated", "已废弃", 6, "项目已废弃不再维护")
+        ));
+
+        initDictDataIfEmpty("iteration_status", List.of(
+                dictItem("TODO", "待开发", 1, "需求已接收，等待开发"),
+                dictItem("IN_PROGRESS", "开发中", 2, "正在进行开发"),
+                dictItem("CODE_REVIEW", "代码审查", 3, "开发完成，等待代码审查"),
+                dictItem("TESTING", "测试中", 4, "代码审查通过，正在测试"),
+                dictItem("DONE", "已完成", 5, "测试通过，已完成")
+        ));
+
+        initDictDataIfEmpty("iteration_priority", List.of(
+                dictItem("HIGH", "高优先级", 1, "紧急需求，优先处理"),
+                dictItem("MEDIUM", "中优先级", 2, "普通需求，正常处理"),
+                dictItem("LOW", "低优先级", 3, "非紧急需求，延后处理")
         ));
 
         log.info("字典数据初始化完成");

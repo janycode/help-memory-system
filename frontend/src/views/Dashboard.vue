@@ -87,6 +87,16 @@
           </div>
         </div>
 
+        <div class="stat-card" @click="navigateTo('/iterations')">
+          <div class="stat-icon iteration">
+            <el-icon :size="24"><List /></el-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ stats.iterations }}</div>
+            <div class="stat-label">迭代管理</div>
+          </div>
+        </div>
+
         <div class="stat-card" @click="navigateTo('/snippets')">
           <div class="stat-icon snippet">
             <el-icon :size="24"><Bell /></el-icon>
@@ -113,6 +123,9 @@
           </el-button>
           <el-button type="info" class="action-btn gray" @click="showAddProjectDialog">
             创建代码仓库
+          </el-button>
+          <el-button class="action-btn purple" @click="showAddIterationDialog">
+            创建迭代任务
           </el-button>
           <el-button type="danger" class="action-btn red" @click="showAddSnippetDialog">
             创建代码片段
@@ -331,6 +344,53 @@
         <el-button type="primary" @click="handleSnippetSubmit" :loading="snippetDialog.submitting">确定</el-button>
       </template>
     </el-dialog>
+
+    <!-- 迭代新增弹窗 -->
+    <el-dialog v-model="iterationDialog.visible" title="新增迭代任务" width="600px" destroy-on-close>
+      <el-form :model="iterationDialog.formData" :rules="iterationDialog.rules" ref="iterationDialog.formRef" label-width="100px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="Issue编号" prop="issueNumber">
+              <el-input v-model="iterationDialog.formData.issueNumber" placeholder="如：ISSUE-123" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="项目简称" prop="projectCode">
+              <el-input v-model="iterationDialog.formData.projectCode" placeholder="如：mynewwork" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="需求概要" prop="title">
+          <el-input v-model="iterationDialog.formData.title" placeholder="需求概要描述" />
+        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="状态" prop="status">
+              <el-select v-model="iterationDialog.formData.status" placeholder="请选择状态">
+                <el-option label="需求提出" value="pending" />
+                <el-option label="开发中" value="developing" />
+                <el-option label="测试中" value="testing" />
+                <el-option label="已上线" value="released" />
+                <el-option label="已关闭" value="closed" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="优先级" prop="priority">
+              <el-select v-model="iterationDialog.formData.priority" placeholder="请选择优先级">
+                <el-option label="高" value="high" />
+                <el-option label="中" value="medium" />
+                <el-option label="低" value="low" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <template #footer>
+        <el-button @click="iterationDialog.visible = false">取消</el-button>
+        <el-button type="primary" @click="handleIterationSubmit" :loading="iterationDialog.submitting">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -339,13 +399,14 @@ import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import request from '@/api/request'
 import { activityApi, type ActivityLog } from '@/api/activity'
-import { Search, Monitor, Cpu, Document, Folder, Plus, Tickets, UserFilled, Bell } from '@element-plus/icons-vue'
+import { Search, Monitor, Cpu, Document, Folder, Plus, Tickets, UserFilled, Bell, List } from '@element-plus/icons-vue'
 import { systemApi } from '@/api/system'
 import { ElMessage } from 'element-plus'
 import { useEnvironmentStore } from '@/stores/environment'
 import { useComponentStore } from '@/stores/component'
 import { useProcessStore } from '@/stores/process'
 import { useProjectStore } from '@/stores/project'
+import { useIterationStore } from '@/stores/iteration'
 import { useDictStore } from '@/stores/dict'
 
 const router = useRouter()
@@ -358,6 +419,7 @@ const stats = ref({
   components: 0,
   processes: 0,
   projects: 0,
+  iterations: 0,
   snippets: 0
 })
 
@@ -435,6 +497,23 @@ const snippetDialog = reactive({
     code: [{ required: true, message: '请输入代码', trigger: 'blur' }]
   }
 })
+
+// 迭代弹窗配置
+const iterationDialog = reactive({
+  visible: false,
+  submitting: false,
+  formRef: null as any,
+  formData: { issueNumber: '', projectCode: '', title: '', status: 'pending', priority: 'medium' },
+  rules: {
+    issueNumber: [{ required: true, message: '请输入Issue编号', trigger: 'blur' }],
+    projectCode: [{ required: true, message: '请输入项目简称', trigger: 'blur' }],
+    title: [{ required: true, message: '请输入需求概要', trigger: 'blur' }],
+    status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+    priority: [{ required: true, message: '请选择优先级', trigger: 'change' }]
+  }
+})
+
+const iterationStore = useIterationStore()
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
@@ -563,6 +642,28 @@ const handleSnippetSubmit = async () => {
     ElMessage.error('创建失败')
   } finally {
     snippetDialog.submitting = false
+  }
+}
+
+// 迭代相关函数
+const showAddIterationDialog = () => {
+  Object.assign(iterationDialog.formData, { issueNumber: '', projectCode: '', title: '', status: 'TODO', priority: 'MEDIUM' })
+  iterationDialog.visible = true
+}
+
+const handleIterationSubmit = async () => {
+  await iterationDialog.formRef.validate()
+  iterationDialog.submitting = true
+  try {
+    await iterationStore.addIteration(iterationDialog.formData as any)
+    ElMessage.success('创建成功')
+    iterationDialog.visible = false
+    loadStats()
+  } catch (error) {
+    console.error('创建迭代失败:', error)
+    ElMessage.error('创建失败')
+  } finally {
+    iterationDialog.submitting = false
   }
 }
 
@@ -836,6 +937,10 @@ html.dark .stat-card {
   background: linear-gradient(135deg, #f56c6c, #c45656);
 }
 
+.stat-icon.iteration {
+  background: linear-gradient(135deg, #9c88ff, #8a70ff);
+}
+
 .stat-info {
   display: flex;
   flex-direction: column;
@@ -912,6 +1017,11 @@ html.dark .quick-actions {
 .action-btn.red {
   --el-button-bg-color: #f56c6c;
   --el-button-border-color: #f56c6c;
+}
+
+.action-btn.purple {
+  --el-button-bg-color: #9c88ff;
+  --el-button-border-color: #9c88ff;
 }
 
 /* ===== 最近活动 ===== */

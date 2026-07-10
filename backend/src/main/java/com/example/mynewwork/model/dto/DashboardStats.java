@@ -14,4 +14,5 @@ public class DashboardStats {
     private long components;
     private long processes;
     private long projects;
+    private long iterations;
 }

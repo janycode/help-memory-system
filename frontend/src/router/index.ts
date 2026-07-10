@@ -71,6 +71,18 @@ const router = createRouter({
           meta: { title: '代码仓库详情', requiresAuth: true }
         },
         {
+          path: 'iterations/',
+          name: 'iterations',
+          component: () => import('@/views/IterationList.vue'),
+          meta: { title: '迭代管理', requiresAuth: true }
+        },
+        {
+          path: 'iterations/:id',
+          name: 'iteration-detail',
+          component: () => import('@/views/IterationList.vue'),
+          meta: { title: '迭代详情', requiresAuth: true }
+        },
+        {
           path: 'snippets/',
           name: 'snippets',
           component: () => import('@/views/SnippetList.vue'),
