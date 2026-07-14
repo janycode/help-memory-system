@@ -366,10 +366,21 @@ html.dark .sidebar {
   margin: 2px 8px;
   padding: 0 !important;
   justify-content: center;
+  display: flex;
+  align-items: center;
+  height: 44px;
 }
 
 :deep(.el-menu--collapse .el-sub-menu__icon-arrow) {
   display: none;
+}
+
+:deep(.el-menu--collapse .el-menu-tooltip__trigger) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 /* ===== 主容器 ===== */
@@ -377,6 +388,7 @@ html.dark .sidebar {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  flex: 1;
 }
 
 /* ===== 头部 ===== */

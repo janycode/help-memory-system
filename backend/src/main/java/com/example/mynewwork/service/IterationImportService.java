@@ -56,12 +56,12 @@ public class IterationImportService {
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
             for (Path entry : stream) {
-                if (Files.isDirectory(entry)) {
+                if (Files.isDirectory(entry) && !shouldSkipDirectory(entry)) {
                     Iteration iteration = parseFolderToIteration(entry);
                     if (iteration != null) {
                         // 只用 issueNumber 去重，同一个 issue 的多个项目合并到一条记录
                         Optional<Iteration> existing = iterationRepository
-                                .findByIssueNumberAndActiveTrue(iteration.getIssueNumber());
+                                .findFirstByIssueNumberAndActiveTrue(iteration.getIssueNumber());
                         if (existing.isEmpty()) {
                             iteration.setLocalDirPath(entry.toString());
                             imported.add(iterationRepository.save(iteration));
@@ -94,6 +94,11 @@ public class IterationImportService {
         }
 
         return imported;
+    }
+
+    private boolean shouldSkipDirectory(Path entry) {
+        String name = entry.getFileName().toString();
+        return name.startsWith(".");
     }
 
     private Iteration parseFolderToIteration(Path folder) {
@@ -292,7 +297,7 @@ public class IterationImportService {
         // 1. 从本地目录同步到页面
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
             for (Path entry : stream) {
-                if (Files.isDirectory(entry)) {
+                if (Files.isDirectory(entry) && !shouldSkipDirectory(entry)) {
                     Iteration localIteration = parseFolderToIteration(entry);
                     if (localIteration != null) {
                         Optional<Iteration> existing = iterationRepository
@@ -520,12 +525,12 @@ public class IterationImportService {
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
             for (Path entry : stream) {
-                if (Files.isDirectory(entry)) {
+                if (Files.isDirectory(entry) && !shouldSkipDirectory(entry)) {
                     Iteration localIteration = parseFolderToIteration(entry);
                     if (localIteration != null) {
                         // 只用 issueNumber 去重
                         Optional<Iteration> existing = iterationRepository
-                                .findByIssueNumberAndActiveTrue(localIteration.getIssueNumber());
+                                .findFirstByIssueNumberAndActiveTrue(localIteration.getIssueNumber());
 
                         if (existing.isEmpty()) {
                             localIteration.setLocalDirPath(entry.toString());

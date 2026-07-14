@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Map;
@@ -78,5 +80,47 @@ public class FileController {
             log.error("检查文件更新失败: {}", path, e);
             return ResponseEntity.internalServerError().body(ApiResponse.error("检查文件更新失败: " + e.getMessage()));
         }
+    }
+
+    @PostMapping("/open")
+    @Operation(summary = "打开本地文件或目录", description = "使用系统默认程序打开本地文件或目录")
+    public ResponseEntity<ApiResponse<Void>> openFile(@RequestBody Map<String, String> request) {
+        String path = request.get("path");
+        if (path == null || path.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("路径不能为空"));
+        }
+        try {
+            File file = new File(path);
+            if (!file.exists()) {
+                return ResponseEntity.ok(ApiResponse.error("路径不存在: " + path));
+            }
+            // 优先使用 Desktop，失败则用 ProcessBuilder（Windows 兼容性更好）
+            try {
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(file);
+                } else {
+                    openWithProcessBuilder(file);
+                }
+            } catch (UnsupportedOperationException e) {
+                openWithProcessBuilder(file);
+            }
+            return ResponseEntity.ok(ApiResponse.success(null, "已打开"));
+        } catch (Exception e) {
+            log.error("打开文件失败: {}", path, e);
+            return ResponseEntity.internalServerError().body(ApiResponse.error("打开失败: " + e.getMessage()));
+        }
+    }
+
+    private void openWithProcessBuilder(File file) throws IOException {
+        String os = System.getProperty("os.name").toLowerCase();
+        ProcessBuilder pb;
+        if (os.contains("win")) {
+            pb = new ProcessBuilder("cmd", "/c", "start", "", file.getAbsolutePath());
+        } else if (os.contains("mac")) {
+            pb = new ProcessBuilder("open", file.getAbsolutePath());
+        } else {
+            pb = new ProcessBuilder("xdg-open", file.getAbsolutePath());
+        }
+        pb.start();
     }
 }

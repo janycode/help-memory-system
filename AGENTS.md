@@ -1,51 +1,91 @@
-# AGENTS.md - 代理开发指南
+# AGENTS.md
 
-## 项目概述
-助记单系统：Spring Boot 3.2.0 + Vue 3 前后端一体化平台，管理环境配置、技术组件、业务流程等。
-- 后端：Java 21、Spring Data JPA、H2 本地文件数据库（开箱即用）、Jasypt 加密敏感字段
-- 前端：Vue 3、TypeScript、Element Plus、Vite、pnpm
-- 一体化部署：前端构建产物自动复制到后端 `src/main/resources/static`
+## Project
 
-## 开发命令
-### 后端（在 backend/ 目录）
-- 启动：`mvn spring-boot:run`
-- 构建：`mvn clean package -DskipTests`
-- 测试：`mvn test`（目前无测试用例）
-- 加密值：`mvn jasypt:encrypt-value -Djasypt.encryptor.password=secret -Djasypt.plugin.value="password"`
+助记单 (Help-Memory-System): Spring Boot 3.2.0 + Vue 3 knowledge management platform for environments, components, processes, and code snippets. Single-developer project; codebase is AI-generated.
 
-### 前端（在 frontend/ 目录）
-- 安装依赖：`pnpm install`
-- 开发服务器：`pnpm dev`（端口 5173，自动代理到后端 8080）
-- 构建：`pnpm build`（输出到 `../backend/src/main/resources/static`）
-- 代码检查：`pnpm lint`
-- 格式化：`pnpm format`
+- **Backend**: Java 21, Spring Data JPA, H2 file database, Jasypt field encryption, JWT auth
+- **Frontend**: Vue 3.4, TypeScript, Element Plus, Vite 5, pnpm
+- **Deployment**:一体化 — frontend `pnpm build` outputs to `backend/src/main/resources/static`, then only the Spring Boot JAR runs
 
-### 一体化构建（根目录）
+## Commands
+
+### Backend (`backend/`)
+
+```bash
+mvn spring-boot:run          # start on :8080
+mvn clean package -DskipTests # build JAR
+mvn test                     # no test cases exist — passes vacuously
+```
+
+### Frontend (`frontend/`)
+
+```bash
+pnpm install
+pnpm dev         # :5173 with /api proxy to :8080
+pnpm build       # outputs to ../backend/src/main/resources/static
+pnpm lint        # eslint --fix
+pnpm format      # prettier --write src/
+```
+
+### Full stack
+
 ```bash
 cd frontend && pnpm install && pnpm build && cd ../backend && mvn spring-boot:run
 ```
 
-## 架构要点
-- 数据库：H2 文件存储在 `data/mynewwork.mv.db`，JDBC URL：`jdbc:h2:file:../data/mynewwork;MODE=MySQL`
-- 配置文件：`backend/src/main/resources/application.yml`
-- 安全：JWT 认证（密钥通过 `JWT_SECRET` 环境变量配置），CORS 允许 `localhost:5173`
-- 加密：Jasypt 加密 password/username/url 字段，密钥通过 `JASYPT_ENCRYPTOR_PASSWORD` 环境变量配置
-- 前端代理：Vite 配置代理 `/api` 到后端（仅此路径，H2 控制台和 Swagger UI 需直接访问后端端口）
+## Gotchas
 
-## 测试
-- 后端：目前无测试用例，使用 `mvn test` 运行
-- 前端：无测试配置，`package.json` 中未定义 test 脚本
-- 集成测试：需手动测试，启动前后端服务后访问 http://localhost:8080
+- **Frontend build into backend**: `pnpm build` writes directly to `backend/src/main/resources/static/`. You must build frontend before building the backend JAR. The Dockerfile assumes frontend is already built.
+- **H2 relative path**: JDBC URL is `jdbc:h2:file:../data/mynewwork` (relative to `backend/`), so DB files live at project-root `data/`. The `data/` dir is gitignored.
+- **No test suite**: No backend or frontend tests. `mvn test` runs zero tests. CI also skips tests (`-DskipTests`).
+- **CI uses npm, not pnpm**: `.github/workflows/auto-build.yml` runs `npm i && npm run build` for frontend — inconsistent with local pnpm setup.
+- **Dockerfile port mapping**: App listens on `:8080` internally, Dockerfile `EXPOSE 18080`. README shows `-p 18080:8080`.
+- **Redis optional but configured**: `spring-boot-starter-data-redis` is a hard dependency in pom.xml, but the README and README describe it as optional. If Redis isn't running, expect startup warnings.
+- **Schema auto-migration**: `spring.jpa.hibernate.ddl-auto=update` — Hibernate modifies schema on startup. No Flyway/Liquibase.
+- **First-run init**: `DataInitializer.java` creates admin account (`admin`/`admin123`) and seed dict data on first startup. The `init-dict-data.sql` file exists but is NOT auto-executed — it's a reference.
+- **Jasypt encryption**: password/username/url fields are encrypted at rest via Jasypt. Key from `JASYPT_ENCRYPTOR_PASSWORD` env var (defaults to `mySecretKey`). Don't insert plaintext into these columns manually.
+- **CORS**: Hardcoded to `localhost:5173,localhost:3000` in `application.yml`. Add new origins in `app.security.cors-allowed-origins`.
+- **SpaConfig**: `SpaConfig.java` forwards non-API routes to `index.html` for Vue Router history mode. Don't remove it.
 
-## 部署
-- Docker：`docker build -t help-memory-system .`（需先构建前端）
-- Docker 运行：`docker run -d -p 18080:18080 -v $(pwd)/data:/app/data --name help-memory-system help-memory-system:latest`
-- 生产环境：推荐使用 Docker 或直接运行 JAR，数据库文件需持久化到 `data/` 目录
-- 环境变量：生产环境必须设置 `JASYPT_ENCRYPTOR_PASSWORD` 和 `JWT_SECRET`
+## Architecture
 
-## 注意事项
-- 首次启动自动创建数据库和初始化管理员账号（admin/admin123）
-- 修改系统名称等配置无需重启，实时生效
-- H2 控制台：http://localhost:8080/h2-console（JDBC URL 需与配置一致）
-- API 文档：http://localhost:8080/swagger-ui.html
-- 前端开发时，H2 控制台和 Swagger UI 需直接访问 http://localhost:8080（不经过 Vite 代理）
+```
+backend/src/main/java/com/example/mynewwork/
+  config/           # SecurityConfig, DataInitializer, SpaConfig, JpaAuditingConfig
+  controller/       # REST controllers, all under /api/*
+  service/          # Business logic, ActivityLogger
+  repository/       # Spring Data JPA repos
+  model/entity/     # 13 JPA entities (Environment, TechnicalComponent, BusinessProcess, Project, CodeSnippet, User, SysDictType, SysDictData, SystemConfig, ActivityLog, Iteration, IterationSyncHistory, IterationImportConfig)
+  model/dto/        # ApiResponse, DashboardStats, HealthCheckResult
+  security/         # JWT filter, TokenProvider, UserPrincipal, CustomUserDetailsService
+  exception/        # GlobalExceptionHandler, custom exceptions
+
+frontend/src/
+  api/              # Axios wrappers per module
+  views/            # One .vue per page (flat, no subdirectories)
+  components/       # Reusable: PasswordDisplay, ConnectionStringDialog, ColumnSelector, UrlLink
+  composables/      # useColumnVisibility, useKeyboardShortcuts
+  layout/           # MainLayout.vue (sidebar + content)
+  stores/           # Pinia stores
+  types/            # TypeScript type definitions
+  utils/            # connectionStrings.ts and others
+```
+
+## Adding a new module
+
+Backend: entity → repository → service (inject `ActivityLogger`) → controller (`/api/xxx`).  
+Frontend: types → api wrapper → view component → route in `router/index.ts` → menu item in `layout/MainLayout.vue`.
+
+## Key URLs (when running locally)
+
+| URL | Note |
+|-----|------|
+| `http://localhost:8080/` | Full app (一体化) |
+| `http://localhost:5173/` | Frontend dev server |
+| `http://localhost:8080/h2-console` | H2 console (JDBC URL must match exactly) |
+| `http://localhost:8080/swagger-ui.html` | API docs |
+
+## CLAUDE.md warning
+
+`CLAUDE.md` contains stale content: references MySQL, application-prod.yml, Nginx deployment, Flyway, and other things that don't exist in the actual codebase. Prefer this file and `README.md` as sources of truth.

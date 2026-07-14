@@ -20,7 +20,7 @@ public interface IterationRepository extends JpaRepository<Iteration, Long> {
 
     Optional<Iteration> findByIssueNumberAndProjectCodeAndActiveTrue(String issueNumber, String projectCode);
 
-    Optional<Iteration> findByIssueNumberAndActiveTrue(String issueNumber);
+    Optional<Iteration> findFirstByIssueNumberAndActiveTrue(String issueNumber);
 
     @Query("SELECT i FROM Iteration i WHERE i.active = true AND (i.issueNumber LIKE %:keyword% OR i.projectCode LIKE %:keyword% OR i.title LIKE %:keyword%)")
     List<Iteration> findActiveByKeyword(@Param("keyword") String keyword);

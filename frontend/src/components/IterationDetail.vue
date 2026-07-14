@@ -73,7 +73,7 @@
       </div>
       <div class="meta-item" v-if="iteration.localDirPath">
         <el-icon :size="12"><FolderOpened /></el-icon>
-        <span class="dir-path" :title="iteration.localDirPath">{{ iteration.localDirPath }}</span>
+        <span class="dir-path clickable" @click="handleOpenFile(iteration.localDirPath)" :title="iteration.localDirPath">{{ iteration.localDirPath }}</span>
       </div>
     </div>
 
@@ -228,11 +228,14 @@
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
-              <el-button text size="small" @click="copyToClipboard(file.name)">
+              <el-button text size="small" @click="copyToClipboard(file.name, '文件名')">
                 <el-icon><CopyDocument /></el-icon>
               </el-button>
-              <el-button text size="small" @click="copyToClipboard(file.path)">
+              <el-button text size="small" @click="copyToClipboard(file.path, '路径')">
                 <el-icon><Location /></el-icon>
+              </el-button>
+              <el-button text size="small" @click="handleOpenFile(file.path)">
+                <el-icon><FolderOpened /></el-icon>
               </el-button>
             </div>
           </div>
@@ -291,7 +294,7 @@ import {
 import type { Iteration, IterationSyncHistory, OtherFile } from '@/types/iteration'
 import { IterationStatusMap, IterationPriorityMap } from '@/types/iteration'
 import { getSyncHistory } from '@/api/iteration'
-import { readFile, writeFile, checkFileUpdate } from '@/api/file'
+import { readFile, writeFile, checkFileUpdate, openFile } from '@/api/file'
 import markdownIt from 'markdown-it'
 import hljs from 'highlight.js/lib/core'
 import 'highlight.js/styles/github.css'
@@ -520,10 +523,12 @@ const performAutoSave = async () => {
     }
 
     // 保存到数据库 - 如果关联了文件，保存文件路径而不是内容
+    // 将 Windows 反斜杠路径转为正斜杠，避免 JSON 序列化时转义失败
+    const normalizePath = (p: string) => p ? p.replace(/\\/g, '/') : p
     emit('auto-save', {
       id: props.iteration.id,
-      developmentNotes: notesFilePath.value || localIteration.developmentNotes,
-      releaseNotes: releaseFilePath.value || localIteration.releaseNotes,
+      developmentNotes: normalizePath(notesFilePath.value) || localIteration.developmentNotes,
+      releaseNotes: normalizePath(releaseFilePath.value) || localIteration.releaseNotes,
       flowchartPath: localIteration.flowchartPath
     } as Partial<Iteration>)
 
@@ -659,17 +664,18 @@ const handleFileAction = async (command: string, file: OtherFile) => {
   if (!props.iteration?.id) return
 
   const updateData: Partial<Iteration> = { id: props.iteration.id }
+  const normalizePath = (p: string) => p ? p.replace(/\\/g, '/') : p
 
   if (command === 'notes') {
-    updateData.developmentNotes = file.path
+    updateData.developmentNotes = normalizePath(file.path)
     notesFilePath.value = file.path
     await loadFileContent('notes')
   } else if (command === 'release') {
-    updateData.releaseNotes = file.path
+    updateData.releaseNotes = normalizePath(file.path)
     releaseFilePath.value = file.path
     await loadFileContent('release')
   } else if (command === 'flowchart') {
-    updateData.flowchartPath = file.path
+    updateData.flowchartPath = normalizePath(file.path)
   }
 
   emit('auto-save', updateData)
@@ -689,12 +695,20 @@ const copyPath = async (path: string) => {
   }
 }
 
-const copyToClipboard = async (text: string) => {
+const copyToClipboard = async (text: string, label: string) => {
   try {
     await navigator.clipboard.writeText(text)
-    ElMessage.success('已复制到剪贴板')
+    ElMessage.success(`已复制${label}`)
   } catch {
     ElMessage.error('复制失败')
+  }
+}
+
+const handleOpenFile = async (path: string) => {
+  try {
+    await openFile(path)
+  } catch (error: any) {
+    ElMessage.error(error.message || '打开失败')
   }
 }
 
@@ -836,9 +850,14 @@ onUnmounted(() => {
 }
 
 .issue-badge {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1d2129;
+  font-size: 18px;
+  font-weight: 700;
+  color: #409eff;
+  background: #ecf5ff;
+  border: 1px solid #b3d8ff;
+  border-radius: 6px;
+  padding: 2px 10px;
+  letter-spacing: 0.5px;
 }
 
 .project-codes {
@@ -849,12 +868,13 @@ onUnmounted(() => {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
 }
 
 .select-label {
   font-size: 12px;
   color: #606266;
+  margin-right: -8px;
 }
 
 .detail-title {
@@ -885,10 +905,17 @@ onUnmounted(() => {
 }
 
 .dir-path {
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-all;
+}
+
+.dir-path.clickable {
+  color: #409eff;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.dir-path.clickable:hover {
+  text-decoration: underline;
 }
 
 .detail-path {

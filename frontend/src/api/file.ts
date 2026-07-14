@@ -11,3 +11,7 @@ export function writeFile(path: string, content: string): Promise<ApiResponse<vo
 export function checkFileUpdate(path: string, lastModified: number): Promise<ApiResponse<{ exists: boolean; updated: boolean; lastModified: number }>> {
   return request.get('/files/check', { params: { path, lastModified } } as any)
 }
+
+export function openFile(path: string): Promise<ApiResponse<void>> {
+  return request.post('/files/open', { path })
+}

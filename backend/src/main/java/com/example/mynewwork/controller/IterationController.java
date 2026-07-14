@@ -139,13 +139,21 @@ public class IterationController {
     @PostMapping("/import")
     @Operation(summary = "从目录导入需求", description = "从指定目录导入需求到系统")
     public ResponseEntity<ApiResponse<List<Iteration>>> importFromDirectory(
-            @RequestBody Map<String, String> request) throws IOException {
-        String dirPath = request.get("dirPath");
-        if (dirPath == null || dirPath.isEmpty()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("目录路径不能为空"));
+            @RequestBody Map<String, String> request) {
+        try {
+            String dirPath = request.get("dirPath");
+            if (dirPath == null || dirPath.isEmpty()) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("目录路径不能为空"));
+            }
+            List<Iteration> imported = iterationImportService.importFromDirectory(dirPath);
+            return ResponseEntity.ok(ApiResponse.success(imported, "导入成功，共导入 " + imported.size() + " 条需求"));
+        } catch (IOException e) {
+            log.error("导入需求IO异常", e);
+            return ResponseEntity.internalServerError().body(ApiResponse.error("导入失败: " + e.getMessage()));
+        } catch (Exception e) {
+            log.error("导入需求异常", e);
+            return ResponseEntity.internalServerError().body(ApiResponse.error("导入失败: " + e.getMessage()));
         }
-        List<Iteration> imported = iterationImportService.importFromDirectory(dirPath);
-        return ResponseEntity.ok(ApiResponse.success(imported, "导入成功，共导入 " + imported.size() + " 条需求"));
     }
 
     @PostMapping("/{id}/sync")
@@ -201,6 +209,10 @@ public class IterationController {
             Map<String, Object> result = iterationImportService.checkAndImportNewFolders();
             return ResponseEntity.ok(ApiResponse.success(result, "检测完成"));
         } catch (IOException e) {
+            log.error("检测新文件夹IO异常", e);
+            return ResponseEntity.internalServerError().body(ApiResponse.error("检测失败: " + e.getMessage()));
+        } catch (Exception e) {
+            log.error("检测新文件夹异常", e);
             return ResponseEntity.internalServerError().body(ApiResponse.error("检测失败: " + e.getMessage()));
         }
     }

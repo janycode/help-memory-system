@@ -3,7 +3,7 @@
     <!-- 左侧面板：需求列表 -->
     <div class="board-left">
       <div class="left-header">
-        <h3 class="board-title">需求看板</h3>
+        <h3 class="board-title">开发记录</h3>
         <div class="header-actions">
           <el-tooltip content="刷新目录" placement="top">
             <el-button size="small" @click="handleRefreshDirs" :loading="refreshing">
@@ -103,10 +103,8 @@
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
           :total="iterationStore.pagination?.totalElements || 0"
-          :page-sizes="[20, 50, 100]"
-          layout="total, sizes, prev, pager, next"
+          layout="total, prev, pager, next"
           small
-          @size-change="handleSizeChange"
           @current-change="handlePageChange"
         />
       </div>
@@ -224,7 +222,7 @@ const searchKeyword = ref('')
 const filterStatus = ref('')
 const filterPriority = ref('')
 const currentPage = ref(1)
-const pageSize = ref(20)
+const pageSize = ref(100)
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const submitting = ref(false)
@@ -571,7 +569,8 @@ onUnmounted(() => {
 <style scoped>
 .iteration-board {
   display: flex;
-  height: calc(100vh - 120px);
+  flex: 1;
+  height: 100%;
   min-height: 500px;
   background: #f7f8fa;
   border-radius: 8px;
@@ -700,10 +699,11 @@ onUnmounted(() => {
 }
 
 .left-pagination {
-  padding: 12px 20px;
+  padding: 4px 8px;
   border-top: 1px solid #f0f0f0;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 /* 右侧面板 */
