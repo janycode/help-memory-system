@@ -133,3 +133,5 @@ docker.sh
 ## 其他
 .claude/
 .trae/
+
+.mimocode/
