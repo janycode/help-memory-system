@@ -9,6 +9,8 @@ jobs:
     steps:
       - name: 拉取代码
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # ========== 第一步：构建后端（Java） ==========
       - name: 配置JDK 21（后端）
