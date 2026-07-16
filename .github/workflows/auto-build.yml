@@ -50,23 +50,35 @@ jobs:
       - name: 微信通知构建成功
         if: success()
         run: |
+          COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --format='· %s (%an)' --no-merges 2>/dev/null || echo "· 无法获取提交记录")
+          CONTENT="✅ GitHub自动构建完成"
+          CONTENT="${CONTENT}\n项目：${{ github.repository }}"
+          CONTENT="${CONTENT}\n分支：${{ github.ref_name }}"
+          CONTENT="${CONTENT}\n提交记录：\n${COMMITS}"
+          CONTENT="${CONTENT}\n构建产物下载：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           curl -X POST ${{ secrets.QYWX_WEBHOOK_URL }} \
           -H "Content-Type: application/json" \
-          -d '{
-            "msgtype": "markdown",
-            "markdown": {
-              "content": "## ✅ GitHub自动构建完成\n**项目**：${{ github.repository }}\n**Commit**：${{ github.sha }}\n**构建产物下载**：[点击下载](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n"
+          -d "{
+            \"msgtype\": \"text\",
+            \"text\": {
+              \"content\": \"${CONTENT}\"
             }
-          }'
+          }"
 
       - name: 微信通知构建失败
         if: failure()
         run: |
+          COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --format='· %s (%an)' --no-merges 2>/dev/null || echo "· 无法获取提交记录")
+          CONTENT="❌ GitHub自动构建失败"
+          CONTENT="${CONTENT}\n项目：${{ github.repository }}"
+          CONTENT="${CONTENT}\n分支：${{ github.ref_name }}"
+          CONTENT="${CONTENT}\n提交记录：\n${COMMITS}"
+          CONTENT="${CONTENT}\n查看日志：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           curl -X POST ${{ secrets.QYWX_WEBHOOK_URL }} \
           -H "Content-Type: application/json" \
-          -d '{
-            "msgtype": "markdown",
-            "markdown": {
-              "content": "## ❌ GitHub自动构建失败\n**项目**：${{ github.repository }}\n**Commit**：${{ github.sha }}\n**查看日志**：[点击查看](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n"
+          -d "{
+            \"msgtype\": \"text\",
+            \"text\": {
+              \"content\": \"${CONTENT}\"
             }
-          }'
+          }"
