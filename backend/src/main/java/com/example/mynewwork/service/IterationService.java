@@ -3,8 +3,10 @@ package com.example.mynewwork.service;
 import com.example.mynewwork.exception.EntityNotFoundException;
 import com.example.mynewwork.model.entity.Iteration;
 import com.example.mynewwork.model.entity.IterationImportConfig;
+import com.example.mynewwork.model.entity.IterationSyncHistory;
 import com.example.mynewwork.repository.IterationImportConfigRepository;
 import com.example.mynewwork.repository.IterationRepository;
+import com.example.mynewwork.repository.IterationSyncHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,7 +24,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -32,8 +33,7 @@ public class IterationService {
 
     private final IterationRepository iterationRepository;
     private final IterationImportConfigRepository importConfigRepository;
-
-    private static final Pattern WINDOWS_PATH_PATTERN = Pattern.compile("^[A-Za-z]:[/\\\\].+\\.[a-zA-Z]{1,10}$");
+    private final IterationSyncHistoryRepository syncHistoryRepository;
 
     private static final Map<String, Integer> STATUS_ORDER = Map.of(
             "TODO", 1,
@@ -108,10 +108,11 @@ public class IterationService {
 
         Iteration saved = iterationRepository.save(iteration);
 
-        // 创建本地目录和文件
+        // 创建本地目录和文件（会修改 localDirPath 和 releaseNotes）
         createLocalDirAndFiles(saved);
 
-        return saved;
+        // 二次保存以持久化 localDirPath 等变更
+        return iterationRepository.save(saved);
     }
 
     @Transactional
@@ -123,8 +124,12 @@ public class IterationService {
 
         String oldStatus = iteration.getStatus();
         String newStatus = iterationDetails.getStatus();
-        String oldDevelopmentNotes = iteration.getDevelopmentNotes();
-        String oldReleaseNotes = iteration.getReleaseNotes();
+
+        // 保存旧内容用于同步历史比较
+        String oldNotesContent = iteration.getDevelopmentNotes();
+        String oldReleaseContent = iteration.getReleaseNotes();
+        String newNotesRaw = iterationDetails.getDevelopmentNotes();
+        String newReleaseRaw = iterationDetails.getReleaseNotes();
 
         if (iterationDetails.getIssueNumber() != null) iteration.setIssueNumber(iterationDetails.getIssueNumber());
         if (iterationDetails.getProjectCode() != null) iteration.setProjectCode(iterationDetails.getProjectCode());
@@ -132,9 +137,16 @@ public class IterationService {
         if (iterationDetails.getIssueUrl() != null) iteration.setIssueUrl(iterationDetails.getIssueUrl());
         if (newStatus != null) iteration.setStatus(newStatus);
         if (iterationDetails.getPriority() != null) iteration.setPriority(iterationDetails.getPriority());
-        if (iterationDetails.getDevelopmentNotes() != null) iteration.setDevelopmentNotes(iterationDetails.getDevelopmentNotes());
-        if (iterationDetails.getReleaseNotes() != null) iteration.setReleaseNotes(iterationDetails.getReleaseNotes());
-        if (iterationDetails.getFlowchartPath() != null) iteration.setFlowchartPath(iterationDetails.getFlowchartPath());
+        // 直接存内容到数据库
+        if (newNotesRaw != null) iteration.setDevelopmentNotes(newNotesRaw);
+        if (newReleaseRaw != null) iteration.setReleaseNotes(newReleaseRaw);
+        // 流程图自动关联：当 localDirPath 不为空时，自动关联到 {issueNumber}.excalidraw
+        if (iteration.getLocalDirPath() != null && !iteration.getLocalDirPath().isEmpty()) {
+            String excalidrawPath = iteration.getLocalDirPath() + "/" + iteration.getIssueNumber() + ".excalidraw";
+            iteration.setFlowchartPath(excalidrawPath);
+        } else if (iterationDetails.getFlowchartPath() != null) {
+            iteration.setFlowchartPath(iterationDetails.getFlowchartPath());
+        }
         if (iterationDetails.getAssigneeId() != null) iteration.setAssigneeId(iterationDetails.getAssigneeId());
         if (iterationDetails.getEstimatedTime() != null) iteration.setEstimatedTime(iterationDetails.getEstimatedTime());
         if (iterationDetails.getActualTime() != null) iteration.setActualTime(iterationDetails.getActualTime());
@@ -152,8 +164,16 @@ public class IterationService {
 
         Iteration saved = iterationRepository.save(iteration);
 
-        // 同步内容到本地文件
-        syncNotesToLocal(saved, oldDevelopmentNotes, oldReleaseNotes);
+        // 内容变化时：记录同步历史 + 写入本地文件
+        if (newNotesRaw != null && !newNotesRaw.equals(oldNotesContent)) {
+            saveSyncHistory(saved.getId(), "PAGE_TO_LOCAL", "developmentNotes", oldNotesContent, newNotesRaw);
+            writeLocalFile(saved, saved.getIssueNumber() + ".txt", newNotesRaw);
+        }
+        if (newReleaseRaw != null && !newReleaseRaw.equals(oldReleaseContent)) {
+            saveSyncHistory(saved.getId(), "PAGE_TO_LOCAL", "releaseNotes", oldReleaseContent, newReleaseRaw);
+            writeLocalFile(saved, saved.getIssueNumber() + ".md", newReleaseRaw);
+        }
+        updateHasTodos(saved);
 
         return saved;
     }
@@ -202,31 +222,20 @@ public class IterationService {
             Files.createDirectories(dirPath);
             iteration.setLocalDirPath(dirPath.toString());
 
-            // 默认创建开发笔记 txt 文件
-            Path notesFile = dirPath.resolve(iteration.getIssueNumber() + ".txt");
-            if (iteration.getDevelopmentNotes() != null && !iteration.getDevelopmentNotes().isEmpty()) {
-                Files.writeString(notesFile, iteration.getDevelopmentNotes());
-            } else {
-                Files.writeString(notesFile, "");
-            }
-            log.info("创建开发笔记文件: {}", notesFile);
-
-            // 默认创建发布文档 md 文件（带模板内容）
-            Path releaseFile = dirPath.resolve(iteration.getIssueNumber() + ".md");
-            String releaseContent = iteration.getReleaseNotes();
-            if (releaseContent == null || releaseContent.isEmpty()) {
-                releaseContent = generateReleaseTemplate(iteration.getIssueNumber());
-            }
-            Files.writeString(releaseFile, releaseContent);
-            iteration.setReleaseNotes(releaseContent);
-            log.info("创建发布文档文件: {}", releaseFile);
-
             // 更新 impactScope 文件列表
             updateImpactScope(iteration, dirPath);
 
+            // 自动关联 .excalidraw 文件到流程图
+            if (iteration.getFlowchartPath() == null || iteration.getFlowchartPath().isEmpty()) {
+                String excalidrawPath = dirPath.resolve(iteration.getIssueNumber() + ".excalidraw").toString();
+                if (Files.exists(Paths.get(excalidrawPath))) {
+                    iteration.setFlowchartPath(excalidrawPath.replace("\\", "/"));
+                }
+            }
+
             iterationRepository.save(iteration);
         } catch (IOException e) {
-            log.error("创建本地目录和文件失败: {}", e.getMessage(), e);
+            log.error("创建本地目录失败: {}", e.getMessage(), e);
         }
     }
 
@@ -258,54 +267,6 @@ public class IterationService {
     }
 
     /**
-     * 页面编辑后同步内容到本地文件
-     */
-    private void syncNotesToLocal(Iteration iteration, String oldDevelopmentNotes, String oldReleaseNotes) {
-        if (iteration.getLocalDirPath() == null || iteration.getLocalDirPath().isEmpty()) {
-            return;
-        }
-
-        Path dirPath = Paths.get(iteration.getLocalDirPath());
-        if (!Files.exists(dirPath) || !Files.isDirectory(dirPath)) {
-            return;
-        }
-
-        try {
-            String newDevelopmentNotes = iteration.getDevelopmentNotes();
-            String newReleaseNotes = iteration.getReleaseNotes();
-            boolean needUpdateImpactScope = false;
-
-            if (newDevelopmentNotes != null && !newDevelopmentNotes.isEmpty()
-                    && !newDevelopmentNotes.equals(oldDevelopmentNotes)
-                    && !isWindowsFilePath(newDevelopmentNotes)) {
-                Path notesFile = dirPath.resolve(iteration.getIssueNumber() + ".txt");
-                Files.writeString(notesFile, newDevelopmentNotes);
-                log.info("同步开发笔记到本地: {}", notesFile);
-                needUpdateImpactScope = true;
-            }
-
-            if (newReleaseNotes != null && !newReleaseNotes.isEmpty()
-                    && !newReleaseNotes.equals(oldReleaseNotes)
-                    && !isWindowsFilePath(newReleaseNotes)) {
-                Path releaseFile = dirPath.resolve(iteration.getIssueNumber() + ".md");
-                Files.writeString(releaseFile, newReleaseNotes);
-                log.info("同步发布文档到本地: {}", releaseFile);
-                needUpdateImpactScope = true;
-            }
-
-            // 更新 impactScope 文件列表
-            if (needUpdateImpactScope) {
-                updateImpactScope(iteration, dirPath);
-            }
-
-            // 检查是否包含待办，更新 hasTodos 字段
-            updateHasTodos(iteration);
-        } catch (IOException e) {
-            log.error("同步文件到本地失败: {}", e.getMessage(), e);
-        }
-    }
-
-    /**
      * 更新 impactScope 文件列表
      */
     private void updateImpactScope(Iteration iteration, Path dirPath) {
@@ -321,6 +282,12 @@ public class IterationService {
                             impactScope.append("\n");
                         }
                         impactScope.append(fileName).append("|").append(filePath);
+
+                        // 自动关联 .excalidraw 文件到流程图字段
+                        if (fileName.toLowerCase().endsWith(".excalidraw")) {
+                            String normalizedPath = filePath.replace("\\", "/");
+                            iteration.setFlowchartPath(normalizedPath);
+                        }
                     });
             iteration.setImpactScope(impactScope.toString());
             iterationRepository.save(iteration);
@@ -336,19 +303,6 @@ public class IterationService {
     private void updateHasTodos(Iteration iteration) {
         String content = iteration.getDevelopmentNotes();
 
-        // 如果是文件路径，则读取文件内容来检查待办
-        if (content != null && isWindowsFilePath(content)) {
-            try {
-                Path filePath = Paths.get(content.trim());
-                if (Files.exists(filePath)) {
-                    content = Files.readString(filePath);
-                }
-            } catch (IOException e) {
-                log.warn("读取待办文件失败: {}", content, e);
-                return; // 读取失败，不更新hasTodos
-            }
-        }
-
         if (content != null && content.contains("待办")) {
             if (!Boolean.TRUE.equals(iteration.getHasTodos())) {
                 iteration.setHasTodos(true);
@@ -363,10 +317,25 @@ public class IterationService {
         }
     }
 
-    private boolean isWindowsFilePath(String str) {
-        if (str == null || str.trim().isEmpty()) {
-            return false;
+    private void writeLocalFile(Iteration iteration, String fileName, String content) {
+        if (iteration.getLocalDirPath() == null || iteration.getLocalDirPath().isEmpty()) return;
+        try {
+            Path dirPath = Paths.get(iteration.getLocalDirPath());
+            if (!Files.exists(dirPath)) Files.createDirectories(dirPath);
+            Files.writeString(dirPath.resolve(fileName), content);
+        } catch (IOException e) {
+            log.warn("写入本地文件失败: {}/{}", iteration.getLocalDirPath(), fileName);
         }
-        return WINDOWS_PATH_PATTERN.matcher(str.trim()).matches();
+    }
+
+    private void saveSyncHistory(Long iterationId, String syncType, String fieldName, String oldValue, String newValue) {
+        IterationSyncHistory history = new IterationSyncHistory();
+        history.setIterationId(iterationId);
+        history.setSyncType(syncType);
+        history.setFieldName(fieldName);
+        history.setOldValue(oldValue);
+        history.setNewValue(newValue);
+        history.setSyncedAt(LocalDateTime.now());
+        syncHistoryRepository.save(history);
     }
 }

@@ -255,8 +255,8 @@ public class IterationImportService {
         Path dir = Paths.get(iteration.getLocalDirPath());
         Files.createDirectories(dir);
 
-        writeContentFile(dir, "notes.txt", iteration.getDevelopmentNotes());
-        writeContentFile(dir, "release.md", iteration.getReleaseNotes());
+        writeContentFile(dir, iteration.getIssueNumber() + ".txt", iteration.getDevelopmentNotes());
+        writeContentFile(dir, iteration.getIssueNumber() + ".md", iteration.getReleaseNotes());
 
         iterationRepository.save(iteration);
     }
@@ -336,8 +336,8 @@ public class IterationImportService {
 
     private boolean hasLocalChanges(Iteration iteration, Path localDir) {
         try {
-            Path notesFile = localDir.resolve("notes.txt");
-            Path releaseFile = localDir.resolve("release.md");
+            Path notesFile = localDir.resolve(iteration.getIssueNumber() + ".txt");
+            Path releaseFile = localDir.resolve(iteration.getIssueNumber() + ".md");
 
             String localNotes = Files.exists(notesFile) ? Files.readString(notesFile) : "";
             String localRelease = Files.exists(releaseFile) ? Files.readString(releaseFile) : "";
@@ -353,8 +353,8 @@ public class IterationImportService {
 
     private void syncLocalToPage(Iteration iteration, Path localDir) {
         try {
-            Path notesFile = localDir.resolve("notes.txt");
-            Path releaseFile = localDir.resolve("release.md");
+            Path notesFile = localDir.resolve(iteration.getIssueNumber() + ".txt");
+            Path releaseFile = localDir.resolve(iteration.getIssueNumber() + ".md");
 
             String oldNotes = iteration.getDevelopmentNotes();
             String oldRelease = iteration.getReleaseNotes();
@@ -382,8 +382,8 @@ public class IterationImportService {
 
     private boolean hasPageChanges(Iteration iteration, Path localDir) {
         try {
-            Path notesFile = localDir.resolve("notes.txt");
-            Path releaseFile = localDir.resolve("release.md");
+            Path notesFile = localDir.resolve(iteration.getIssueNumber() + ".txt");
+            Path releaseFile = localDir.resolve(iteration.getIssueNumber() + ".md");
 
             String localNotes = Files.exists(notesFile) ? Files.readString(notesFile) : "";
             String localRelease = Files.exists(releaseFile) ? Files.readString(releaseFile) : "";
@@ -399,14 +399,16 @@ public class IterationImportService {
 
     private void syncPageToLocal(Iteration iteration, Path localDir) {
         try {
-            String oldNotes = Files.exists(localDir.resolve("notes.txt")) ? Files.readString(localDir.resolve("notes.txt")) : "";
-            String oldRelease = Files.exists(localDir.resolve("release.md")) ? Files.readString(localDir.resolve("release.md")) : "";
+            String notesFileName = iteration.getIssueNumber() + ".txt";
+            String releaseFileName = iteration.getIssueNumber() + ".md";
+            String oldNotes = Files.exists(localDir.resolve(notesFileName)) ? Files.readString(localDir.resolve(notesFileName)) : "";
+            String oldRelease = Files.exists(localDir.resolve(releaseFileName)) ? Files.readString(localDir.resolve(releaseFileName)) : "";
 
             String newNotes = iteration.getDevelopmentNotes() != null ? iteration.getDevelopmentNotes() : "";
             String newRelease = iteration.getReleaseNotes() != null ? iteration.getReleaseNotes() : "";
 
-            writeContentFile(localDir, "notes.txt", newNotes);
-            writeContentFile(localDir, "release.md", newRelease);
+            writeContentFile(localDir, notesFileName, newNotes);
+            writeContentFile(localDir, releaseFileName, newRelease);
 
             // 记录同步历史
             if (!oldNotes.equals(newNotes)) {
@@ -497,6 +499,12 @@ public class IterationImportService {
                         impactScope.append("\n");
                     }
                     impactScope.append(fileName).append("|").append(filePath);
+
+                    // 自动关联 .excalidraw 文件到流程图字段
+                    if (fileName.toLowerCase().endsWith(".excalidraw")) {
+                        String normalizedPath = filePath.replace("\\", "/");
+                        iteration.setFlowchartPath(normalizedPath);
+                    }
                 }
             }
             iteration.setImpactScope(impactScope.toString());

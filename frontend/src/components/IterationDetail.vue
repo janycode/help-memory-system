@@ -77,44 +77,22 @@
       </div>
     </div>
 
-    <!-- 文件路径行 -->
-    <div class="detail-path" v-if="iteration.projectCode">
-      <el-icon :size="14"><FolderOpened /></el-icon>
-      <span>{{ iteration.issueNumber }}-{{ iteration.projectCode }}-{{ iteration.title }}/</span>
-    </div>
-
     <!-- Tab 导航 -->
     <div class="detail-tabs">
-      <div
-        v-for="tab in tabs"
-        :key="tab.key"
-        class="tab-item"
-        :class="{ active: activeTab === tab.key }"
-        @click="activeTab = tab.key"
-      >
-        <el-icon :size="14"><component :is="tab.icon" /></el-icon>
-        {{ tab.label }}
-        <span v-if="tab.key === 'files' && allFiles.length > 0" class="tab-badge">{{ allFiles.length }}</span>
+      <div class="tabs-left">
+        <div
+          v-for="tab in tabs"
+          :key="tab.key"
+          class="tab-item"
+          :class="{ active: activeTab === tab.key }"
+          @click="activeTab = tab.key"
+        >
+          <el-icon :size="14"><component :is="tab.icon" /></el-icon>
+          {{ tab.label }}
+          <span v-if="tab.key === 'files' && allFiles.length > 0" class="tab-badge">{{ allFiles.length }}</span>
+        </div>
       </div>
-    </div>
-
-    <!-- 编辑/预览切换 -->
-    <div class="detail-toolbar">
-      <div class="toolbar-left">
-        <el-tooltip v-if="notesFilePath" :content="notesFilePath" placement="bottom">
-          <span class="file-linked">
-            <el-icon><Document /></el-icon>
-            开发笔记: {{ getFileName(notesFilePath) }}
-          </span>
-        </el-tooltip>
-        <el-tooltip v-if="releaseFilePath" :content="releaseFilePath" placement="bottom">
-          <span class="file-linked">
-            <el-icon><Document /></el-icon>
-            发布文档: {{ getFileName(releaseFilePath) }}
-          </span>
-        </el-tooltip>
-      </div>
-      <div class="toolbar-right">
+      <div class="tabs-right">
         <el-button text size="small" @click="isEditing = !isEditing" v-if="activeTab !== 'files' && activeTab !== 'history'">
           <el-icon :size="14"><Edit v-if="!isEditing" /><View v-else /></el-icon>
           {{ isEditing ? '预览' : '编辑' }}
@@ -128,20 +106,27 @@
       <!-- 开发笔记(txt) -->
       <div v-if="activeTab === 'notes'" class="content-section">
         <div v-if="isEditing" class="edit-area">
-          <textarea
-            v-model="localIteration.developmentNotes"
-            class="notes-textarea"
-            placeholder="记录后端改动点、接口URL、API文档地址、核心业务逻辑、改动范围和影响等助记信息..."
-            @input="triggerAutoSave"
-            spellcheck="false"
-          ></textarea>
+          <div class="editor-with-lines">
+            <div class="line-numbers" v-html="getLineNumbers(localIteration.developmentNotes)"></div>
+            <textarea
+              ref="notesTextarea"
+              v-model="localIteration.developmentNotes"
+              class="notes-textarea"
+              placeholder="记录后端改动点、接口URL、API文档地址、核心业务逻辑、改动范围和影响等助记信息..."
+              @input="triggerAutoSave"
+              spellcheck="false"
+            ></textarea>
+          </div>
           <span class="auto-save-hint" v-if="autoSaveStatus">
             <el-icon><Clock /></el-icon>
             {{ autoSaveStatus }}
           </span>
         </div>
         <div v-else class="preview-area">
-          <div class="notes-content" v-html="renderedNotesWithLineBreaks"></div>
+          <div class="notes-content-with-lines">
+            <div class="line-numbers" v-html="getLineNumbers(localIteration.developmentNotes)"></div>
+            <div class="notes-content" v-html="renderedNotesWithLineBreaks" @scroll="handleScroll"></div>
+          </div>
           <el-empty v-if="!localIteration.developmentNotes" description="暂无开发笔记" />
         </div>
       </div>
@@ -149,20 +134,27 @@
       <!-- 发布文档(md) -->
       <div v-if="activeTab === 'release'" class="content-section">
         <div v-if="isEditing" class="edit-area">
-          <textarea
-            v-model="localIteration.releaseNotes"
-            class="notes-textarea release-textarea"
-            placeholder="输入发布文档内容（支持 Markdown）..."
-            @input="triggerAutoSave"
-            spellcheck="false"
-          ></textarea>
+          <div class="editor-with-lines">
+            <div class="line-numbers" v-html="getLineNumbers(localIteration.releaseNotes)"></div>
+            <textarea
+              ref="releaseTextarea"
+              v-model="localIteration.releaseNotes"
+              class="notes-textarea release-textarea"
+              placeholder="输入发布文档内容（支持 Markdown）..."
+              @input="triggerAutoSave"
+              spellcheck="false"
+            ></textarea>
+          </div>
           <span class="auto-save-hint" v-if="autoSaveStatus">
             <el-icon><Clock /></el-icon>
             {{ autoSaveStatus }}
           </span>
         </div>
         <div v-else class="preview-area">
-          <div class="markdown-body" v-html="renderedRelease"></div>
+          <div class="notes-content-with-lines">
+            <div class="line-numbers" v-html="getLineNumbers(localIteration.releaseNotes)"></div>
+            <div class="markdown-body" v-html="renderedRelease" @scroll="handleScroll"></div>
+          </div>
           <el-empty v-if="!localIteration.releaseNotes" description="暂无发布文档" />
         </div>
       </div>
@@ -210,24 +202,6 @@
               <div class="file-path">{{ file.path }}</div>
             </div>
             <div class="file-actions">
-              <el-dropdown trigger="click" @command="(cmd) => handleFileAction(cmd, file)">
-                <el-button text size="small" type="primary">
-                  关联到 <el-icon><ArrowDown /></el-icon>
-                </el-button>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="notes">
-                      <el-icon><Edit /></el-icon> 开发笔记(txt)
-                    </el-dropdown-item>
-                    <el-dropdown-item command="release">
-                      <el-icon><Document /></el-icon> 发布文档(md)
-                    </el-dropdown-item>
-                    <el-dropdown-item command="flowchart">
-                      <el-icon><Link /></el-icon> 流程图
-                    </el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
               <el-button text size="small" @click="copyToClipboard(file.name, '文件名')">
                 <el-icon><CopyDocument /></el-icon>
               </el-button>
@@ -256,14 +230,33 @@
             </div>
             <div class="history-content">
               <div class="history-diff">
-                <div class="diff-old" v-if="record.oldValue">
+                <div class="diff-old">
                   <div class="diff-label">旧值</div>
-                  <pre>{{ truncateText(record.oldValue, 200) }}</pre>
+                  <div class="diff-body">
+                    <template v-if="record.oldValue">
+                      <div v-for="(line, li) in getDiffLines(record.oldValue, record.newValue, 'old')" :key="'o'+li"
+                        :class="['diff-line', line.type]">
+                        <span class="diff-ln">{{ line.lineNum }}</span>
+                        <span class="diff-prefix">{{ line.type === 'removed' ? '-' : ' ' }}</span>
+                        <span class="diff-text">{{ line.text || '\u00A0' }}</span>
+                      </div>
+                    </template>
+                    <span v-else class="diff-empty">（空）</span>
+                  </div>
                 </div>
-                <div class="diff-arrow">→</div>
-                <div class="diff-new" v-if="record.newValue">
+                <div class="diff-new">
                   <div class="diff-label">新值</div>
-                  <pre>{{ truncateText(record.newValue, 200) }}</pre>
+                  <div class="diff-body">
+                    <template v-if="record.newValue">
+                      <div v-for="(line, li) in getDiffLines(record.oldValue, record.newValue, 'new')" :key="'n'+li"
+                        :class="['diff-line', line.type]">
+                        <span class="diff-ln">{{ line.lineNum }}</span>
+                        <span class="diff-prefix">{{ line.type === 'added' ? '+' : ' ' }}</span>
+                        <span class="diff-text">{{ line.text || '\u00A0' }}</span>
+                      </div>
+                    </template>
+                    <span v-else class="diff-empty">（空）</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -285,16 +278,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
-  Edit, Delete, FolderOpened, Clock, CopyDocument, Link, View, Document, CircleCheck, Location, ArrowDown,
+  Edit, Delete, FolderOpened, Clock, CopyDocument, Link, View, Document, CircleCheck, Location,
   Notebook, Picture, Refresh, Close
 } from '@element-plus/icons-vue'
 import type { Iteration, IterationSyncHistory, OtherFile } from '@/types/iteration'
 import { IterationStatusMap, IterationPriorityMap } from '@/types/iteration'
 import { getSyncHistory } from '@/api/iteration'
-import { readFile, writeFile, checkFileUpdate, openFile } from '@/api/file'
+import { readFile, checkFileUpdate, openFile } from '@/api/file'
 import markdownIt from 'markdown-it'
 import hljs from 'highlight.js/lib/core'
 import 'highlight.js/styles/github.css'
@@ -348,6 +341,11 @@ const notesFilePath = ref('')
 const releaseFilePath = ref('')
 const notesLastModified = ref(0)
 const releaseLastModified = ref(0)
+
+// 性能优化：请求取消 + 切换标记
+let abortController: AbortController | null = null
+let currentIterationId: number | null = null
+let switchDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
 const localIteration = reactive({
   developmentNotes: '',
@@ -434,19 +432,106 @@ const renderedNotes = computed(() => {
   return md.render(localIteration.developmentNotes)
 })
 
+// 单个字符是否为中文/中文标点/空白
+const isCJKOrSpace = (ch: string): boolean => {
+  const code = ch.charCodeAt(0)
+  return (code >= 0x4E00 && code <= 0x9FFF)   // CJK统一汉字
+    || (code >= 0x3000 && code <= 0x303F)      // CJK标点
+    || (code >= 0xFF00 && code <= 0xFFEF)      // 全角符号
+    || (code >= 0x2000 && code <= 0x206F)      // 通用标点
+    || ch === ' ' || ch === '\t'
+}
+
+// HTML 转义单个字符
+const escHtml = (ch: string): string =>
+  ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch
+
+// 扫描一段纯文本，输出 HTML（转义 + 英文/数字着色）
+// 生成行号 HTML
+const getLineNumbers = (text: string | null): string => {
+  if (!text) return '<div class="ln">1</div>'
+  const lines = text.split('\n')
+  return lines.map((_, i) => `<div class="ln">${i + 1}</div>`).join('')
+}
+
+const scanPlain = (text: string, start: number, end: number): string => {
+  let html = ''
+  let i = start
+  while (i < end) {
+    const ch = text[i]
+    if (ch === '&' || ch === '<' || ch === '>') {
+      html += escHtml(ch); i++
+    } else if (/[0-9]/.test(ch)) {
+      let num = ''
+      while (i < end && /[0-9]/.test(text[i])) { num += text[i]; i++ }
+      html += `<span class="num-highlight">${num}</span>`
+    } else if (!isCJKOrSpace(ch)) {
+      let en = ''
+      while (i < end && !isCJKOrSpace(text[i]) && !/[0-9]/.test(text[i])
+        && text[i] !== '&' && text[i] !== '<' && text[i] !== '>') {
+        en += text[i]; i++
+      }
+      html += `<span class="en-highlight">${en}</span>`
+    } else {
+      html += ch; i++
+    }
+  }
+  return html
+}
+
 // 开发笔记需要保留换行符显示
 const renderedNotesWithLineBreaks = computed(() => {
   if (!localIteration.developmentNotes) return ''
-  // 先统一换行符为 \n，再转换为 <br>
-  const normalized = localIteration.developmentNotes
+  const text = localIteration.developmentNotes
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
-  return normalized
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/待办/g, '<span class="todo-highlight">待办</span>')
-    .replace(/\n/g, '<br>')
+  // 逐行做单次遍历扫描，输出 HTML
+  return text.split('\n').map(line => {
+    let html = ''
+    let i = 0
+    const len = line.length
+    while (i < len) {
+      // ""包裹 → 红色（最高优先级，内部不做其他着色）
+      if (line[i] === '\u201C' || line[i] === '"') {
+        const q = line[i]
+        const closeChar = q === '\u201C' ? '\u201D' : '"'
+        const close = line.indexOf(closeChar, i + 1)
+        if (close !== -1) {
+          const inner = line.substring(i + 1, close)
+          // 内容只做 HTML 转义，不做英文/数字着色
+          let innerHtml = ''
+          for (let j = 0; j < inner.length; j++) {
+            innerHtml += escHtml(inner[j])
+          }
+          html += `<span class="quote-highlight">${q}${innerHtml}${closeChar}</span>`
+          i = close + 1
+          continue
+        }
+      }
+      // 【】包裹 → 加粗加大橙色
+      if (line[i] === '【') {
+        const close = line.indexOf('】', i + 1)
+        if (close !== -1) {
+          const inner = line.substring(i + 1, close)
+          html += `<span class="bracket-highlight">【${scanPlain(inner, 0, inner.length)}】</span>`
+          i = close + 1
+          continue
+        }
+      }
+      // "待办" 关键词
+      if (line.substring(i, i + 2) === '待办') {
+        html += '<span class="todo-highlight">待办</span>'
+        i += 2
+        continue
+      }
+      // 普通字符：转义 + 英文/数字着色（逐段扫描到下一个特殊字符）
+      const segStart = i
+      while (i < len && line[i] !== '\u201C' && line[i] !== '"'
+        && line[i] !== '【' && line.substring(i, i + 2) !== '待办') { i++ }
+      html += scanPlain(line, segStart, i)
+    }
+    return html
+  }).join('<br>')
 })
 
 const renderedRelease = computed(() => {
@@ -454,50 +539,92 @@ const renderedRelease = computed(() => {
   return md.render(localIteration.releaseNotes)
 })
 
-// 检测是否为 Windows 文件路径
-const isWindowsFilePath = (str: string): boolean => {
-  if (!str) return false
-  const trimmed = str.trim()
-  // Windows 文件路径模式: 盘符:\路径\文件 或 盘符:/路径/文件
-  // 例如: D:\work\07_需求\test.txt 或 D:/work/07_需求/test.txt
-  // 支持: 带空格的路径、中文路径、多级目录、各种文件扩展名
-  const windowsPathPattern = /^[A-Za-z]:[/\\].+\.[a-zA-Z]{1,10}$/
-  return windowsPathPattern.test(trimmed)
-}
-
 watch(
   () => props.iteration,
   async (newVal) => {
-    if (newVal) {
+    if (!newVal) return
+
+    const iterationId = newVal.id
+    const isSameIteration = currentIterationId === iterationId
+
+    // 同一迭代的数据更新（auto-save 后端返回）：只更新标量字段，不重新加载文件
+    if (isSameIteration) {
       localIteration.flowchartPath = newVal.flowchartPath || ''
       localIteration.status = newVal.status
       localIteration.priority = newVal.priority
-
-      // 检查是否关联了文件路径
-      const isNotesPath = isWindowsFilePath(newVal.developmentNotes)
-      const isReleasePath = isWindowsFilePath(newVal.releaseNotes)
-
-      if (isNotesPath) {
-        notesFilePath.value = newVal.developmentNotes
-        await loadFileContent('notes')
-      } else {
-        notesFilePath.value = ''
-        localIteration.developmentNotes = newVal.developmentNotes || ''
-      }
-
-      if (isReleasePath) {
-        releaseFilePath.value = newVal.releaseNotes
-        await loadFileContent('release')
-      } else {
-        releaseFilePath.value = ''
-        localIteration.releaseNotes = newVal.releaseNotes || ''
-      }
-
-      loadSyncHistory()
+      return
     }
+
+    // 切换到不同迭代：完整加载流程
+    // 取消上一次未完成的请求
+    if (abortController) {
+      abortController.abort()
+    }
+    // 清除上一次的防抖定时器
+    if (switchDebounceTimer) {
+      clearTimeout(switchDebounceTimer)
+    }
+
+    // 防抖：快速切换时只处理最后一次（100ms）
+    await new Promise<void>(resolve => {
+      switchDebounceTimer = setTimeout(() => {
+        switchDebounceTimer = null
+        resolve()
+      }, 100)
+    })
+
+    // 防抖后如果又切换了，放弃本次
+    if (iterationId !== props.iteration?.id) return
+
+    // 创建新的 AbortController
+    abortController = new AbortController()
+    currentIterationId = iterationId
+
+    localIteration.flowchartPath = newVal.flowchartPath || ''
+    localIteration.status = newVal.status
+    localIteration.priority = newVal.priority
+
+    // 自动关联逻辑：当 localDirPath 不为空时，自动设置文件路径
+    if (newVal.localDirPath && newVal.localDirPath.trim()) {
+      notesFilePath.value = newVal.localDirPath + '/' + newVal.issueNumber + '.txt'
+      releaseFilePath.value = newVal.localDirPath + '/' + newVal.issueNumber + '.md'
+      // 编辑模式下不从文件加载，避免覆盖用户正在编辑的内容
+      if (!isEditing.value) {
+        await loadFileContent('notes')
+        await loadFileContent('release')
+      }
+    } else {
+      notesFilePath.value = ''
+      releaseFilePath.value = ''
+      localIteration.developmentNotes = newVal.developmentNotes || ''
+      localIteration.releaseNotes = newVal.releaseNotes || ''
+    }
+
+    // 如果已切换到其他迭代，停止后续操作
+    if (currentIterationId !== iterationId) return
+
+    if (currentIterationId !== iterationId) return
+    loadSyncHistory()
   },
   { immediate: true }
 )
+
+const notesTextarea = ref<HTMLTextAreaElement | null>(null)
+const releaseTextarea = ref<HTMLTextAreaElement | null>(null)
+
+const syncLineNumbers = (textarea: HTMLTextAreaElement) => {
+  const lineNumbers = textarea.parentElement?.querySelector('.line-numbers') as HTMLElement
+  if (lineNumbers) {
+    lineNumbers.scrollTop = textarea.scrollTop
+  }
+}
+
+const onNotesScroll = () => {
+  if (notesTextarea.value) syncLineNumbers(notesTextarea.value)
+}
+const onReleaseScroll = () => {
+  if (releaseTextarea.value) syncLineNumbers(releaseTextarea.value)
+}
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 let fileCheckInterval: ReturnType<typeof setInterval> | null = null
@@ -515,20 +642,11 @@ const performAutoSave = async () => {
   autoSaveStatus.value = '保存中...'
 
   try {
-    // 如果关联了文件，先保存到文件
-    if (activeTab.value === 'notes' && notesFilePath.value) {
-      await saveFileContent('notes')
-    } else if (activeTab.value === 'release' && releaseFilePath.value) {
-      await saveFileContent('release')
-    }
-
-    // 保存到数据库 - 如果关联了文件，保存文件路径而不是内容
-    // 将 Windows 反斜杠路径转为正斜杠，避免 JSON 序列化时转义失败
-    const normalizePath = (p: string) => p ? p.replace(/\\/g, '/') : p
+    // 发送内容给后端，由后端统一处理文件写入和同步历史
     emit('auto-save', {
       id: props.iteration.id,
-      developmentNotes: normalizePath(notesFilePath.value) || localIteration.developmentNotes,
-      releaseNotes: normalizePath(releaseFilePath.value) || localIteration.releaseNotes,
+      developmentNotes: localIteration.developmentNotes,
+      releaseNotes: localIteration.releaseNotes,
       flowchartPath: localIteration.flowchartPath
     } as Partial<Iteration>)
 
@@ -565,25 +683,13 @@ const loadFileContent = async (type: 'notes' | 'release') => {
   }
 }
 
-const saveFileContent = async (type: 'notes' | 'release') => {
-  const filePath = type === 'notes' ? notesFilePath.value : releaseFilePath.value
-  if (!filePath) return
-
-  let content = type === 'notes' ? localIteration.developmentNotes : localIteration.releaseNotes
-  // 统一换行符为 \n
-  content = (content || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-  await writeFile(filePath, content)
-
-  if (type === 'notes') {
-    notesLastModified.value = Date.now()
-  } else {
-    releaseLastModified.value = Date.now()
-  }
-}
-
 const checkFileUpdates = async () => {
   // 只有在非编辑状态下才检查文件更新，避免干扰用户编辑
   if (isEditing.value) return
+  // 如果已切换到其他迭代，跳过检查
+  if (props.iteration?.id !== currentIterationId) return
+  // 没有关联文件则跳过
+  if (!notesFilePath.value && !releaseFilePath.value) return
 
   let hasUpdate = false
 
@@ -612,31 +718,6 @@ const checkFileUpdates = async () => {
   }
 }
 
-// 自动刷新文件内容
-const autoRefreshFiles = async () => {
-  if (notesFilePath.value) {
-    try {
-      const response = await checkFileUpdate(notesFilePath.value, notesLastModified.value)
-      if (response.data?.updated) {
-        await loadFileContent('notes')
-      }
-    } catch (error) {
-      console.error('自动刷新文件失败:', error)
-    }
-  }
-
-  if (releaseFilePath.value) {
-    try {
-      const response = await checkFileUpdate(releaseFilePath.value, releaseLastModified.value)
-      if (response.data?.updated) {
-        await loadFileContent('release')
-      }
-    } catch (error) {
-      console.error('自动刷新文件失败:', error)
-    }
-  }
-}
-
 const applySyncNotification = async () => {
   if (notesFilePath.value) {
     await loadFileContent('notes')
@@ -645,6 +726,15 @@ const applySyncNotification = async () => {
     await loadFileContent('release')
   }
   syncNotification.value = ''
+  // 发送内容给后端，由后端统一处理文件写入和同步历史
+  if (props.iteration?.id) {
+    emit('auto-save', {
+      id: props.iteration.id,
+      developmentNotes: localIteration.developmentNotes,
+      releaseNotes: localIteration.releaseNotes,
+      flowchartPath: localIteration.flowchartPath
+    } as Partial<Iteration>)
+  }
   ElMessage.success('已加载最新内容')
 }
 
@@ -658,28 +748,6 @@ const handlePriorityChange = (val: string) => {
   if (props.iteration?.id) {
     emit('update-priority', props.iteration.id, val)
   }
-}
-
-const handleFileAction = async (command: string, file: OtherFile) => {
-  if (!props.iteration?.id) return
-
-  const updateData: Partial<Iteration> = { id: props.iteration.id }
-  const normalizePath = (p: string) => p ? p.replace(/\\/g, '/') : p
-
-  if (command === 'notes') {
-    updateData.developmentNotes = normalizePath(file.path)
-    notesFilePath.value = file.path
-    await loadFileContent('notes')
-  } else if (command === 'release') {
-    updateData.releaseNotes = normalizePath(file.path)
-    releaseFilePath.value = file.path
-    await loadFileContent('release')
-  } else if (command === 'flowchart') {
-    updateData.flowchartPath = normalizePath(file.path)
-  }
-
-  emit('auto-save', updateData)
-  ElMessage.success(`已关联到${getFieldLabel(command)}`)
 }
 
 const copyPath = async (path: string) => {
@@ -717,6 +785,37 @@ const formatDateTime = (dateStr: string | null) => {
   return new Date(dateStr).toLocaleString('zh-CN')
 }
 
+// 逐行 diff：返回指定侧的差异行（含行号）
+type DiffLine = { text: string; type: 'same' | 'added' | 'removed'; lineNum: number }
+const getDiffLines = (oldVal: string | null, newVal: string | null, side: 'old' | 'new'): DiffLine[] => {
+  const oldLines = (oldVal || '').split('\n')
+  const newLines = (newVal || '').split('\n')
+  const result: DiffLine[] = []
+  let oi = 0, ni = 0
+  while (oi < oldLines.length || ni < newLines.length) {
+    const o = oi < oldLines.length ? oldLines[oi] : undefined
+    const n = ni < newLines.length ? newLines[ni] : undefined
+    if (o === n) {
+      if (o !== undefined) result.push({ text: o, type: 'same', lineNum: oi + 1 })
+      oi++; ni++
+    } else if (o !== undefined && newLines.indexOf(o, ni) === -1) {
+      result.push({ text: o, type: 'removed', lineNum: oi + 1 })
+      oi++
+    } else if (n !== undefined && oldLines.indexOf(n, oi) === -1) {
+      result.push({ text: n, type: 'added', lineNum: ni + 1 })
+      ni++
+    } else {
+      if (o !== undefined) result.push({ text: o, type: 'removed', lineNum: oi + 1 })
+      if (n !== undefined) result.push({ text: n, type: 'added', lineNum: ni + 1 })
+      oi++; ni++
+    }
+  }
+  // 只返回有差异的行（去掉 same），并保留行号上下文
+  const diffIndices = new Set<number>()
+  result.forEach((l, i) => { if (l.type !== 'same') { diffIndices.add(i); diffIndices.add(i - 1); diffIndices.add(i + 1) } })
+  return result.filter((l, i) => diffIndices.has(i) && l.type !== 'same')
+}
+
 const getFieldLabel = (fieldName: string) => {
   const labels: Record<string, string> = {
     developmentNotes: '开发笔记(txt)',
@@ -733,15 +832,13 @@ const truncateText = (text: string, maxLength: number) => {
   return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
 }
 
-const getFileName = (path: string) => {
-  if (!path) return ''
-  return path.split(/[/\\]/).pop() || path
-}
-
 const loadSyncHistory = async () => {
   if (!props.iteration?.id) return
+  const id = props.iteration.id
   try {
-    const response = await getSyncHistory(props.iteration.id)
+    const response = await getSyncHistory(id)
+    // 如果已切换到其他迭代，丢弃结果
+    if (currentIterationId !== id) return
     syncHistory.value = response.data || []
   } catch (error) {
     console.error('加载同步历史失败:', error)
@@ -764,18 +861,6 @@ const getFileColor = (fileName: string) => {
   return '#909399'
 }
 
-// 刷新全部文件内容
-const refreshAllFiles = async () => {
-  if (notesFilePath.value) {
-    await loadFileContent('notes')
-  }
-  if (releaseFilePath.value) {
-    await loadFileContent('release')
-  }
-  syncNotification.value = ''
-  ElMessage.success('已刷新全部文件内容')
-}
-
 // Ctrl+E 快捷键切换编辑/预览模式
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.ctrlKey && e.key === 'e') {
@@ -794,14 +879,35 @@ onMounted(() => {
   fileCheckInterval = setInterval(checkFileUpdates, 10000)
   // 监听快捷键
   document.addEventListener('keydown', handleKeydown)
+  // 行号跟随滚动
+  nextTick(() => {
+    notesTextarea.value?.addEventListener('scroll', onNotesScroll)
+    releaseTextarea.value?.addEventListener('scroll', onReleaseScroll)
+  })
+})
+
+watch(isEditing, () => {
+  nextTick(() => {
+    notesTextarea.value?.addEventListener('scroll', onNotesScroll)
+    releaseTextarea.value?.addEventListener('scroll', onReleaseScroll)
+  })
 })
 
 onUnmounted(() => {
   if (fileCheckInterval) {
     clearInterval(fileCheckInterval)
   }
+  if (switchDebounceTimer) {
+    clearTimeout(switchDebounceTimer)
+  }
+  if (abortController) {
+    abortController.abort()
+  }
   // 移除快捷键监听
   document.removeEventListener('keydown', handleKeydown)
+  // 移除滚动监听
+  notesTextarea.value?.removeEventListener('scroll', onNotesScroll)
+  releaseTextarea.value?.removeEventListener('scroll', onReleaseScroll)
 })
 </script>
 
@@ -839,7 +945,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px 12px;
+  padding: 12px 24px 8px;
   border-bottom: 1px solid #f0f0f0;
 }
 
@@ -878,7 +984,7 @@ onUnmounted(() => {
 }
 
 .detail-title {
-  padding: 12px 24px 0;
+  padding: 8px 24px 0;
   font-size: 18px;
   font-weight: 600;
   color: #1d2129;
@@ -886,7 +992,7 @@ onUnmounted(() => {
 }
 
 .detail-meta {
-  padding: 8px 24px 0;
+  padding: 6px 24px 0;
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
@@ -918,20 +1024,24 @@ onUnmounted(() => {
   text-decoration: underline;
 }
 
-.detail-path {
-  padding: 8px 24px 0;
-  font-size: 12px;
-  color: #86909c;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .detail-tabs {
   display: flex;
-  gap: 4px;
-  padding: 16px 24px 0;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px 0;
   border-bottom: 1px solid #f0f0f0;
+}
+
+.tabs-left {
+  display: flex;
+  gap: 4px;
+}
+
+.tabs-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .tab-item {
@@ -967,35 +1077,6 @@ onUnmounted(() => {
   text-align: center;
 }
 
-.detail-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 24px;
-}
-
-.toolbar-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.file-linked {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: #67c23a;
-  background: #f0f9eb;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.toolbar-right {
-  display: flex;
-  gap: 8px;
-}
-
 .shortcut-hint {
   font-size: 11px;
   color: #909399;
@@ -1008,13 +1089,15 @@ onUnmounted(() => {
 .detail-content {
   flex: 1;
   overflow: hidden;
-  padding: 0 24px 24px;
+  padding: 0 24px 12px;
+  min-height: 0;
 }
 
 .content-section {
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .edit-area {
@@ -1022,30 +1105,77 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   position: relative;
+  min-height: 0;
+}
+
+.editor-with-lines {
+  flex: 1;
+  display: flex;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.line-numbers {
+  flex-shrink: 0;
+  width: 32px;
+  padding: 16px 4px 16px 2px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #c0c4cc;
+  text-align: right;
+  user-select: none;
+  overflow: hidden;
+}
+
+.line-numbers :deep(.ln) {
+  height: 19.6px;
 }
 
 .notes-textarea {
   width: 100%;
   flex: 1;
-  min-height: 300px;
+  min-height: 0;
   padding: 16px;
-  border: 1px solid #e4e7ed;
-  border-radius: 8px;
+  border: none;
+  border-radius: 0;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
   font-size: 14px;
   line-height: 1.4;
   color: #2b2b2b;
-  resize: vertical;
+  resize: none;
   outline: none;
-  transition: border-color 0.2s;
+  overflow-y: auto;
+}
+
+.editor-with-lines .notes-textarea {
+  border: none;
 }
 
 .notes-textarea:focus {
-  border-color: #409eff;
+  border-color: transparent;
+}
+
+.notes-content-with-lines {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.notes-content-with-lines .line-numbers {
+  padding-top: 0;
+}
+
+.notes-content-with-lines .notes-content,
+.notes-content-with-lines .markdown-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
 }
 
 .release-textarea {
-  min-height: 400px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -1085,12 +1215,36 @@ onUnmounted(() => {
   margin-top: 4px;
 }
 
-.todo-highlight {
+.notes-content :deep(.todo-highlight) {
   color: #e6a23c;
   font-weight: 600;
   background-color: #fdf6ec;
   padding: 1px 4px;
   border-radius: 3px;
+}
+
+.notes-content :deep(.en-highlight) {
+  color: #409eff;
+  font-weight: 700;
+}
+
+.notes-content :deep(.num-highlight) {
+  color: #9b59b6;
+  font-weight: 700;
+}
+
+.notes-content :deep(.bracket-highlight) {
+  font-weight: 700;
+  font-size: 1.15em;
+  color: #e6a23c;
+  background-color: #fdf6ec;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.notes-content :deep(.quote-highlight) {
+  color: #f56c6c;
+  font-weight: 600;
 }
 
 /* Markdown 样式美化 */
@@ -1392,48 +1546,91 @@ onUnmounted(() => {
 
 .history-diff {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  gap: 1px;
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 12px;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
 }
 
 .diff-old,
 .diff-new {
   flex: 1;
   min-width: 0;
+  background: #fff;
 }
 
 .diff-label {
   font-size: 11px;
   color: #86909c;
-  margin-bottom: 4px;
+  padding: 4px 8px;
+  background: #f5f7fa;
+  border-bottom: 1px solid #e4e7ed;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.diff-old pre,
-.diff-new pre {
-  margin: 0;
-  padding: 8px;
-  background: #f7f8fa;
-  border-radius: 4px;
-  font-size: 12px;
-  line-height: 1.5;
-  overflow-x: auto;
+.diff-body {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.diff-line {
+  display: flex;
+  padding: 0 8px;
+  line-height: 20px;
   white-space: pre-wrap;
   word-break: break-all;
 }
 
-.diff-old pre {
-  background: #fef0f0;
+.diff-line.added {
+  background: #e6ffec;
 }
 
-.diff-new pre {
-  background: #f0f9eb;
+.diff-line.removed {
+  background: #ffebe9;
 }
 
-.diff-arrow {
+.diff-line.same {
   color: #86909c;
-  font-size: 16px;
+}
+
+.diff-ln {
+  width: 32px;
   flex-shrink: 0;
-  margin-top: 20px;
+  text-align: right;
+  padding-right: 8px;
+  color: #86909c;
+  font-size: 11px;
+  user-select: none;
+}
+
+.diff-prefix {
+  width: 16px;
+  flex-shrink: 0;
+  text-align: center;
+  color: #86909c;
+  user-select: none;
+}
+
+.diff-line.added .diff-prefix {
+  color: #1a7f37;
+}
+
+.diff-line.removed .diff-prefix {
+  color: #cf222e;
+}
+
+.diff-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.diff-empty {
+  display: block;
+  padding: 8px;
+  color: #c0c4cc;
+  font-style: italic;
 }
 
 .detail-empty {

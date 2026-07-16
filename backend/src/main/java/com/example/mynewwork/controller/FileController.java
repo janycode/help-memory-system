@@ -19,9 +19,13 @@ import java.util.Map;
 @Tag(name = "文件操作", description = "文件读写相关接口")
 public class FileController {
 
-    @GetMapping("/read")
+    @PostMapping("/read")
     @Operation(summary = "读取文件内容", description = "读取指定路径的文件内容")
-    public ResponseEntity<ApiResponse<Map<String, String>>> readFile(@RequestParam String path) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> readFile(@RequestBody Map<String, String> request) {
+        String path = request.get("path");
+        if (path == null || path.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("路径不能为空"));
+        }
         try {
             Path filePath = Paths.get(path);
             if (!Files.exists(filePath)) {
@@ -59,11 +63,16 @@ public class FileController {
         }
     }
 
-    @GetMapping("/check")
+    @PostMapping("/check")
     @Operation(summary = "检查文件更新", description = "检查文件是否有更新")
     public ResponseEntity<ApiResponse<Map<String, Object>>> checkFileUpdate(
-            @RequestParam String path,
-            @RequestParam long lastModified) {
+            @RequestBody Map<String, Object> request) {
+        String path = (String) request.get("path");
+        long lastModified = request.get("lastModified") != null
+                ? ((Number) request.get("lastModified")).longValue() : 0;
+        if (path == null || path.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("路径不能为空"));
+        }
         try {
             Path filePath = Paths.get(path);
             if (!Files.exists(filePath)) {
@@ -115,7 +124,8 @@ public class FileController {
         String os = System.getProperty("os.name").toLowerCase();
         ProcessBuilder pb;
         if (os.contains("win")) {
-            pb = new ProcessBuilder("cmd", "/c", "start", "", file.getAbsolutePath());
+            // 路径用双引号包裹，防止 & 等特殊字符被 cmd 解释为命令分隔符
+            pb = new ProcessBuilder("cmd", "/c", "start", "", "\"" + file.getAbsolutePath() + "\"");
         } else if (os.contains("mac")) {
             pb = new ProcessBuilder("open", file.getAbsolutePath());
         } else {

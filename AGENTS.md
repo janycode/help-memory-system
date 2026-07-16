@@ -70,6 +70,8 @@ frontend/src/
   stores/           # Pinia stores
   types/            # TypeScript type definitions
   utils/            # connectionStrings.ts and others
+
+Note: views/ includes IterationList.vue and TestStats.vue (not listed in README).
 ```
 
 ## Adding a new module
