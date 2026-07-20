@@ -2,7 +2,7 @@
   <div class="batch-so-container">
     <div class="page-header">
       <div class="header-actions">
-        <el-button size="small" @click="showHistory = true; hasNewHistory = false">
+        <el-button size="small" @click="showHistory = true; hasNewHistory = false" class="history-btn">
           创建历史
           <el-badge v-if="hasNewHistory" :value="1" class="history-badge" />
         </el-button>
@@ -160,7 +160,7 @@ const userStore = useUserStore()
 
 // 状态
 const currentEnv = ref('dev')
-const apiUrl = ref('http://dev.example.org/api/om/v1/shipping-order/submit')
+const apiUrl = ref('')
 const prefix = ref('TEST')
 const batchCount = ref(1)
 const startNumber = ref(1)
@@ -216,16 +216,19 @@ const groupedHistory = computed(() => {
   return grouped
 })
 
-// API配置
-const apiUrls = {
-  dev: 'http://dev.example.org/api/om/v1/shipping-order/submit',
-  test: 'https://uat.example.com/api/om/v1/shipping-order/submit'
+// API配置（根据当前用户动态生成）
+const getApiUrls = () => {
+  const brand = userStore.currentUser?.username || 'example'
+  return {
+    dev: `http://dev.${brand}.org/api/om/v1/shipping-order/submit`,
+    test: `https://uat.${brand}.com/api/om/v1/shipping-order/submit`
+  }
 }
 
 // 方法
 const switchEnv = (env: string) => {
   currentEnv.value = env
-  apiUrl.value = apiUrls[env as keyof typeof apiUrls]
+  apiUrl.value = getApiUrls()[env as keyof ReturnType<typeof getApiUrls>]
   const savedAuth = localStorage.getItem(`shippingOrderAuthorization_${env}`)
   authorization.value = savedAuth || ''
   updatePreview()
@@ -524,30 +527,22 @@ const calcStartNumberFromHistory = () => {
     return
   }
 
-  // 取最后一条记录的日期与今天比较
-  const lastItem = historyList.value[0]
+  // 今天日期字符串 YYYYMMDD
   const today = new Date()
   const todayStr = today.getFullYear().toString() +
     String(today.getMonth() + 1).padStart(2, '0') +
     String(today.getDate()).padStart(2, '0')
 
-  // 从 bookingNo 中提取日期部分（前缀之后的8位数字）
-  const dateMatch = lastItem.no.match(/(\d{8})\d{2}$/)
-  if (!dateMatch || dateMatch[1] !== todayStr) {
-    // 最后一条记录的日期不是今天，起始值从 1 开始
-    startNumber.value = 1
-    return
-  }
-
-  // 日期相同，取最大序号 + 1
+  // 筛选今天日期的 SO，取最大尾号
   let maxNum = 0
   historyList.value.forEach(item => {
-    const match = item.no.match(/(\d{2})$/)
-    if (match) {
-      const num = parseInt(match[1], 10)
+    const match = item.no.match(/(\d{8})(\d{2})$/)
+    if (match && match[1] === todayStr) {
+      const num = parseInt(match[2], 10)
       if (num > maxNum) maxNum = num
     }
   })
+
   startNumber.value = maxNum + 1
 }
 
@@ -614,6 +609,7 @@ watch(authorization, (val) => {
 
 // 初始化
 onMounted(() => {
+  switchEnv('dev')
   const savedAuth = localStorage.getItem(`shippingOrderAuthorization_${currentEnv.value}`)
   if (savedAuth) {
     authorization.value = savedAuth
@@ -908,6 +904,10 @@ onMounted(() => {
   color: #909399;
   font-size: 12px;
   padding: 12px 0;
+}
+
+.history-btn {
+  position: relative;
 }
 
 .history-badge {

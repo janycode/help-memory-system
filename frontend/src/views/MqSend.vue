@@ -130,17 +130,20 @@ import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 
-// 环境配置
-const ENV_CONFIG = {
-  dev: {
-    url: 'http://192.168.33.10:9880/topic/sendTopicMessage.do',
-    topic: 'dev%edi',
-    tokenType: 'XSRF-TOKEN'
-  },
-  test: {
-    url: 'https://devops.example.com/rocketmq/topic/sendTopicMessage.do',
-    topic: 'staging%edi',
-    tokenType: 'JSESSIONID'
+// 环境配置（根据当前用户动态生成）
+const getEnvConfig = () => {
+  const brand = userStore.currentUser?.username || 'example'
+  return {
+    dev: {
+      url: 'http://192.168.33.10:9880/topic/sendTopicMessage.do',
+      topic: 'dev%edi',
+      tokenType: 'XSRF-TOKEN'
+    },
+    test: {
+      url: `https://devops.${brand}.com/rocketmq/topic/sendTopicMessage.do`,
+      topic: 'staging%edi',
+      tokenType: 'JSESSIONID'
+    }
   }
 }
 
@@ -171,11 +174,11 @@ const resultList = ref<Array<{
 }>>([])
 
 // 计算属性
-const currentUrl = computed(() => ENV_CONFIG[currentEnv.value as keyof typeof ENV_CONFIG].url)
-const tokenLabel = computed(() => ENV_CONFIG[currentEnv.value as keyof typeof ENV_CONFIG].tokenType)
+const currentUrl = computed(() => (getEnvConfig() as Record<string, any>)[currentEnv.value].url)
+const tokenLabel = computed(() => (getEnvConfig() as Record<string, any>)[currentEnv.value].tokenType)
 
 const proxyHeaders = computed(() => {
-  const cfg = ENV_CONFIG[currentEnv.value as keyof typeof ENV_CONFIG]
+  const cfg = (getEnvConfig() as Record<string, any>)[currentEnv.value]
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Cookie': getCookie(),
@@ -203,7 +206,7 @@ const hasFail = computed(() => resultList.value.some(r => !r.success))
 
 // 方法
 const getCookie = () => {
-  const cfg = ENV_CONFIG[currentEnv.value as keyof typeof ENV_CONFIG]
+  const cfg = (getEnvConfig() as Record<string, any>)[currentEnv.value]
   if (cfg.tokenType === 'XSRF-TOKEN') {
     return `XSRF-TOKEN=${token.value}`
   } else {
@@ -213,7 +216,7 @@ const getCookie = () => {
 
 const switchEnv = (env: string) => {
   currentEnv.value = env
-  const cfg = ENV_CONFIG[env as keyof typeof ENV_CONFIG]
+  const cfg = (getEnvConfig() as Record<string, any>)[env]
   topic.value = cfg.topic
   updatePreview()
 }

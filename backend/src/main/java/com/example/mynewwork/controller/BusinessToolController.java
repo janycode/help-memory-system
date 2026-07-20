@@ -329,7 +329,9 @@ public class BusinessToolController {
      * RocketMQ消息发送
      */
     @PostMapping("/mq-send")
-    public ApiResponse<?> sendMqMessage(@RequestBody Map<String, Object> request) {
+    public ApiResponse<?> sendMqMessage(@RequestBody Map<String, Object> request,
+                                        @org.springframework.security.core.annotation.AuthenticationPrincipal
+                                        org.springframework.security.core.userdetails.UserDetails userDetails) {
         try {
             String env = (String) request.get("env");
             @SuppressWarnings("unchecked")
@@ -339,11 +341,12 @@ public class BusinessToolController {
             String tag = (String) request.get("tag");
             String messageBody = (String) request.get("messageBody");
 
+            String brand = userDetails != null ? userDetails.getUsername() : "example";
             String baseUrl;
             if ("dev".equals(env)) {
                 baseUrl = "http://192.168.33.10:9880";
             } else {
-                baseUrl = "https://devops.example.com/rocketmq";
+                baseUrl = "https://devops." + brand + ".com/rocketmq";
             }
             String targetUrl = baseUrl + "/topic/sendTopicMessage.do";
 
