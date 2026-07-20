@@ -5,6 +5,7 @@ import com.example.mynewwork.model.entity.User;
 import com.example.mynewwork.security.JwtTokenProvider;
 import com.example.mynewwork.security.UserPrincipal;
 import com.example.mynewwork.service.ActivityLogService;
+import com.example.mynewwork.service.UserMenuPermissionService;
 import com.example.mynewwork.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +34,7 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
     private final ActivityLogService activityLogService;
+    private final UserMenuPermissionService userMenuPermissionService;
 
     @PostMapping("/login")
     @Operation(summary = "用户登录", description = "通过用户名和密码进行登录")
@@ -59,6 +61,7 @@ public class AuthController {
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
         data.put("user", user);
+        data.put("allowedMenus", userMenuPermissionService.getAllowedMenus(user.getId()));
 
         return ResponseEntity.ok(ApiResponse.success(data, "登录成功"));
     }

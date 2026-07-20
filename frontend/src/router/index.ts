@@ -107,6 +107,12 @@ const router = createRouter({
           meta: { title: '用户管理', requiresAuth: true, requiresAdmin: true }
         },
         {
+          path: 'menu-permissions/',
+          name: 'menu-permissions',
+          component: () => import('@/views/MenuPermissionManagement.vue'),
+          meta: { title: '菜单权限', requiresAuth: true, requiresAdmin: true }
+        },
+        {
           path: 'profile/',
           name: 'profile',
           component: () => import('@/views/Profile.vue'),
@@ -123,6 +129,18 @@ const router = createRouter({
           name: 'database',
           component: () => import('@/views/Database.vue'),
           meta: { title: '本地数据库', requiresAuth: true }
+        },
+        {
+          path: 'tools/batch-so/',
+          name: 'batch-so',
+          component: () => import('@/views/BatchSo.vue'),
+          meta: { title: 'SO批量新建', requiresAuth: true }
+        },
+        {
+          path: 'tools/mq-send/',
+          name: 'mq-send',
+          component: () => import('@/views/MqSend.vue'),
+          meta: { title: 'MQ自动称重', requiresAuth: true }
         },
         {
           path: 'system/',

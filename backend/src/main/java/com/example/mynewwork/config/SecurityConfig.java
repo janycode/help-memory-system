@@ -119,6 +119,7 @@ public class SecurityConfig {
                     "/snippets/**",
                     "/dict/**",
                     "/users/**",
+                    "/menu-permissions/**",
                     "/profile/**",
                     "/search/**",
                     "/database/**",
@@ -156,7 +157,9 @@ public class SecurityConfig {
                     "/*.woff",
                     "/*.woff2",
                     "/*.ttf",
-                    "/*.eot"
+                    "/*.eot",
+                    "/tools/**",
+                    "/api/tools/**"
                 ).permitAll()
                 .requestMatchers(
                     "/admin/**"

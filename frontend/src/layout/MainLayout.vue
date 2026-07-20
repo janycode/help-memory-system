@@ -11,67 +11,86 @@
         router
         :collapse="isCollapsed"
       >
-        <el-menu-item index="/">
+        <el-menu-item v-if="userStore.isMenuAllowed('home')" index="/">
           <el-icon><House /></el-icon>
           <template #title>首页</template>
         </el-menu-item>
 
-        <el-menu-item index="/iterations">
+        <el-menu-item v-if="userStore.isMenuAllowed('iterations')" index="/iterations">
           <el-icon><List /></el-icon>
           <template #title>迭代管理</template>
         </el-menu-item>
 
-        <el-menu-item index="/search">
+        <el-menu-item v-if="userStore.isMenuAllowed('search')" index="/search">
           <el-icon><Search /></el-icon>
           <template #title>全局搜索</template>
         </el-menu-item>
 
-        <el-menu-item index="/database">
+        <el-menu-item v-if="userStore.isMenuAllowed('database')" index="/database">
           <el-icon><Coin /></el-icon>
           <template #title>本地数据库</template>
         </el-menu-item>
 
-        <el-sub-menu index="biz">
+        <el-sub-menu v-if="hasBizMenuAccess" index="biz">
           <template #title>
             <el-icon><Grid /></el-icon>
             <span>业务管理</span>
           </template>
-          <el-menu-item index="/environments">
+          <el-menu-item v-if="userStore.isMenuAllowed('environments')" index="/environments">
             <el-icon><Monitor /></el-icon>
             环境管理
           </el-menu-item>
-          <el-menu-item index="/components">
+          <el-menu-item v-if="userStore.isMenuAllowed('components')" index="/components">
             <el-icon><Cpu /></el-icon>
             技术组件
           </el-menu-item>
-          <el-menu-item index="/processes">
+          <el-menu-item v-if="userStore.isMenuAllowed('processes')" index="/processes">
             <el-icon><Document /></el-icon>
             业务流程
           </el-menu-item>
-          <el-menu-item index="/repositories">
+          <el-menu-item v-if="userStore.isMenuAllowed('repositories')" index="/repositories">
             <el-icon><Folder /></el-icon>
             代码仓库
           </el-menu-item>
-          <el-menu-item index="/snippets">
+          <el-menu-item v-if="userStore.isMenuAllowed('snippets')" index="/snippets">
             <el-icon><DocumentCopy /></el-icon>
             代码片段
           </el-menu-item>
         </el-sub-menu>
 
-        <el-sub-menu index="sys">
+        <el-sub-menu v-if="hasToolsMenuAccess" index="tools">
+          <template #title>
+            <el-icon><Promotion /></el-icon>
+            <span>业务工具</span>
+          </template>
+          <el-menu-item v-if="userStore.isMenuAllowed('batch-so')" index="/tools/batch-so">
+            <el-icon><DocumentAdd /></el-icon>
+            SO批量新建
+          </el-menu-item>
+          <el-menu-item v-if="userStore.isMenuAllowed('mq-send')" index="/tools/mq-send">
+            <el-icon><Connection /></el-icon>
+            MQ自动称重
+          </el-menu-item>
+        </el-sub-menu>
+
+        <el-sub-menu v-if="hasSysMenuAccess" index="sys">
           <template #title>
             <el-icon><Setting /></el-icon>
             <span>系统管理</span>
           </template>
-          <el-menu-item index="/dict">
+          <el-menu-item v-if="userStore.isMenuAllowed('dict')" index="/dict">
             <el-icon><Collection /></el-icon>
             字典管理
           </el-menu-item>
-          <el-menu-item v-if="userStore.isAdmin" index="/users">
+          <el-menu-item v-if="userStore.isMenuAllowed('users')" index="/users">
             <el-icon><User /></el-icon>
             用户管理
           </el-menu-item>
-          <el-menu-item v-if="userStore.isAdmin" index="/system">
+          <el-menu-item v-if="userStore.isMenuAllowed('menu-permissions')" index="/menu-permissions">
+            <el-icon><Key /></el-icon>
+            菜单权限
+          </el-menu-item>
+          <el-menu-item v-if="userStore.isMenuAllowed('system')" index="/system">
             <el-icon><Tools /></el-icon>
             系统配置
           </el-menu-item>
@@ -164,10 +183,13 @@ const activeMenu = computed(() => {
   if (path.startsWith('/snippets')) return '/snippets'
   if (path.startsWith('/dict')) return '/dict'
   if (path.startsWith('/users')) return '/users'
+  if (path.startsWith('/menu-permissions')) return '/menu-permissions'
   if (path.startsWith('/system')) return '/system'
   if (path.startsWith('/profile')) return '/profile'
   if (path.startsWith('/search')) return '/search'
   if (path.startsWith('/database')) return '/database'
+  if (path.startsWith('/tools/batch-so')) return '/tools/batch-so'
+  if (path.startsWith('/tools/mq-send')) return '/tools/mq-send'
   return '/'
 })
 
@@ -181,6 +203,26 @@ const userInitials = computed(() => {
   if (!user) return 'U'
   const name = user.fullName || user.username || ''
   return name ? name.charAt(0).toUpperCase() : 'U'
+})
+
+const hasBizMenuAccess = computed(() => {
+  return userStore.isMenuAllowed('environments') ||
+         userStore.isMenuAllowed('components') ||
+         userStore.isMenuAllowed('processes') ||
+         userStore.isMenuAllowed('repositories') ||
+         userStore.isMenuAllowed('snippets')
+})
+
+const hasToolsMenuAccess = computed(() => {
+  return userStore.isMenuAllowed('batch-so') ||
+         userStore.isMenuAllowed('mq-send')
+})
+
+const hasSysMenuAccess = computed(() => {
+  return userStore.isMenuAllowed('dict') ||
+         userStore.isMenuAllowed('users') ||
+         userStore.isMenuAllowed('menu-permissions') ||
+         userStore.isMenuAllowed('system')
 })
 
 const breadcrumbs = computed(() => {
@@ -486,9 +528,11 @@ html.dark .username {
 /* ===== 内容区 ===== */
 .content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   background-color: var(--content-bg);
   padding: 0;
-  overflow: auto;
+  overflow: hidden;
 }
 
 html.dark .content {

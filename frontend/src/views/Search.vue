@@ -45,7 +45,11 @@
 
       <!-- 环境结果 -->
       <div v-if="searchStore.searchResult.environments.length" class="result-section">
-        <h3><el-icon><Monitor /></el-icon> 环境 ({{ searchStore.searchResult.environments.length }})</h3>
+        <h3 class="section-header" @click="toggleSection('environments')">
+          <el-icon class="collapse-icon"><component :is="collapsedSections.environments ? ArrowRight : ArrowDown" /></el-icon>
+          <el-icon><Monitor /></el-icon> 环境 ({{ searchStore.searchResult.environments.length }})
+        </h3>
+        <div v-show="!collapsedSections.environments">
         <el-card v-for="item in searchStore.searchResult.environments" :key="item.id" class="result-item">
           <div class="item-title" @click="showEnvironmentDetail(item)">{{ item.name }}</div>
           <div class="item-desc">{{ item.description }}</div>
@@ -64,11 +68,16 @@
             </div>
           </div>
         </el-card>
+        </div>
       </div>
 
       <!-- 组件结果 -->
       <div v-if="searchStore.searchResult.components.length" class="result-section">
-        <h3><el-icon><Connection /></el-icon> 技术组件 ({{ searchStore.searchResult.components.length }})</h3>
+        <h3 class="section-header" @click="toggleSection('components')">
+          <el-icon class="collapse-icon"><component :is="collapsedSections.components ? ArrowRight : ArrowDown" /></el-icon>
+          <el-icon><Connection /></el-icon> 技术组件 ({{ searchStore.searchResult.components.length }})
+        </h3>
+        <div v-show="!collapsedSections.components">
         <el-card v-for="item in searchStore.searchResult.components" :key="item.id" class="result-item">
           <div class="item-title" @click="showComponentDetail(item)">{{ item.name }}</div>
           <div class="item-desc">{{ item.description }}</div>
@@ -87,11 +96,16 @@
             </div>
           </div>
         </el-card>
+        </div>
       </div>
 
       <!-- 流程结果 -->
       <div v-if="searchStore.searchResult.processes.length" class="result-section">
-        <h3><el-icon><Document /></el-icon> 业务流程 ({{ searchStore.searchResult.processes.length }})</h3>
+        <h3 class="section-header" @click="toggleSection('processes')">
+          <el-icon class="collapse-icon"><component :is="collapsedSections.processes ? ArrowRight : ArrowDown" /></el-icon>
+          <el-icon><Document /></el-icon> 业务流程 ({{ searchStore.searchResult.processes.length }})
+        </h3>
+        <div v-show="!collapsedSections.processes">
         <el-card v-for="item in searchStore.searchResult.processes" :key="item.id" class="result-item">
           <div class="item-title" @click="showProcessDetail(item)">{{ item.name }}</div>
           <div class="item-desc">{{ item.description }}</div>
@@ -111,11 +125,16 @@
             </div>
           </div>
         </el-card>
+        </div>
       </div>
 
       <!-- 代码片段结果 -->
       <div v-if="searchStore.searchResult.snippets && searchStore.searchResult.snippets.length" class="result-section">
-        <h3><el-icon><Document /></el-icon> 代码片段 ({{ searchStore.searchResult.snippets.length }})</h3>
+        <h3 class="section-header" @click="toggleSection('snippets')">
+          <el-icon class="collapse-icon"><component :is="collapsedSections.snippets ? ArrowRight : ArrowDown" /></el-icon>
+          <el-icon><Document /></el-icon> 代码片段 ({{ searchStore.searchResult.snippets.length }})
+        </h3>
+        <div v-show="!collapsedSections.snippets">
         <el-card v-for="item in searchStore.searchResult.snippets" :key="item.id" class="result-item">
           <div class="snippet-header">
             <div class="item-title" @click="showSnippetDetail(item)">{{ item.title }}</div>
@@ -143,11 +162,16 @@
             </div>
           </div>
         </el-card>
+        </div>
       </div>
 
       <!-- 代码仓库结果 -->
       <div v-if="searchStore.searchResult.projects.length" class="result-section">
-        <h3><el-icon><Folder /></el-icon> 代码仓库 ({{ searchStore.searchResult.projects.length }})</h3>
+        <h3 class="section-header" @click="toggleSection('projects')">
+          <el-icon class="collapse-icon"><component :is="collapsedSections.projects ? ArrowRight : ArrowDown" /></el-icon>
+          <el-icon><Folder /></el-icon> 代码仓库 ({{ searchStore.searchResult.projects.length }})
+        </h3>
+        <div v-show="!collapsedSections.projects">
         <el-card v-for="item in searchStore.searchResult.projects" :key="item.id" class="result-item">
           <div class="item-title" @click="showProjectDetail(item)">{{ item.name }}</div>
           <div class="item-desc">{{ item.description }}</div>
@@ -166,11 +190,16 @@
             </div>
           </div>
         </el-card>
+        </div>
       </div>
 
       <!-- 迭代结果 -->
       <div v-if="searchStore.searchResult.iterations && searchStore.searchResult.iterations.length" class="result-section">
-        <h3><el-icon><List /></el-icon> 迭代任务 ({{ searchStore.searchResult.iterations.length }})</h3>
+        <h3 class="section-header" @click="toggleSection('iterations')">
+          <el-icon class="collapse-icon"><component :is="collapsedSections.iterations ? ArrowRight : ArrowDown" /></el-icon>
+          <el-icon><List /></el-icon> 迭代任务 ({{ searchStore.searchResult.iterations.length }})
+        </h3>
+        <div v-show="!collapsedSections.iterations">
         <el-card v-for="item in searchStore.searchResult.iterations" :key="item.id" class="result-item">
           <div class="item-title" @click="showIterationDetail(item)">{{ item.issueNumber }} - {{ item.title }}</div>
           <div class="item-desc">{{ item.projectCode }}</div>
@@ -187,6 +216,7 @@
             </div>
           </div>
         </el-card>
+        </div>
       </div>
 
       <!-- 无结果 -->
@@ -504,7 +534,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { Monitor, Connection, Document, Folder, List } from '@element-plus/icons-vue'
+import { Monitor, Connection, Document, Folder, List, ArrowRight, ArrowDown } from '@element-plus/icons-vue'
 import { useSearchStore } from '@/stores/search'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
@@ -520,6 +550,20 @@ import PasswordDisplay from '@/components/PasswordDisplay.vue'
 const route = useRoute()
 const searchStore = useSearchStore()
 const keyword = ref('')
+
+// 分类折叠状态（默认展开）
+const collapsedSections = ref<Record<string, boolean>>({
+  environments: false,
+  components: false,
+  processes: false,
+  projects: false,
+  snippets: false,
+  iterations: false
+})
+
+const toggleSection = (key: string) => {
+  collapsedSections.value[key] = !collapsedSections.value[key]
+}
 
 // 对话框控制
 const environmentDialogVisible = ref(false)
@@ -936,6 +980,21 @@ onMounted(() => {
   gap: 8px;
   margin-bottom: 15px;
   color: #333;
+}
+
+.section-header {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.section-header:hover {
+  color: var(--el-color-primary);
+}
+
+.collapse-icon {
+  font-size: 14px;
+  transition: transform 0.2s;
 }
 
 .result-item {

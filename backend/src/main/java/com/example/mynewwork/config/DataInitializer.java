@@ -8,6 +8,7 @@ import com.example.mynewwork.repository.SysDictDataRepository;
 import com.example.mynewwork.repository.SysDictTypeRepository;
 import com.example.mynewwork.repository.SystemConfigRepository;
 import com.example.mynewwork.repository.UserRepository;
+import com.example.mynewwork.service.UserMenuPermissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -27,10 +28,13 @@ public class DataInitializer implements CommandLineRunner {
     private final SysDictDataRepository dictDataRepository;
     private final SystemConfigRepository configRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMenuPermissionService userMenuPermissionService;
 
     @Override
     public void run(String... args) {
         initAdminUser();
+        initBrandUsers();
+        initAdminMenuPermissions();
         initDictData();
         initSystemConfig();
     }
@@ -57,6 +61,48 @@ public class DataInitializer implements CommandLineRunner {
                 existing.setUpdatedAt(LocalDateTime.now());
                 userRepository.save(existing);
                 log.info("重置管理员用户密码: admin/admin123");
+            }
+        }
+    }
+
+    private void initAdminMenuPermissions() {
+        User admin = userRepository.findByUsername("admin").orElse(null);
+        if (admin != null) {
+            List<String> allMenus = List.of(
+                    "home", "iterations", "search", "database",
+                    "environments", "components", "processes", "repositories",
+                    "snippets", "batch-so", "mq-send", "dict", "users", "menu-permissions", "system"
+            );
+            userMenuPermissionService.saveAllowedMenus(admin.getId(), allMenus);
+        }
+    }
+
+    private void initBrandUsers() {
+        createBrandUserIfNotExists("leaderrun", "leaderrun@example.com", "123456", "Leaderrun");
+    }
+
+    private void createBrandUserIfNotExists(String username, String email, String password, String fullName) {
+        if (!userRepository.existsByUsername(username)) {
+            User user = new User();
+            user.setUsername(username);
+            user.setEmail(email);
+            user.setPassword(passwordEncoder.encode(password));
+            user.setFullName(fullName);
+            user.setDepartment("技术部");
+            user.setPosition("管理员");
+            user.setRoles(java.util.Set.of("ADMIN"));
+            user.setEnabled(true);
+            user.setCreatedAt(LocalDateTime.now());
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+            log.info("初始化品牌用户: {}/{}", username, password);
+        } else {
+            User existing = userRepository.findByUsername(username).orElse(null);
+            if (existing != null && !passwordEncoder.matches(password, existing.getPassword())) {
+                existing.setPassword(passwordEncoder.encode(password));
+                existing.setUpdatedAt(LocalDateTime.now());
+                userRepository.save(existing);
+                log.info("重置品牌用户密码: {}/{}", username, password);
             }
         }
     }

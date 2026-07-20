@@ -84,6 +84,9 @@ app:
 
 # 日志配置
 logging:
+  charset:
+    console: UTF-8
+    file: UTF-8
   level:
     com.example.mynewwork: DEBUG
     org.springframework.security: DEBUG
