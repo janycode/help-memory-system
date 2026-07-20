@@ -138,7 +138,7 @@ const ENV_CONFIG = {
     tokenType: 'XSRF-TOKEN'
   },
   test: {
-    url: 'https://devops.leaderrun.com/rocketmq/topic/sendTopicMessage.do',
+    url: 'https://devops.example.com/rocketmq/topic/sendTopicMessage.do',
     topic: 'staging%edi',
     tokenType: 'JSESSIONID'
   }

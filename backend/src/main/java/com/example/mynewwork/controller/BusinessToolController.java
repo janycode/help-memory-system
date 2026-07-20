@@ -343,7 +343,7 @@ public class BusinessToolController {
             if ("dev".equals(env)) {
                 baseUrl = "http://192.168.33.10:9880";
             } else {
-                baseUrl = "https://devops.leaderrun.com/rocketmq";
+                baseUrl = "https://devops.example.com/rocketmq";
             }
             String targetUrl = baseUrl + "/topic/sendTopicMessage.do";
 

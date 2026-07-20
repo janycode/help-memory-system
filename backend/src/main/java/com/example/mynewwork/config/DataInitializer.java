@@ -78,7 +78,7 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void initBrandUsers() {
-        createBrandUserIfNotExists("leaderrun", "leaderrun@example.com", "123456", "Leaderrun");
+        createBrandUserIfNotExists("testuser", "testuser@example.com", "123456", "Test User");
     }
 
     private void createBrandUserIfNotExists(String username, String email, String password, String fullName) {

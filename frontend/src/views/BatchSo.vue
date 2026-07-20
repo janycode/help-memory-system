@@ -160,7 +160,7 @@ const userStore = useUserStore()
 
 // 状态
 const currentEnv = ref('dev')
-const apiUrl = ref('http://dev.leaderrun.org/api/om/v1/shipping-order/submit')
+const apiUrl = ref('http://dev.example.org/api/om/v1/shipping-order/submit')
 const prefix = ref('TEST')
 const batchCount = ref(1)
 const startNumber = ref(1)
@@ -218,8 +218,8 @@ const groupedHistory = computed(() => {
 
 // API配置
 const apiUrls = {
-  dev: 'http://dev.leaderrun.org/api/om/v1/shipping-order/submit',
-  test: 'https://uat.leaderrun.com/api/om/v1/shipping-order/submit'
+  dev: 'http://dev.example.org/api/om/v1/shipping-order/submit',
+  test: 'https://uat.example.com/api/om/v1/shipping-order/submit'
 }
 
 // 方法
