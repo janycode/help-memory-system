@@ -53,6 +53,7 @@ public class BusinessToolController {
                 String prefix = request.get("prefix") != null ? (String) request.get("prefix") : "TEST";
                 boolean satellite = request.get("satellite") != null && (boolean) request.get("satellite");
                 String authorization = (String) request.get("authorization");
+                String environment = request.get("environment") != null ? (String) request.get("environment") : "dev";
                 @SuppressWarnings("unchecked")
                 Map<String, Object> modifiedFields = request.get("modifiedFields") != null
                         ? (Map<String, Object>) request.get("modifiedFields")
@@ -147,7 +148,7 @@ public class BusinessToolController {
                         creationLog.setStatus((boolean) result.get("success") ? "success" : "error");
                         creationLog.setRequestBody(requestBody);
                         creationLog.setResponse(response.body());
-                        creationLog.setEnvironment("dev");
+                        creationLog.setEnvironment(environment);
                         soCreationLogRepository.save(creationLog);
                     } catch (Exception e) {
                         log.error("[SO] 请求失败: bookingNo={}, error={}", bookingNo, e.getMessage(), e);

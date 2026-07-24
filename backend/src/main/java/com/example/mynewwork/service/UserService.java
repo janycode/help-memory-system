@@ -173,6 +173,29 @@ public class UserService {
     }
 
     /**
+     * 修改密码（需验证旧密码）
+     *
+     * @param userId 用户ID
+     * @param oldPassword 旧密码
+     * @param newPassword 新密码
+     */
+    @Transactional
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        log.info("修改用户密码, ID: {}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("用户", userId));
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new IllegalArgumentException("当前密码不正确");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+    /**
      * 记录用户最后登录时间
      *
      * @param id 用户ID

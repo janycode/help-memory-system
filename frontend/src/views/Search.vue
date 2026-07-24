@@ -919,6 +919,8 @@ onMounted(() => {
 <style scoped>
 .search-page {
   padding: 20px;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .page-header {

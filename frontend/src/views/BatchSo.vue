@@ -308,7 +308,8 @@ const handleSubmit = async () => {
         prefix: prefix.value,
         satellite: satellite.value,
         authorization: authorization.value,
-        modifiedFields: modifiedFields.value
+        modifiedFields: modifiedFields.value,
+        environment: currentEnv.value
       })
     })
 

@@ -104,7 +104,7 @@ public class AuthController {
             HttpServletRequest httpRequest) {
         log.info("修改密码: userId={}", userPrincipal.getUser().getId());
 
-        userService.updatePassword(userPrincipal.getUser().getId(), request.getNewPassword());
+        userService.changePassword(userPrincipal.getUser().getId(), request.getOldPassword(), request.getNewPassword());
         
         activityLogService.log(userPrincipal.getUser().getId(), userPrincipal.getUser().getUsername(), 
                 "UPDATE_PASSWORD", "用户认证", "修改密码", null, httpRequest);

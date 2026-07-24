@@ -73,7 +73,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*",
+        configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:5173",
             "http://localhost:3000",
             "http://127.0.0.1:5173",
@@ -109,41 +109,20 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
-                    "/auth/**",
+                    // 公开 API（无需认证）
                     "/api/auth/**",
-                    "/login",
-                    "/environments/**",
-                    "/components/**",
-                    "/processes/**",
-                    "/repositories/**",
-                    "/snippets/**",
-                    "/dict/**",
-                    "/users/**",
-                    "/menu-permissions/**",
-                    "/profile/**",
-                    "/search/**",
-                    "/database/**",
-                    "/system/**",
-                    "/api/snippets/**",
-                    "/api/iterations/**",
-                    "/iterations/**",
-                    "/api/files/**",
-                    "/files/**",
+                    "/api/system/title",
+                    "/api/system/config",
+                    "/api/system/config/**",
+                    // Swagger / Actuator
                     "/swagger-ui.html",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/actuator/health",
                     "/actuator/info",
-                    "/dashboard/**",
-                    "/api/dashboard/**",
-                    "/druid/**",
                     "/h2-console/**",
-                    "/system/title",
-                    "/api/system/title",
-                    "/system/config",
-                    "/api/system/config",
-                    "/system/config/**",
-                    "/api/system/config/**",
+                    "/druid/**",
+                    // 静态资源
                     "/favicon.ico",
                     "/",
                     "/index.html",
@@ -158,8 +137,24 @@ public class SecurityConfig {
                     "/*.woff2",
                     "/*.ttf",
                     "/*.eot",
-                    "/tools/**",
-                    "/api/tools/**"
+                    // SPA 路由（由 SpaConfig 转发到 index.html，必须 permitAll）
+                    "/login",
+                    "/environments/**",
+                    "/components/**",
+                    "/processes/**",
+                    "/repositories/**",
+                    "/snippets/**",
+                    "/iterations/**",
+                    "/dict/**",
+                    "/users/**",
+                    "/menu-permissions/**",
+                    "/profile/**",
+                    "/search/**",
+                    "/database/**",
+                    "/dashboard/**",
+                    "/system/**",
+                    "/files/**",
+                    "/tools/**"
                 ).permitAll()
                 .requestMatchers(
                     "/admin/**"
