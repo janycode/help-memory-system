@@ -32,9 +32,9 @@
             <label><span class="required">*</span>前缀</label>
             <el-input size="small" v-model="prefix" maxlength="4" style="width: 60px" @input="updatePreview" />
             <label>批量</label>
-            <el-input-number size="small" v-model="batchCount" :min="1" :max="20" @change="updatePreview" @wheel.prevent="handleBatchWheel" />
+            <el-input-number size="small" v-model="batchCount" :min="1" :max="99" @change="updatePreview" @wheel.prevent="handleBatchWheel" />
             <label>起始</label>
-            <el-input-number size="small" v-model="startNumber" :min="1" :max="99" disabled />
+            <el-input-number size="small" v-model="startNumber" :min="1" :max="999" disabled />
           </div>
           <div class="form-row">
             <el-checkbox size="small" v-model="satellite">卫星仓</el-checkbox>
@@ -56,6 +56,7 @@
               开始接单
             </el-button>
           </div>
+          <div class="auth-hint">获取方法：F12 - 开发者工具 - 网络 - 选中实际接口 - 标头 - 请求标头 - cookie Authorization=只取该值</div>
         </div>
 
         <!-- 字段配置 -->
@@ -241,7 +242,8 @@ const updatePreview = () => {
 
   for (let i = 0; i < batchCount.value; i++) {
     const num = startNumber.value + i
-    previewBookingNos.value.push(`${prefix.value}${dateStr}${String(num).padStart(2, '0')}`)
+    const padLen = num > 99 ? 3 : 2
+    previewBookingNos.value.push(`${prefix.value}${dateStr}${String(num).padStart(padLen, '0')}`)
   }
 }
 
@@ -290,6 +292,7 @@ const handleSubmit = async () => {
   resultSuccess.value = false
   resultError.value = false
   resultMessage.value = '正在创建...'
+  let completeReceived = false
 
   try {
     const token = userStore.token
@@ -378,6 +381,7 @@ const handleSubmit = async () => {
             errorCount.value++
             resultMessage.value = `已完成 ${successCount.value + errorCount.value}/${totalCount.value}`
           } else if (eventType === 'complete') {
+            completeReceived = true
             resultSuccess.value = eventData.success
             resultError.value = !eventData.success
             resultMessage.value = eventData.success ? '批量创建成功！' : '部分创建失败'
@@ -394,8 +398,12 @@ const handleSubmit = async () => {
       loadHistory()
     }
   } catch (error: any) {
-    ElMessage.error('请求失败: ' + error.message)
-    resultMessage.value = '请求失败: ' + error.message
+    if (!completeReceived) {
+      ElMessage.error('请求失败: ' + error.message)
+      resultMessage.value = '请求失败: ' + error.message
+    } else if (resultMessage.value === '正在创建...') {
+      resultMessage.value = '批量创建完成'
+    }
   } finally {
     isSubmitting.value = false
   }
@@ -423,6 +431,7 @@ const handleReceive = async () => {
   resultSuccess.value = false
   resultError.value = false
   resultMessage.value = '正在接单...'
+  let receiveCompleteReceived = false
 
   try {
     const token = userStore.token
@@ -493,6 +502,7 @@ const handleReceive = async () => {
             })
             errorCount.value++
           } else if (eventType === 'receive-complete') {
+            receiveCompleteReceived = true
             resultSuccess.value = eventData.success
             resultError.value = !eventData.success
             resultMessage.value = eventData.success ? '批量接单成功！' : '部分接单失败'
@@ -501,7 +511,11 @@ const handleReceive = async () => {
       }
     }
   } catch (error: any) {
-    ElMessage.error('接单请求失败: ' + error.message)
+    if (!receiveCompleteReceived) {
+      ElMessage.error('接单请求失败: ' + error.message)
+    } else if (resultMessage.value === '正在接单...') {
+      resultMessage.value = '批量接单完成'
+    }
   } finally {
     isReceiving.value = false
   }
@@ -537,7 +551,7 @@ const calcStartNumberFromHistory = () => {
   // 筛选今天日期的 SO，取最大尾号
   let maxNum = 0
   historyList.value.forEach(item => {
-    const match = item.no.match(/(\d{8})(\d{2})$/)
+    const match = item.no.match(/(\d{8})(\d{2,3})$/)
     if (match && match[1] === todayStr) {
       const num = parseInt(match[2], 10)
       if (num > maxNum) maxNum = num
@@ -557,7 +571,7 @@ const handleBatchWheel = (e: WheelEvent) => {
   e.preventDefault()
   const delta = e.deltaY < 0 ? 1 : -1
   const newVal = batchCount.value + delta
-  if (newVal >= 1 && newVal <= 20) {
+  if (newVal >= 1 && newVal <= 99) {
     batchCount.value = newVal
     updatePreview()
   }
@@ -698,6 +712,13 @@ onMounted(() => {
 
 .form-row:last-child {
   margin-bottom: 0;
+}
+
+.auth-hint {
+  color: #999;
+  font-size: 11px;
+  margin-top: 4px;
+  line-height: 1.4;
 }
 
 .form-row label {

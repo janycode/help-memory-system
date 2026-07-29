@@ -11,6 +11,12 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
+      path: '/rocketmq/',
+      name: 'rocketmq',
+      component: () => import('@/views/RocketMQ.vue'),
+      meta: { title: 'RocketMQ', requiresAuth: false }
+    },
+    {
       path: '/',
       name: 'layout',
       component: () => import('@/layout/MainLayout.vue'),

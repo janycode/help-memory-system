@@ -15,12 +15,16 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/tools")
@@ -73,7 +77,8 @@ public class BusinessToolController {
 
                 for (int i = 0; i < batchCount; i++) {
                     int currentIndex = startNumber + i;
-                    String bookingNo = prefix + dateStr + String.format("%02d", currentIndex);
+                    int padLen = currentIndex > 99 ? 3 : 2;
+                    String bookingNo = prefix + dateStr + String.format("%0" + padLen + "d", currentIndex);
 
                     Map<String, Object> defaultFields = new LinkedHashMap<>();
                     defaultFields.put("satellite", satellite);
@@ -327,45 +332,213 @@ public class BusinessToolController {
     }
 
     /**
+     * 获取RocketMQ Topic列表
+     */
+    @PostMapping("/mq-topics")
+    public ApiResponse<?> getMqTopics(@RequestBody Map<String, Object> request) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, String> proxyHeaders = (Map<String, String>) request.get("proxyHeaders");
+            String targetUrl = (String) request.get("targetUrl");
+            String env = (String) request.get("env");
+
+            log.info("[MQ] 获取Topic列表: targetUrl={}, env={}", targetUrl, env);
+
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(targetUrl))
+                    .GET();
+
+            if (proxyHeaders != null) {
+                String[] forwardKeys = {"Cookie", "User-Agent", "Accept", "x-xsrf-token"};
+                for (String key2 : forwardKeys) {
+                    if (proxyHeaders.containsKey(key2)) {
+                        requestBuilder.header(key2, proxyHeaders.get(key2));
+                    }
+                }
+            }
+
+            HttpResponse<String> response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            Object rawData = parseJsonRaw(response.body());
+
+            List<String> topicList = new ArrayList<>();
+            if (rawData instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> dataMap = (Map<String, Object>) rawData;
+                Object dataObj = dataMap.get("data");
+                if (dataObj instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> innerData = (Map<String, Object>) dataObj;
+                    Object topicsObj = innerData.get("topicList");
+                    if (topicsObj == null) {
+                        topicsObj = innerData.get("topicNameList");
+                    }
+                    if (topicsObj instanceof List) {
+                        @SuppressWarnings("unchecked")
+                        List<Object> topics = (List<Object>) topicsObj;
+                        String prefix = "dev".equalsIgnoreCase(env) ? "dev%" : "staging%";
+                        for (Object topic : topics) {
+                            String topicStr = String.valueOf(topic);
+                            if (topicStr.startsWith(prefix)) {
+                                topicList.add(topicStr);
+                            }
+                        }
+                    }
+                }
+            }
+
+            Collections.sort(topicList);
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("topics", topicList);
+            result.put("rawResponse", rawData);
+
+            return ApiResponse.success(result);
+
+        } catch (Exception e) {
+            log.error("[MQ] 获取Topic列表失败", e);
+            return ApiResponse.error("获取Topic列表失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 预览Java文件内容
+     */
+    @PostMapping("/mq-preview-java")
+    public ApiResponse<?> previewJavaFile(@RequestBody Map<String, Object> request) {
+        try {
+            String filePath = (String) request.get("filePath");
+            if (filePath == null || filePath.trim().isEmpty()) {
+                return ApiResponse.error("文件路径不能为空");
+            }
+
+            String content = Files.readString(Paths.get(filePath));
+            log.info("[MQ] 预览Java文件: {}", filePath);
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("content", content);
+            result.put("filePath", filePath);
+
+            return ApiResponse.success(result);
+
+        } catch (java.nio.file.NoSuchFileException e) {
+            log.error("[MQ] Java文件不存在: {}", e.getMessage());
+            return ApiResponse.error("文件不存在: " + e.getMessage());
+        } catch (java.nio.file.AccessDeniedException e) {
+            log.error("[MQ] Java文件访问权限不足: {}", e.getMessage());
+            return ApiResponse.error("文件访问权限不足: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("[MQ] 预览Java文件失败", e);
+            return ApiResponse.error("预览Java文件失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 解析Java文件，提取tag和字段
+     */
+    @PostMapping("/mq-parse-java")
+    public ApiResponse<?> parseJavaFile(@RequestBody Map<String, Object> request) {
+        try {
+            String filePath = (String) request.get("filePath");
+            if (filePath == null || filePath.trim().isEmpty()) {
+                return ApiResponse.error("文件路径不能为空");
+            }
+
+            String content = Files.readString(Paths.get(filePath));
+            log.info("[MQ] 解析Java文件: {}", filePath);
+
+            String tag = extractTag(content);
+            Map<String, Object> messageBody = extractFields(content);
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("tag", tag);
+            result.put("messageBody", messageBody);
+
+            return ApiResponse.success(result);
+
+        } catch (java.nio.file.NoSuchFileException e) {
+            log.error("[MQ] Java文件不存在: {}", e.getMessage());
+            return ApiResponse.error("文件不存在: " + e.getMessage());
+        } catch (java.nio.file.AccessDeniedException e) {
+            log.error("[MQ] Java文件访问权限不足: {}", e.getMessage());
+            return ApiResponse.error("文件访问权限不足: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("[MQ] 解析Java文件失败", e);
+            return ApiResponse.error("解析Java文件失败: " + e.getMessage());
+        }
+    }
+
+    private String extractTag(String content) {
+        Pattern pattern = Pattern.compile("public\\s+static\\s+final\\s+String\\s+\\w+\\s*=\\s*\"([^\"]+)\"");
+        Matcher matcher = pattern.matcher(content);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return "";
+    }
+
+    private Map<String, Object> extractFields(String content) {
+        Map<String, Object> fields = new LinkedHashMap<>();
+        java.util.Random random = new java.util.Random();
+
+        Pattern pattern = Pattern.compile("\\n\\s*(private|public|protected)\\s+(?!static\\s+final\\s+String)([^;=]+?)\\s+(\\w+)\\s*[;=]");
+        Matcher matcher = pattern.matcher(content);
+
+        while (matcher.find()) {
+            String fieldType = matcher.group(2).trim();
+            String fieldName = matcher.group(3);
+
+            if (fieldName.equals("serialVersionUID")) {
+                continue;
+            }
+
+            if (fieldType.equals("String")) {
+                fields.put(fieldName, "mock_" + fieldName + "_" + random.nextInt(10000));
+            } else if (fieldType.equals("Integer") || fieldType.equals("int")) {
+                fields.put(fieldName, random.nextInt(9999) + 1);
+            } else if (fieldType.equals("Long") || fieldType.equals("long")) {
+                fields.put(fieldName, random.nextLong(9999999999L) + 1);
+            } else if (fieldType.equals("Boolean") || fieldType.equals("boolean")) {
+                fields.put(fieldName, random.nextBoolean());
+            } else if (fieldType.equals("BigDecimal")) {
+                fields.put(fieldName, String.format("%.2f", random.nextDouble() * 1000));
+            } else if (fieldType.equals("LocalDateTime") || fieldType.equals("Date")) {
+                fields.put(fieldName, java.time.LocalDateTime.now().toString());
+            } else {
+                fields.put(fieldName, "");
+            }
+        }
+
+        return fields;
+    }
+
+    /**
      * RocketMQ消息发送
      */
     @PostMapping("/mq-send")
-    public ApiResponse<?> sendMqMessage(@RequestBody Map<String, Object> request,
-                                        @org.springframework.security.core.annotation.AuthenticationPrincipal
-                                        org.springframework.security.core.userdetails.UserDetails userDetails) {
+    public ApiResponse<?> sendMqMessage(@RequestBody Map<String, Object> request) {
         try {
-            String env = (String) request.get("env");
             @SuppressWarnings("unchecked")
             Map<String, String> proxyHeaders = (Map<String, String>) request.get("proxyHeaders");
             String topic = (String) request.get("topic");
             String key = (String) request.get("key");
             String tag = (String) request.get("tag");
             String messageBody = (String) request.get("messageBody");
-
-            String brand = userDetails != null ? userDetails.getUsername() : "example";
-            String baseUrl;
-            if ("dev".equals(env)) {
-                baseUrl = "http://192.168.33.10:9880";
-            } else {
-                baseUrl = "https://devops." + brand + ".com/rocketmq";
-            }
-            String targetUrl = baseUrl + "/topic/sendTopicMessage.do";
+            boolean traceEnabled = request.get("traceEnabled") != null && (boolean) request.get("traceEnabled");
+            String targetUrl = (String) request.get("targetUrl");
 
             Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("topic", topic);
             payload.put("key", key);
             payload.put("tag", tag);
             payload.put("messageBody", messageBody);
-            payload.put("traceEnabled", false);
+            payload.put("traceEnabled", traceEnabled);
 
             String postData = objectMapper.writeValueAsString(payload);
-            log.info("[MQ] 发送消息: env={}, targetUrl={}", env, targetUrl);
+            log.info("[MQ] 发送消息: targetUrl={}, topic={}", targetUrl, topic);
 
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                     .uri(URI.create(targetUrl))
                     .header("Content-Type", "application/json");
 
-            // 只转发原始实现中指定的 headers
             if (proxyHeaders != null) {
                 String[] forwardKeys = {"Cookie", "User-Agent", "Accept", "x-xsrf-token"};
                 for (String key2 : forwardKeys) {

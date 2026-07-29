@@ -33,8 +33,12 @@
                   v-for="menu in allMenus"
                   :key="menu.code"
                   :label="menu.code"
+                  :disabled="row.isAdmin || PUBLIC_MENUS.includes(menu.code)"
                 >
                   {{ menu.name }}
+                  <el-tag v-if="PUBLIC_MENUS.includes(menu.code)" type="info" size="small" style="margin-left: 4px">
+                    公开
+                  </el-tag>
                 </el-checkbox>
               </el-checkbox-group>
               <el-tag v-if="row.isAdmin" type="success" size="small" style="margin-left: 8px">
@@ -76,6 +80,7 @@ const allMenus = [
   { code: 'iterations', name: '迭代管理' },
   { code: 'search', name: '全局搜索' },
   { code: 'database', name: '本地数据库' },
+  { code: 'rocketmq', name: 'RocketMQ' },
   { code: 'environments', name: '环境管理' },
   { code: 'components', name: '技术组件' },
   { code: 'processes', name: '业务流程' },
@@ -88,6 +93,8 @@ const allMenus = [
   { code: 'menu-permissions', name: '菜单权限' },
   { code: 'system', name: '系统配置' }
 ]
+
+const PUBLIC_MENUS = ['rocketmq']
 
 const filteredUsers = computed(() => {
   if (!searchKeyword.value) return usersWithPermissions.value

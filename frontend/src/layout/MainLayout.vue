@@ -31,6 +31,11 @@
           <template #title>本地数据库</template>
         </el-menu-item>
 
+        <el-menu-item v-if="userStore.isMenuAllowed('rocketmq')" index="/rocketmq">
+          <el-icon><Connection /></el-icon>
+          <template #title>RocketMQ</template>
+        </el-menu-item>
+
         <el-sub-menu v-if="hasBizMenuAccess" index="biz">
           <template #title>
             <el-icon><Grid /></el-icon>
@@ -190,6 +195,7 @@ const activeMenu = computed(() => {
   if (path.startsWith('/database')) return '/database'
   if (path.startsWith('/tools/batch-so')) return '/tools/batch-so'
   if (path.startsWith('/tools/mq-send')) return '/tools/mq-send'
+  if (path.startsWith('/rocketmq')) return '/rocketmq'
   return '/'
 })
 

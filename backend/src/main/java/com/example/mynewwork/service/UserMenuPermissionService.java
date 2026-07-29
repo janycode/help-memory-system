@@ -29,23 +29,29 @@ public class UserMenuPermissionService {
     private final ObjectMapper objectMapper;
 
     private static final List<String> ALL_MENUS = List.of(
-            "home", "iterations", "search", "database",
+            "home", "iterations", "search", "database", "rocketmq",
             "environments", "components", "processes", "repositories",
             "snippets", "batch-so", "mq-send", "dict", "users", "menu-permissions", "system"
     );
 
-    private static final List<String> DEFAULT_MENUS = List.of("home");
+    private static final List<String> DEFAULT_MENUS = List.of("home", "rocketmq");
+
+    private static final List<String> PUBLIC_MENUS = List.of("rocketmq");
 
     public List<String> getAllowedMenus(Long userId) {
-        return repository.findByUserId(userId)
+        List<String> menus = repository.findByUserId(userId)
                 .map(p -> parseMenus(p.getAllowedMenus()))
                 .orElse(new ArrayList<>(DEFAULT_MENUS));
+        addPublicMenus(menus);
+        return menus;
     }
 
     @Transactional
     public void saveAllowedMenus(Long userId, List<String> menus) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
+
+        addPublicMenus(menus);
 
         UserMenuPermission permission = repository.findByUserId(userId)
                 .orElse(new UserMenuPermission());
@@ -90,6 +96,14 @@ public class UserMenuPermissionService {
         } catch (JsonProcessingException e) {
             log.error("解析菜单权限失败: {}", menusJson, e);
             return new ArrayList<>(ALL_MENUS);
+        }
+    }
+
+    private void addPublicMenus(List<String> menus) {
+        for (String publicMenu : PUBLIC_MENUS) {
+            if (!menus.contains(publicMenu)) {
+                menus.add(publicMenu);
+            }
         }
     }
 }

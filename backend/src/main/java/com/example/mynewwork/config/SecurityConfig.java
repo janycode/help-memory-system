@@ -154,7 +154,9 @@ public class SecurityConfig {
                     "/dashboard/**",
                     "/system/**",
                     "/files/**",
-                    "/tools/**"
+                    "/tools/**",
+                    "/api/tools/**",
+                    "/rocketmq/**"
                 ).permitAll()
                 .requestMatchers(
                     "/admin/**"

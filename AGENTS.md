@@ -41,11 +41,11 @@ cd frontend && pnpm install && pnpm build && cd ../backend && mvn spring-boot:ru
 - **No test suite**: No backend or frontend tests. `mvn test` runs zero tests. CI also skips tests (`-DskipTests`).
 - **CI uses npm, not pnpm**: `.github/workflows/auto-build.yml` runs `npm i && npm run build` for frontend — inconsistent with local pnpm setup.
 - **Dockerfile port mapping**: App listens on `:8080` internally, Dockerfile `EXPOSE 18080`. README shows `-p 18080:8080`.
-- **Redis optional but configured**: `spring-boot-starter-data-redis` is a hard dependency in pom.xml, but the README and README describe it as optional. If Redis isn't running, expect startup warnings.
+- **Redis optional but configured**: `spring-boot-starter-data-redis` is a hard dependency in pom.xml, but the README describes it as optional. If Redis isn't running, expect startup warnings.
 - **Schema auto-migration**: `spring.jpa.hibernate.ddl-auto=update` — Hibernate modifies schema on startup. No Flyway/Liquibase.
 - **First-run init**: `DataInitializer.java` creates admin account (`admin`/`admin123`) and seed dict data on first startup. The `init-dict-data.sql` file exists but is NOT auto-executed — it's a reference.
-- **Jasypt encryption**: password/username/url fields are encrypted at rest via Jasypt. Key from `JASYPT_ENCRYPTOR_PASSWORD` env var (defaults to `mySecretKey`). Don't insert plaintext into these columns manually.
-- **CORS**: Hardcoded to `localhost:5173,localhost:3000` in `application.yml`. Add new origins in `app.security.cors-allowed-origins`.
+- **Jasypt encryption**: `password`, `username`, `url` fields are encrypted at rest via Jasypt (algorithm `PBEWithMD5AndDES`, no IV). Key from `JASYPT_ENCRYPTOR_PASSWORD` env var (defaults to `mySecretKey`). Don't insert plaintext into these columns manually.
+- **CORS**: Hardcoded to `http://localhost:5173,http://localhost:3000` in `application.yml`. Add new origins in `app.security.cors-allowed-origins`.
 - **SpaConfig**: `SpaConfig.java` forwards non-API routes to `index.html` for Vue Router history mode. Don't remove it.
 
 ## Architecture
@@ -56,7 +56,7 @@ backend/src/main/java/com/example/mynewwork/
   controller/       # REST controllers, all under /api/*
   service/          # Business logic, ActivityLogger
   repository/       # Spring Data JPA repos
-  model/entity/     # 13 JPA entities (Environment, TechnicalComponent, BusinessProcess, Project, CodeSnippet, User, SysDictType, SysDictData, SystemConfig, ActivityLog, Iteration, IterationSyncHistory, IterationImportConfig)
+  model/entity/     # 15 JPA entities (Environment, TechnicalComponent, BusinessProcess, Project, CodeSnippet, User, UserMenuPermission, SysDictType, SysDictData, SystemConfig, ActivityLog, SoCreationLog, Iteration, IterationSyncHistory, IterationImportConfig)
   model/dto/        # ApiResponse, DashboardStats, HealthCheckResult
   security/         # JWT filter, TokenProvider, UserPrincipal, CustomUserDetailsService
   exception/        # GlobalExceptionHandler, custom exceptions
@@ -71,7 +71,7 @@ frontend/src/
   types/            # TypeScript type definitions
   utils/            # connectionStrings.ts and others
 
-Note: views/ includes IterationList.vue and TestStats.vue (not listed in README).
+Runtime directories (gitignored): `data/` (H2 DB), `logs/`, `uploads/` (file storage), `backend/target/`, `backend/src/main/resources/static/` (frontend build output).
 ```
 
 ## Adding a new module

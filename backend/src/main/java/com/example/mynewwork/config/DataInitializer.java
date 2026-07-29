@@ -69,7 +69,7 @@ public class DataInitializer implements CommandLineRunner {
         User admin = userRepository.findByUsername("admin").orElse(null);
         if (admin != null) {
             List<String> allMenus = List.of(
-                    "home", "iterations", "search", "database",
+                    "home", "iterations", "search", "database", "rocketmq",
                     "environments", "components", "processes", "repositories",
                     "snippets", "batch-so", "mq-send", "dict", "users", "menu-permissions", "system"
             );
