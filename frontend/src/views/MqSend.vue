@@ -130,9 +130,7 @@ import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 
-// 环境配置（根据当前用户动态生成）
 const getEnvConfig = () => {
-  const brand = userStore.currentUser?.username || 'example'
   return {
     dev: {
       url: 'http://192.168.33.10:9880/topic/sendTopicMessage.do',
@@ -140,7 +138,7 @@ const getEnvConfig = () => {
       tokenType: 'XSRF-TOKEN'
     },
     test: {
-      url: `https://devops.${brand}.com/rocketmq/topic/sendTopicMessage.do`,
+      url: 'https://devops.leaderrun.com/rocketmq/topic/sendTopicMessage.do',
       topic: 'staging%edi',
       tokenType: 'JSESSIONID'
     }

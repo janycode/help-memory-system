@@ -2,6 +2,29 @@
   <div class="rocketmq-container">
     <div class="main-content">
       <div class="config-panel">
+        <div class="url-config-header" @click="urlConfigExpanded = !urlConfigExpanded">
+          <span class="url-config-title">请求地址配置</span>
+          <el-link type="primary" :underline="false">
+            {{ urlConfigExpanded ? '收起 ▲' : '展开 ▼' }}
+          </el-link>
+        </div>
+        <div v-if="urlConfigExpanded" class="url-config-body">
+          <div class="url-config-env">
+            <span class="url-config-env-label">DEV:</span>
+            <el-input v-model="envConfig.dev.url" size="small" placeholder="发送地址" />
+            <el-input v-model="envConfig.dev.topicsUrl" size="small" placeholder="Topic列表地址" />
+          </div>
+          <div class="url-config-env">
+            <span class="url-config-env-label">TEST:</span>
+            <el-input v-model="envConfig.test.url" size="small" placeholder="发送地址" />
+            <el-input v-model="envConfig.test.topicsUrl" size="small" placeholder="Topic列表地址" />
+          </div>
+          <div class="url-config-actions">
+            <el-button size="small" type="primary" @click="handleSaveUrls">保存</el-button>
+            <el-button size="small" @click="handleResetUrls">重置</el-button>
+          </div>
+        </div>
+
         <div class="config-row">
           <div class="config-item">
             <label>环境</label>
@@ -218,24 +241,25 @@ import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { rocketmqApi } from '@/api/rocketmq'
 import type { RocketMqEnvironment } from '@/types/rocketmq'
+import { normalizeDomain } from '@/utils/domain'
+import { useEnvConfig } from '@/composables/useEnvConfig'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
 
-const getEnvConfig = () => {
-  return {
-    dev: {
-      url: 'http://192.168.33.10:9880/topic/sendTopicMessage.do',
-      topicsUrl: 'http://192.168.33.10:9880/topic/list.queryTopicType',
-      tokenType: 'XSRF-TOKEN',
-      version: 'RocketMQ v5.5.0'
-    },
-    test: {
-      url: 'https://devops.leaderrun.com/rocketmq/topic/sendTopicMessage.do',
-      topicsUrl: 'https://devops.leaderrun.com/rocketmq/topic/list.query',
-      tokenType: 'JSESSIONID',
-      version: 'RocketMQ v5.3.2'
-    }
-  }
+const { load: loadEnvConfig, save: saveEnvConfig, reset: resetEnvConfig } = useEnvConfig()
+const envConfig = ref(loadEnvConfig())
+const urlConfigExpanded = ref(false)
+
+const getEnvConfig = () => envConfig.value
+
+const handleSaveUrls = () => {
+  saveEnvConfig(envConfig.value)
+  ElMessage.success('URL 配置已保存')
+}
+
+const handleResetUrls = () => {
+  envConfig.value = resetEnvConfig()
+  ElMessage.info('已重置为默认 URL')
 }
 
 const currentEnv = ref<RocketMqEnvironment>('test')
@@ -670,8 +694,9 @@ const handleSend = async () => {
   resultList.value = []
 
   const payload = buildPayload()
+  const finalUrl = normalizeDomain(currentUrl.value)
   const requestData = {
-    targetUrl: currentUrl.value,
+    targetUrl: finalUrl,
     proxyHeaders: proxyHeaders.value,
     ...payload
   }
@@ -1256,8 +1281,13 @@ watch(messageBodyJson, (val) => {
 }
 
 .history-section-content {
-  max-height: 9.375rem;
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.history-section-content .json-box {
+  max-height: none;
+  overflow: visible;
 }
 
 .history-section-content-full {
@@ -1314,5 +1344,46 @@ watch(messageBodyJson, (val) => {
   background: transparent !important;
   padding: 0;
   font-family: inherit;
+}
+
+.url-config-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid #ebeef5;
+  margin-bottom: 8px;
+}
+
+.url-config-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.url-config-body {
+  padding: 8px 0 12px;
+}
+
+.url-config-env {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.url-config-env-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #606266;
+  min-width: 40px;
+}
+
+.url-config-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
 }
 </style>

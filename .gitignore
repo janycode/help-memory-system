@@ -133,5 +133,6 @@ docker.sh
 ## 其他
 .claude/
 .trae/
+.workbuddy/
 
 .mimocode/

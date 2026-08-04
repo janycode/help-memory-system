@@ -605,6 +605,40 @@ public class BusinessToolController {
         return ApiResponse.success("已清空");
     }
 
+    /**
+     * HashId 编码
+     */
+    @PostMapping("/hashid/encode")
+    public ApiResponse<?> hashidEncode(@RequestBody Map<String, Object> request) {
+        try {
+            String salt = (String) request.get("salt");
+            int length = (int) request.get("length");
+            long input = Long.parseLong(request.get("input").toString());
+            com.example.mynewwork.util.HashidsCompat hashids = new com.example.mynewwork.util.HashidsCompat(salt, length);
+            return ApiResponse.success(Map.of("result", hashids.encode(input)));
+        } catch (Exception e) {
+            log.error("[HashId] 编码失败", e);
+            return ApiResponse.error("编码失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * HashId 解码
+     */
+    @PostMapping("/hashid/decode")
+    public ApiResponse<?> hashidDecode(@RequestBody Map<String, Object> request) {
+        try {
+            String salt = (String) request.get("salt");
+            int length = (int) request.get("length");
+            String input = (String) request.get("input");
+            com.example.mynewwork.util.HashidsCompat hashids = new com.example.mynewwork.util.HashidsCompat(salt, length);
+            return ApiResponse.success(Map.of("result", hashids.decode(input)));
+        } catch (Exception e) {
+            log.error("[HashId] 解码失败", e);
+            return ApiResponse.error("解码失败: " + e.getMessage());
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private <T> T parseJson(String json, Class<T> clazz) {
         try {

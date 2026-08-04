@@ -217,12 +217,10 @@ const groupedHistory = computed(() => {
   return grouped
 })
 
-// API配置（根据当前用户动态生成）
 const getApiUrls = () => {
-  const brand = userStore.currentUser?.username || 'example'
   return {
-    dev: `http://dev.${brand}.org/api/om/v1/shipping-order/submit`,
-    test: `https://uat.${brand}.com/api/om/v1/shipping-order/submit`
+    dev: 'http://dev.leaderrun.org/api/om/v1/shipping-order/submit',
+    test: 'https://uat.leaderrun.com/api/om/v1/shipping-order/submit'
   }
 }
 

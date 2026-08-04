@@ -81,6 +81,7 @@ const allMenus = [
   { code: 'search', name: '全局搜索' },
   { code: 'database', name: '本地数据库' },
   { code: 'rocketmq', name: 'RocketMQ' },
+  { code: 'hashid', name: 'HashId解密' },
   { code: 'environments', name: '环境管理' },
   { code: 'components', name: '技术组件' },
   { code: 'processes', name: '业务流程' },
@@ -94,7 +95,7 @@ const allMenus = [
   { code: 'system', name: '系统配置' }
 ]
 
-const PUBLIC_MENUS = ['rocketmq']
+const PUBLIC_MENUS = ['rocketmq', 'hashid', 'batch-so', 'mq-send']
 
 const filteredUsers = computed(() => {
   if (!searchKeyword.value) return usersWithPermissions.value

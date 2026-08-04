@@ -1,6 +1,6 @@
 <template>
   <el-container class="main-layout">
-    <el-aside :width="isCollapsed ? '64px' : '220px'" class="sidebar" :class="{ collapsed: isCollapsed }">
+    <el-aside v-if="showSidebar" :width="isCollapsed ? '64px' : '220px'" class="sidebar" :class="{ collapsed: isCollapsed }">
       <div class="logo">
         <h2 v-if="!isCollapsed">{{ systemTitle }}</h2>
         <span v-else class="logo-icon">{{ systemTitle.charAt(0) }}</span>
@@ -29,11 +29,6 @@
         <el-menu-item v-if="userStore.isMenuAllowed('database')" index="/database">
           <el-icon><Coin /></el-icon>
           <template #title>本地数据库</template>
-        </el-menu-item>
-
-        <el-menu-item v-if="userStore.isMenuAllowed('rocketmq')" index="/rocketmq">
-          <el-icon><Connection /></el-icon>
-          <template #title>RocketMQ</template>
         </el-menu-item>
 
         <el-sub-menu v-if="hasBizMenuAccess" index="biz">
@@ -68,6 +63,14 @@
             <el-icon><Promotion /></el-icon>
             <span>业务工具</span>
           </template>
+          <el-menu-item v-if="userStore.isMenuAllowed('rocketmq')" index="/rocketmq">
+            <el-icon><Connection /></el-icon>
+            RocketMQ
+          </el-menu-item>
+          <el-menu-item v-if="userStore.isMenuAllowed('hashid')" index="/tools/hashid">
+            <el-icon><Lock /></el-icon>
+            HashId解密
+          </el-menu-item>
           <el-menu-item v-if="userStore.isMenuAllowed('batch-so')" index="/tools/batch-so">
             <el-icon><DocumentAdd /></el-icon>
             SO批量新建
@@ -106,7 +109,7 @@
     <el-container class="main-container">
       <el-header class="header">
         <div class="header-left">
-          <el-button class="collapse-btn" text @click="toggleCollapse">
+          <el-button v-if="showSidebar" class="collapse-btn" text @click="toggleCollapse">
             <el-icon :size="18"><Fold v-if="!isCollapsed" /><Expand v-else /></el-icon>
           </el-button>
           <el-breadcrumb separator="/">
@@ -126,7 +129,7 @@
               <el-icon :size="18"><Moon v-if="!themeStore.isDark" /><Sunny v-else /></el-icon>
             </el-button>
           </el-tooltip>
-          <el-dropdown>
+          <el-dropdown v-if="showSidebar">
             <span class="user-info">
               <el-avatar size="small" class="avatar">
                 {{ userInitials }}
@@ -193,10 +196,16 @@ const activeMenu = computed(() => {
   if (path.startsWith('/profile')) return '/profile'
   if (path.startsWith('/search')) return '/search'
   if (path.startsWith('/database')) return '/database'
+  if (path.startsWith('/tools/hashid')) return '/tools/hashid'
   if (path.startsWith('/tools/batch-so')) return '/tools/batch-so'
   if (path.startsWith('/tools/mq-send')) return '/tools/mq-send'
   if (path.startsWith('/rocketmq')) return '/rocketmq'
   return '/'
+})
+
+const showSidebar = computed(() => {
+  if (!route.meta?.toolsMenu) return true
+  return userStore.isAuthenticated && userStore.isAdmin
 })
 
 const toggleCollapse = () => {
@@ -220,7 +229,9 @@ const hasBizMenuAccess = computed(() => {
 })
 
 const hasToolsMenuAccess = computed(() => {
-  return userStore.isMenuAllowed('batch-so') ||
+  return userStore.isMenuAllowed('rocketmq') ||
+         userStore.isMenuAllowed('hashid') ||
+         userStore.isMenuAllowed('batch-so') ||
          userStore.isMenuAllowed('mq-send')
 })
 

@@ -11,12 +11,6 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
-      path: '/rocketmq/',
-      name: 'rocketmq',
-      component: () => import('@/views/RocketMQ.vue'),
-      meta: { title: 'RocketMQ', requiresAuth: false }
-    },
-    {
       path: '/',
       name: 'layout',
       component: () => import('@/layout/MainLayout.vue'),
@@ -137,16 +131,28 @@ const router = createRouter({
           meta: { title: '本地数据库', requiresAuth: true }
         },
         {
+          path: 'rocketmq/',
+          name: 'rocketmq',
+          component: () => import('@/views/RocketMQ.vue'),
+          meta: { title: 'RocketMQ', requiresAuth: false, toolsMenu: true }
+        },
+        {
+          path: 'tools/hashid/',
+          name: 'hashid',
+          component: () => import('@/views/HashId.vue'),
+          meta: { title: 'HashId解密', requiresAuth: false, toolsMenu: true }
+        },
+        {
           path: 'tools/batch-so/',
           name: 'batch-so',
           component: () => import('@/views/BatchSo.vue'),
-          meta: { title: 'SO批量新建', requiresAuth: true }
+          meta: { title: 'SO批量新建', requiresAuth: false, toolsMenu: true }
         },
         {
           path: 'tools/mq-send/',
           name: 'mq-send',
           component: () => import('@/views/MqSend.vue'),
-          meta: { title: 'MQ自动称重', requiresAuth: true }
+          meta: { title: 'MQ自动称重', requiresAuth: false, toolsMenu: true }
         },
         {
           path: 'system/',

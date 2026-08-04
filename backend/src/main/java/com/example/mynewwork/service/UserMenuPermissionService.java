@@ -29,14 +29,14 @@ public class UserMenuPermissionService {
     private final ObjectMapper objectMapper;
 
     private static final List<String> ALL_MENUS = List.of(
-            "home", "iterations", "search", "database", "rocketmq",
+            "home", "iterations", "search", "database", "rocketmq", "hashid",
             "environments", "components", "processes", "repositories",
             "snippets", "batch-so", "mq-send", "dict", "users", "menu-permissions", "system"
     );
 
-    private static final List<String> DEFAULT_MENUS = List.of("home", "rocketmq");
+    private static final List<String> DEFAULT_MENUS = List.of("home", "rocketmq", "hashid", "batch-so", "mq-send");
 
-    private static final List<String> PUBLIC_MENUS = List.of("rocketmq");
+    private static final List<String> PUBLIC_MENUS = List.of("rocketmq", "hashid", "batch-so", "mq-send");
 
     public List<String> getAllowedMenus(Long userId) {
         List<String> menus = repository.findByUserId(userId)
@@ -51,14 +51,15 @@ public class UserMenuPermissionService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
 
-        addPublicMenus(menus);
+        List<String> mutableMenus = new ArrayList<>(menus);
+        addPublicMenus(mutableMenus);
 
         UserMenuPermission permission = repository.findByUserId(userId)
                 .orElse(new UserMenuPermission());
 
         permission.setUser(user);
         try {
-            permission.setAllowedMenus(objectMapper.writeValueAsString(menus));
+            permission.setAllowedMenus(objectMapper.writeValueAsString(mutableMenus));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("菜单权限序列化失败", e);
         }
