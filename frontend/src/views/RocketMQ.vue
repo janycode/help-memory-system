@@ -64,12 +64,25 @@
           </div>
 
           <div class="form-item full-width">
-            <label><span class="required">*</span>Java文件路径</label>
+            <label><span class="required">*</span>Java文件</label>
             <div class="input-group">
-              <el-input size="small" v-model="javaFilePath" placeholder="D:\\work\\xxx\\xxx.java" :spellcheck="false" />
+              <el-input
+                size="small"
+                v-model="javaFilePath"
+                placeholder="选择文件或粘贴服务器绝对路径"
+                :spellcheck="false"
+                @input="onJavaPathInput"
+              >
+                <template #prefix>
+                  <el-tooltip content="点击选择本地文件（自动上传）" placement="top">
+                    <span class="file-picker-hint" @click="selectJavaFile">选择文件</span>
+                  </el-tooltip>
+                </template>
+              </el-input>
               <el-button size="small" type="primary" :loading="isParsing" @click="parseJavaFile">解析</el-button>
               <el-button size="small" type="success" :loading="isPreviewingJava" @click="previewJavaFileContent">预览</el-button>
             </div>
+            <input ref="fileInputRef" type="file" accept=".java" class="hidden-file-input" @change="onJavaFileSelected" />
           </div>
 
           <div class="form-item">
@@ -89,19 +102,41 @@
         </div>
 
         <div class="footer-hint">
-          注意事项：① Token需要从RocketMQ管理后台登录后获取<span class="highlight-red"> Cookie </span>中的值；② Java文件路径必须是服务器可访问的<span class="highlight-red"> 绝对路径 </span>；③ 消息体JSON可手动编辑，只需编辑所需<span class="highlight-red"> Value </span>值
+          注意事项：① Token需要从RocketMQ管理后台登录后获取<span class="highlight-red"> Cookie </span>中的值；② 点击输入框左侧【选择文件】选择本地<span class="highlight-red"> .java 文件 </span>（解析时自动上传，内存解析不落盘），或直接粘贴服务器可访问的<span class="highlight-red"> 绝对路径 </span>；③ 消息体JSON可手动编辑，只需编辑所需<span class="highlight-red"> Value </span>值
         </div>
       </div>
 
       <div class="panels-row">
         <div class="preview-panel featured-panel">
           <div class="panel-title">
-            消息体预览
-            <el-button size="small" type="primary" @click="openBodyEditor">编辑</el-button>
+            消息体
+            <div class="body-toolbar">
+              <el-button size="small" @click="formatMessageBody">格式化</el-button>
+              <el-button size="small" type="warning" @click="validateMessageBody">校验</el-button>
+              <el-button size="small" type="primary" @click="switchBodyMode">
+                {{ bodyEditMode ? '预览' : '编辑' }}
+              </el-button>
+              <el-button size="small" class="btn-danger" @click="clearMessageBody">清空</el-button>
+            </div>
           </div>
           <div class="preview-content">
             <div class="json-editor">
-              <pre class="json-preview">{{ formatJson(messageBodyObj) }}</pre>
+              <div v-if="bodyEditMode" class="body-editor-wrapper">
+                <div class="line-numbers" ref="lineNumbersRef">
+                  <div v-for="n in lineCount" :key="n" class="line-number">{{ n }}</div>
+                </div>
+                <textarea
+                  ref="textareaRef"
+                  v-model="messageBodyJson"
+                  placeholder="消息体JSON"
+                  class="body-editor-textarea"
+                  :spellcheck="false"
+                  :autocapitalize="'off'"
+                  :autocorrect="'off'"
+                  @scroll="onTextareaScroll"
+                ></textarea>
+              </div>
+              <pre v-else class="json-preview body-preview">{{ formatJson(parseMessageBody(messageBodyJson)) }}</pre>
             </div>
           </div>
         </div>
@@ -129,49 +164,24 @@
         </div>
       </div>
 
-      <div class="result-panel" :class="{ success: hasSuccess, fail: hasFail }">
-        <div class="panel-title">响应结果</div>
-        <div class="result-list">
-          <div v-if="resultList.length === 0" class="empty-hint">暂无响应</div>
-          <div v-for="(item, index) in resultList" :key="index" class="result-item" :class="{ success: item.success, fail: !item.success }" @click="item.expanded = !item.expanded">
-            <div class="result-item-header">
-              <span class="result-item-icon">{{ item.success ? '✅' : '❌' }}</span>
-              <span class="result-item-summary">{{ item.summary }}</span>
-              <span class="result-item-toggle" :class="{ expanded: item.expanded }">▶</span>
-            </div>
-            <div v-if="item.expanded" class="result-item-body">
-              <pre class="json-box json-box-full">{{ formatJson(item.data) }}</pre>
-            </div>
+    </div>
+
+    <div class="result-panel" :class="{ success: hasSuccess, fail: hasFail }">
+      <div class="panel-title">响应结果</div>
+      <div class="result-list">
+        <div v-if="resultList.length === 0" class="empty-hint">暂无响应</div>
+        <div v-for="(item, index) in resultList" :key="index" class="result-item" :class="{ success: item.success, fail: !item.success }" @click="item.expanded = !item.expanded">
+          <div class="result-item-header">
+            <span class="result-item-icon">{{ item.success ? '✅' : '❌' }}</span>
+            <span class="result-item-summary">{{ item.summary }}</span>
+            <span class="result-item-toggle" :class="{ expanded: item.expanded }">▶</span>
+          </div>
+          <div v-if="item.expanded" class="result-item-body">
+            <pre class="json-box json-box-full">{{ formatJson(item.data) }}</pre>
           </div>
         </div>
       </div>
     </div>
-
-    <el-dialog v-model="bodyEditorVisible" title="编辑消息体" width="80%" :close-on-click-modal="false">
-      <div class="body-editor-toolbar">
-        <el-button size="small" @click="formatMessageBody">格式化</el-button>
-        <el-button size="small" type="warning" @click="validateMessageBody">校验</el-button>
-      </div>
-      <div class="body-editor-wrapper">
-        <div class="line-numbers" ref="lineNumbersRef">
-          <div v-for="n in lineCount" :key="n" class="line-number">{{ n }}</div>
-        </div>
-        <textarea
-          ref="textareaRef"
-          v-model="messageBodyJson"
-          placeholder="消息体JSON"
-          class="body-editor-textarea"
-          :spellcheck="false"
-          :autocapitalize="'off'"
-          :autocorrect="'off'"
-          @scroll="onTextareaScroll"
-        ></textarea>
-      </div>
-      <template #footer>
-        <el-button @click="bodyEditorVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveMessageBody">确定</el-button>
-      </template>
-    </el-dialog>
 
     <el-dialog v-model="historyDialogVisible" title="历史消息" width="80%" :close-on-click-modal="false">
       <div class="history-toolbar">
@@ -276,6 +286,9 @@ const saveToken = (env: RocketMqEnvironment, value: string) => {
 
 const token = ref(loadToken(currentEnv.value))
 const javaFilePath = ref('')
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const selectedJavaFile = ref<File | null>(null)
+const pendingJavaAction = ref<'parse' | 'preview' | null>(null)
 const topic = ref('')
 const tag = ref('')
 const key = ref('')
@@ -299,7 +312,7 @@ const javaHighlightedContent = computed(() => {
 })
 const javaPreviewFilePath = ref('')
 const isSending = ref(false)
-const bodyEditorVisible = ref(false)
+const bodyEditMode = ref(false)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const lineNumbersRef = ref<HTMLElement | null>(null)
 
@@ -410,14 +423,52 @@ const loadTopics = async () => {
   }
 }
 
+const selectJavaFile = () => {
+  fileInputRef.value?.click()
+}
+
+const onJavaFileSelected = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) {
+    return
+  }
+  selectedJavaFile.value = file
+  javaFilePath.value = file.name
+  const action = pendingJavaAction.value
+  pendingJavaAction.value = null
+  if (action === 'parse') {
+    await parseJavaFile()
+  } else if (action === 'preview') {
+    await previewJavaFileContent()
+  }
+}
+
+const onJavaPathInput = () => {
+  // 用户手动输入/粘贴路径时，清除已选文件，切换到路径解析模式
+  selectedJavaFile.value = null
+}
+
+const ensureJavaSource = (action: 'parse' | 'preview'): boolean => {
+  if (selectedJavaFile.value || (javaFilePath.value && javaFilePath.value.trim())) {
+    return true
+  }
+  pendingJavaAction.value = action
+  ElMessage.info('请选择Java文件或输入绝对路径')
+  selectJavaFile()
+  return false
+}
+
 const parseJavaFile = async () => {
-  if (!javaFilePath.value) {
-    ElMessage.error('请输入Java文件路径')
+  if (!ensureJavaSource('parse')) {
     return
   }
   isParsing.value = true
   try {
-    const response = await rocketmqApi.parseJavaFile(javaFilePath.value)
+    const response = selectedJavaFile.value
+      ? await rocketmqApi.parseJavaFileUpload(selectedJavaFile.value)
+      : await rocketmqApi.parseJavaFile(javaFilePath.value.trim())
     tag.value = response.data?.tag || ''
     messageBodyObj.value = response.data?.messageBody || {}
     messageBodyJson.value = JSON.stringify(messageBodyObj.value)
@@ -430,15 +481,16 @@ const parseJavaFile = async () => {
 }
 
 const previewJavaFileContent = async () => {
-  if (!javaFilePath.value) {
-    ElMessage.error('请输入Java文件路径')
+  if (!ensureJavaSource('preview')) {
     return
   }
   isPreviewingJava.value = true
   try {
-    const response = await rocketmqApi.previewJavaFile(javaFilePath.value)
+    const response = selectedJavaFile.value
+      ? await rocketmqApi.previewJavaFileUpload(selectedJavaFile.value)
+      : await rocketmqApi.previewJavaFile(javaFilePath.value.trim())
     javaPreviewContent.value = response.data?.content || ''
-    javaPreviewFilePath.value = response.data?.filePath || javaFilePath.value
+    javaPreviewFilePath.value = response.data?.fileName || response.data?.filePath || javaFilePath.value
     javaPreviewVisible.value = true
   } catch (error: any) {
     ElMessage.error('预览失败: ' + (error.message || '未知错误'))
@@ -469,13 +521,11 @@ const parseMessageBody = (body: any) => {
 }
 
 const buildPayloadForDisplay = () => {
-  let bodyObj = messageBodyObj.value
-  if (typeof bodyObj === 'string') {
-    try {
-      bodyObj = JSON.parse(bodyObj)
-    } catch {
-      bodyObj = messageBodyJson.value
-    }
+  let bodyObj: any = messageBodyJson.value
+  try {
+    bodyObj = JSON.parse(messageBodyJson.value)
+  } catch {
+    bodyObj = messageBodyJson.value
   }
   return {
     topic: topic.value,
@@ -486,9 +536,18 @@ const buildPayloadForDisplay = () => {
   }
 }
 
-const openBodyEditor = () => {
-  messageBodyJson.value = JSON.stringify(messageBodyObj.value)
-  bodyEditorVisible.value = true
+const switchBodyMode = () => {
+  if (bodyEditMode.value) {
+    // 编辑 → 预览：校验 JSON，非法则阻止切换，避免展示不一致内容
+    try {
+      JSON.parse(messageBodyJson.value)
+      bodyEditMode.value = false
+    } catch (e: any) {
+      ElMessage.error('JSON格式错误，无法切换预览: ' + e.message)
+    }
+  } else {
+    bodyEditMode.value = true
+  }
 }
 
 const formatMessageBody = () => {
@@ -510,15 +569,10 @@ const validateMessageBody = () => {
   }
 }
 
-const saveMessageBody = () => {
-  try {
-    const obj = JSON.parse(messageBodyJson.value)
-    messageBodyObj.value = obj
-    bodyEditorVisible.value = false
-    ElMessage.success('保存成功')
-  } catch (e: any) {
-    ElMessage.error('JSON格式错误: ' + e.message)
-  }
+const clearMessageBody = () => {
+  messageBodyObj.value = {}
+  messageBodyJson.value = '{}'
+  ElMessage.success('消息体已清空')
 }
 
 const formatJson = (obj: any) => {
@@ -528,6 +582,8 @@ const formatJson = (obj: any) => {
 
 const resetForm = () => {
   javaFilePath.value = ''
+  selectedJavaFile.value = null
+  pendingJavaAction.value = null
   topic.value = ''
   tag.value = ''
   key.value = ''
@@ -689,6 +745,12 @@ const handleSend = async () => {
     ElMessage.error('请输入消息体')
     return
   }
+  try {
+    JSON.parse(messageBodyJson.value)
+  } catch (e: any) {
+    ElMessage.error('消息体JSON格式错误，请先修正后再发送: ' + e.message)
+    return
+  }
 
   isSending.value = true
   resultList.value = []
@@ -753,6 +815,7 @@ watch(messageBodyJson, (val) => {
       JSON.parse(val)
     }
   } catch {
+    // 编辑过程中的中间状态允许 JSON 不完整，此处仅校验不报错
   }
 })
 </script>
@@ -821,6 +884,16 @@ watch(messageBodyJson, (val) => {
   background: #ecf5ff;
   color: #409eff;
   border-color: #ecf5ff;
+}
+
+.preview-panel.featured-panel .panel-title .btn-danger {
+  color: #f56c6c;
+}
+
+.preview-panel.featured-panel .panel-title .btn-danger:hover {
+  background: #fef0f0;
+  color: #f56c6c;
+  border-color: #fef0f0;
 }
 
 .config-row {
@@ -983,6 +1056,17 @@ watch(messageBodyJson, (val) => {
 .json-preview {
   flex: 1;
   min-width: 0;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: .625rem;
+  line-height: 1.5;
+}
+
+.body-preview {
+  margin: 0;
+  max-height: 15.625rem;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 .json-box {
@@ -1021,6 +1105,8 @@ watch(messageBodyJson, (val) => {
 
 .result-panel {
   border-left: .1875rem solid #dcdfe6;
+  flex-shrink: 0;
+  margin-top: .5rem;
 }
 
 .result-panel.success {
@@ -1103,10 +1189,10 @@ watch(messageBodyJson, (val) => {
   padding: .625rem 0;
 }
 
-.body-editor-toolbar {
+.body-toolbar {
   display: flex;
-  gap: .5rem;
-  margin-bottom: .625rem;
+  gap: .25rem;
+  align-items: center;
 }
 
 .body-editor-wrapper {
@@ -1123,7 +1209,7 @@ watch(messageBodyJson, (val) => {
   text-align: center;
   padding: .5rem .25rem;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: .6875rem;
+  font-size: .625rem;
   line-height: 1.5;
   color: #909399;
   overflow: hidden;
@@ -1131,16 +1217,16 @@ watch(messageBodyJson, (val) => {
 }
 
 .line-number {
-  height: 1.0313rem;
+  height: .9375rem;
 }
 
 .body-editor-textarea {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: .6875rem;
+  font-size: .625rem;
   line-height: 1.5;
   resize: none;
   flex: 1;
-  height: 21.875rem;
+  height: 15.625rem;
   padding: .5rem;
   border: none;
   outline: none;
@@ -1385,5 +1471,22 @@ watch(messageBodyJson, (val) => {
   display: flex;
   gap: 8px;
   margin-top: 8px;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.file-picker-hint {
+  color: #409eff;
+  font-size: 12px;
+  font-weight: 500;
+  user-select: none;
+  cursor: pointer;
+}
+
+.file-picker-hint:hover {
+  color: #66b1ff;
+  text-decoration: underline;
 }
 </style>

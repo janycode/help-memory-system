@@ -36,6 +36,22 @@ pnpm format      # prettier --write src/
 cd frontend && pnpm install && pnpm build && cd ../backend && mvn spring-boot:run
 ```
 
+### 编译构建验证（用户约定，必须遵守）
+
+本项目的编译构建验证标准 = **先构建前端，再打包后端 jar**：
+
+```bash
+# 1. 先手动清空旧前端产物（safe-delete 会拦截 vite emptyDir 的批量删除）
+rm -rf backend/src/main/resources/static
+# 2. 构建前端（产物输出到 backend/src/main/resources/static）
+cd frontend && pnpm build
+# 3. 打包后端 JAR（打包成功即代表编译没问题）
+cd ../backend && mvn clean package -DskipTests
+```
+
+- **打包出 jar 即代表编译没问题** —— 无需再依赖其他验证手段。
+- 顺序不可颠倒：先构建前端再打包后端，否则 JAR 不含前端资源。
+
 ## 注意事项（Gotchas）
 
 - **前端构建进后端**：`pnpm build` 直接写入 `backend/src/main/resources/static/`。打包后端 JAR 前必须先构建前端。Dockerfile 假设前端已构建完成。

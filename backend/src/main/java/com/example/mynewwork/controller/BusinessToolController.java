@@ -9,12 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -463,6 +465,64 @@ public class BusinessToolController {
         } catch (Exception e) {
             log.error("[MQ] 解析Java文件失败", e);
             return ApiResponse.error("解析Java文件失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 解析上传的Java文件（内存处理，不落盘），提取tag和字段
+     * 适用于局域网多人使用：浏览器选择本地文件后上传解析
+     */
+    @PostMapping("/mq-parse-java-upload")
+    public ApiResponse<?> parseJavaFileUpload(@RequestParam("file") MultipartFile file) {
+        try {
+            if (file == null || file.isEmpty()) {
+                return ApiResponse.error("请选择要解析的Java文件");
+            }
+            if (!file.getOriginalFilename().toLowerCase().endsWith(".java")) {
+                return ApiResponse.error("仅支持解析 .java 文件");
+            }
+
+            String content = new String(file.getBytes(), StandardCharsets.UTF_8);
+            log.info("[MQ] 解析上传的Java文件: {}", file.getOriginalFilename());
+
+            String tag = extractTag(content);
+            Map<String, Object> messageBody = extractFields(content);
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("tag", tag);
+            result.put("messageBody", messageBody);
+            result.put("fileName", file.getOriginalFilename());
+
+            return ApiResponse.success(result);
+
+        } catch (Exception e) {
+            log.error("[MQ] 解析上传的Java文件失败", e);
+            return ApiResponse.error("解析Java文件失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 预览上传的Java文件内容（内存处理，不落盘）
+     */
+    @PostMapping("/mq-preview-java-upload")
+    public ApiResponse<?> previewJavaFileUpload(@RequestParam("file") MultipartFile file) {
+        try {
+            if (file == null || file.isEmpty()) {
+                return ApiResponse.error("请选择要预览的Java文件");
+            }
+
+            String content = new String(file.getBytes(), StandardCharsets.UTF_8);
+            log.info("[MQ] 预览上传的Java文件: {}", file.getOriginalFilename());
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("content", content);
+            result.put("fileName", file.getOriginalFilename());
+
+            return ApiResponse.success(result);
+
+        } catch (Exception e) {
+            log.error("[MQ] 预览上传的Java文件失败", e);
+            return ApiResponse.error("预览Java文件失败: " + e.getMessage());
         }
     }
 

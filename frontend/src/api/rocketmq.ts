@@ -14,6 +14,18 @@ export const rocketmqApi = {
     return request.post('/tools/mq-parse-java', { filePath })
   },
 
+  previewJavaFileUpload(file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return request.post('/tools/mq-preview-java-upload', formData)
+  },
+
+  parseJavaFileUpload(file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return request.post('/tools/mq-parse-java-upload', formData)
+  },
+
   sendMessage(data: SendMessageRequest & { targetUrl: string }) {
     return request.post('/tools/mq-send', data)
   }

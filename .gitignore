@@ -51,6 +51,7 @@ dist-ssr/
 ## Vite
 .vite/
 .cache/
+vite.config.ts.timestamp-*.mjs
 
 ## TypeScript
 *.tsbuildinfo
