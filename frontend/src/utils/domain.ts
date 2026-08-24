@@ -8,7 +8,7 @@ export function normalizeDomain(url: string): string {
     const parsed = new URL(url)
     const parts = parsed.hostname.split('.')
     if (parts.length >= 3 && !/^\d+$/.test(parts[0])) {
-      parts[0] = 'leaderrun'
+      parts[parts.length - 2] = 'leaderrun'
       parsed.hostname = parts.join('.')
     }
     return parsed.toString()

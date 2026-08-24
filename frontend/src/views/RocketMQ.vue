@@ -136,7 +136,7 @@
                   @scroll="onTextareaScroll"
                 ></textarea>
               </div>
-              <pre v-else class="json-preview body-preview">{{ formatJson(parseMessageBody(messageBodyJson)) }}</pre>
+              <pre v-else class="json-preview body-preview" v-html="highlightJson(parseMessageBody(messageBodyJson))"></pre>
             </div>
           </div>
         </div>
@@ -151,7 +151,8 @@
               </div>
             </div>
             <div class="json-preview">
-              <pre class="json-box">{{ formatJson(buildPayloadForDisplay()) }}</pre>
+              <el-button class="popup-preview-btn" size="small" type="primary" plain @click="requestPreviewVisible = true">弹窗预览</el-button>
+              <pre class="json-box" v-html="highlightJson(buildPayloadForDisplay())"></pre>
             </div>
           </div>
           <div class="send-action">
@@ -182,6 +183,10 @@
         </div>
       </div>
     </div>
+
+    <el-dialog v-model="requestPreviewVisible" title="请求体完整预览" width="90%" :close-on-click-modal="false">
+      <pre class="json-box request-preview-body" v-html="highlightJson(buildPayloadForDisplay())"></pre>
+    </el-dialog>
 
     <el-dialog v-model="historyDialogVisible" title="历史消息" width="80%" :close-on-click-modal="false">
       <div class="history-toolbar">
@@ -312,6 +317,7 @@ const javaHighlightedContent = computed(() => {
 })
 const javaPreviewFilePath = ref('')
 const isSending = ref(false)
+const requestPreviewVisible = ref(false)
 const bodyEditMode = ref(false)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const lineNumbersRef = ref<HTMLElement | null>(null)
@@ -580,6 +586,16 @@ const formatJson = (obj: any) => {
   return JSON.stringify(obj, null, 2)
 }
 
+const highlightJson = (obj: any) => {
+  const text = formatJson(obj)
+  if (!text) return ''
+  try {
+    return hljs.highlight(text, { language: 'json', ignoreIllegals: true }).value
+  } catch {
+    return text
+  }
+}
+
 const resetForm = () => {
   javaFilePath.value = ''
   selectedJavaFile.value = null
@@ -839,15 +855,23 @@ watch(messageBodyJson, (val) => {
 .panels-row {
   display: flex;
   gap: .5rem;
+  flex: 1;
+  min-height: 0;
 }
 
 .panels-row .preview-panel.featured-panel {
   flex: 0 0 35%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .panels-row .send-panel {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .config-panel,
@@ -1020,10 +1044,14 @@ watch(messageBodyJson, (val) => {
 .panels-row .send-panel .preview-content {
   display: flex;
   gap: .5rem;
+  flex: 1;
+  min-height: 0;
 }
 
 .panels-row .preview-panel.featured-panel .preview-content {
   display: block;
+  flex: 1;
+  min-height: 0;
 }
 
 .headers-preview {
@@ -1035,8 +1063,10 @@ watch(messageBodyJson, (val) => {
   border-radius: .25rem;
   padding: .5rem;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: .625rem;
+  font-size: .75rem;
   line-height: 1.5;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .header-line {
@@ -1057,13 +1087,28 @@ watch(messageBodyJson, (val) => {
   flex: 1;
   min-width: 0;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: .625rem;
+  font-size: .75rem;
   line-height: 1.5;
+  height: 100%;
+  position: relative;
+}
+
+.popup-preview-btn {
+  position: absolute;
+  top: .25rem;
+  right: .25rem;
+  z-index: 1;
+}
+
+.request-preview-body {
+  max-height: none;
+  height: auto;
+  overflow: visible;
 }
 
 .body-preview {
   margin: 0;
-  max-height: 15.625rem;
+  height: 100%;
   overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-all;
@@ -1084,9 +1129,18 @@ watch(messageBodyJson, (val) => {
   overflow-y: auto;
 }
 
+/* 请求预览面板内覆盖：放大字号并撑满高度（不影响响应结果/历史弹窗） */
+.panels-row .json-box {
+  font-size: .75rem;
+  max-height: none;
+  height: 100%;
+  box-sizing: border-box;
+}
+
 .json-editor {
   flex: 1;
   min-width: 0;
+  height: 100%;
 }
 
 .json-textarea {
@@ -1101,6 +1155,7 @@ watch(messageBodyJson, (val) => {
   gap: .5rem;
   justify-content: flex-end;
   margin-top: .5rem;
+  flex-shrink: 0;
 }
 
 .result-panel {
@@ -1200,6 +1255,7 @@ watch(messageBodyJson, (val) => {
   border: .0625rem solid #dcdfe6;
   border-radius: .25rem;
   overflow: hidden;
+  height: 100%;
 }
 
 .line-numbers {
@@ -1226,7 +1282,7 @@ watch(messageBodyJson, (val) => {
   line-height: 1.5;
   resize: none;
   flex: 1;
-  height: 15.625rem;
+  height: 100%;
   padding: .5rem;
   border: none;
   outline: none;

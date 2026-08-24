@@ -616,8 +616,23 @@ public class BusinessToolController {
 
         } catch (Exception e) {
             log.error("[MQ] 发送失败", e);
-            return ApiResponse.error("发送失败: " + e.getMessage());
+            return ApiResponse.error("发送失败: " + extractRootCause(e));
         }
+    }
+
+    /**
+     * 提取异常根因描述，避免 message 为 null 时返回无意义信息
+     */
+    private String extractRootCause(Throwable e) {
+        Throwable cause = e;
+        while (cause.getCause() != null && cause.getCause() != cause) {
+            cause = cause.getCause();
+        }
+        String msg = cause.getMessage();
+        if (msg == null || msg.isBlank()) {
+            return cause.getClass().getSimpleName();
+        }
+        return cause.getClass().getSimpleName() + ": " + msg;
     }
 
     /**

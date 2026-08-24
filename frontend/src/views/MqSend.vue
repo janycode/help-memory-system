@@ -91,12 +91,13 @@
             </div>
           </div>
           <div class="json-preview">
+            <el-button class="popup-preview-btn" size="small" type="primary" plain @click="requestPreviewVisible = true">弹窗预览</el-button>
             <div v-if="plateList.length > 1" class="preview-nav">
               <el-button size="small" :disabled="currentPlateIndex === 0" @click="navigatePlate(-1)">◀</el-button>
               <span>{{ currentPlateIndex + 1 }} / {{ plateList.length }} [{{ plateList[currentPlateIndex] }}]</span>
               <el-button size="small" :disabled="currentPlateIndex === plateList.length - 1" @click="navigatePlate(1)">▶</el-button>
             </div>
-            <pre class="json-box">{{ formatJson(currentPayload) }}</pre>
+            <pre class="json-box" v-html="highlightJson(currentPayload)"></pre>
           </div>
         </div>
       </div>
@@ -119,6 +120,10 @@
           </div>
         </div>
       </div>
+
+    <el-dialog v-model="requestPreviewVisible" title="请求体完整预览" width="90%" :close-on-click-modal="false">
+      <pre class="json-box request-preview-body" v-html="highlightJson(currentPayload)"></pre>
+    </el-dialog>
     </div>
   </div>
 </template>
@@ -127,6 +132,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github.css'
 
 const userStore = useUserStore()
 
@@ -270,6 +277,18 @@ const formatJson = (obj: any) => {
   return JSON.stringify(obj, null, 2)
 }
 
+const highlightJson = (obj: any) => {
+  const text = formatJson(obj)
+  if (!text) return ''
+  try {
+    return hljs.highlight(text, { language: 'json', ignoreIllegals: true }).value
+  } catch {
+    return text
+  }
+}
+
+const requestPreviewVisible = ref(false)
+
 const restoreDefaults = () => {
   licencePlate.value = '粤B1834C'
   totalWeight.value = TYPE_DEFAULTS[currentType.value]
@@ -373,6 +392,13 @@ onMounted(() => {
   box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.08);
 }
 
+.preview-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .config-row {
   display: flex;
   gap: 16px;
@@ -469,6 +495,8 @@ onMounted(() => {
 .preview-content {
   display: flex;
   gap: 10px;
+  flex: 1;
+  min-height: 0;
 }
 
 .headers-preview {
@@ -478,8 +506,10 @@ onMounted(() => {
   border-radius: 4px;
   padding: 8px;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 10px;
+  font-size: .75rem;
   line-height: 1.5;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .header-line {
@@ -499,6 +529,22 @@ onMounted(() => {
 .json-preview {
   flex: 1;
   min-width: 0;
+  font-size: .75rem;
+  height: 100%;
+  position: relative;
+}
+
+.popup-preview-btn {
+  position: absolute;
+  top: .25rem;
+  right: .25rem;
+  z-index: 1;
+}
+
+.request-preview-body {
+  max-height: none;
+  height: auto;
+  overflow: visible;
 }
 
 .preview-nav {
@@ -524,6 +570,14 @@ onMounted(() => {
   margin: 0;
   max-height: 250px;
   overflow-y: auto;
+}
+
+/* 请求预览面板内覆盖：放大字号并撑满高度（不影响响应结果） */
+.preview-panel .json-box {
+  font-size: .75rem;
+  max-height: none;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .result-panel {
