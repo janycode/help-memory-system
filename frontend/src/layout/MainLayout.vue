@@ -21,6 +21,11 @@
           <template #title>迭代管理</template>
         </el-menu-item>
 
+        <el-menu-item v-if="userStore.isMenuAllowed('github-issues')" index="/github-issues">
+          <el-icon><Tickets /></el-icon>
+          <template #title>GitHub 指派任务</template>
+        </el-menu-item>
+
         <el-menu-item v-if="userStore.isMenuAllowed('search')" index="/search">
           <el-icon><Search /></el-icon>
           <template #title>全局搜索</template>
@@ -78,6 +83,10 @@
           <el-menu-item v-if="userStore.isMenuAllowed('mq-send')" index="/tools/mq-send">
             <el-icon><Connection /></el-icon>
             MQ自动称重
+          </el-menu-item>
+          <el-menu-item v-if="userStore.isMenuAllowed('jenkins-monitor')" index="/tools/jenkins-monitor">
+            <el-icon><Odometer /></el-icon>
+            Jenkins监控
           </el-menu-item>
         </el-sub-menu>
 
@@ -188,6 +197,7 @@ const activeMenu = computed(() => {
   if (path.startsWith('/processes')) return '/processes'
   if (path.startsWith('/repositories')) return '/repositories'
   if (path.startsWith('/iterations')) return '/iterations'
+  if (path.startsWith('/github-issues')) return '/github-issues'
   if (path.startsWith('/snippets')) return '/snippets'
   if (path.startsWith('/dict')) return '/dict'
   if (path.startsWith('/users')) return '/users'
@@ -232,7 +242,8 @@ const hasToolsMenuAccess = computed(() => {
   return userStore.isMenuAllowed('rocketmq') ||
          userStore.isMenuAllowed('hashid') ||
          userStore.isMenuAllowed('batch-so') ||
-         userStore.isMenuAllowed('mq-send')
+         userStore.isMenuAllowed('mq-send') ||
+         userStore.isMenuAllowed('jenkins-monitor')
 })
 
 const hasSysMenuAccess = computed(() => {

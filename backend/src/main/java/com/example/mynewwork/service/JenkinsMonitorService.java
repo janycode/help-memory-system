@@ -316,12 +316,14 @@ public class JenkinsMonitorService {
 
     /**
      * 通过本地 git 仓库取最近 3 条提交（已格式化），未配置目录或执行失败返回空列表
-     * 优先按构建分支查询，本地无该分支时回退当前分支
+     * 先 fetch 远程分支保证拿到最新提交，优先按构建分支查询，失败回退当前分支
      */
     private List<String> fetchRecentCommits(JenkinsJobConfig config, String branch) {
         if (!StringUtils.hasText(config.getLocalDir())) {
             return List.of();
         }
+        // 预先拉取远程分支最新代码，避免拿到陈旧的提交日志
+        fetchRemote(config.getLocalDir(), branch);
         List<String> commits = runGitLog(config.getLocalDir(), branch);
         if (commits.isEmpty() && StringUtils.hasText(branch)) {
             commits = runGitLog(config.getLocalDir(), null);
@@ -330,16 +332,56 @@ public class JenkinsMonitorService {
     }
 
     /**
-     * 在指定目录执行 git log 取 3 条提交（UTF-8 输出，规避 Windows 编码问题）
+     * git fetch 拉取远程分支最新提交，失败仅记录日志不阻断（后续 log 仍会尝试）
+     */
+    private void fetchRemote(String dir, String branch) {
+        List<String> args = StringUtils.hasText(branch)
+                ? List.of("fetch", "origin", branch)
+                : List.of("fetch", "origin");
+        GitExecResult result = execGit(dir, args);
+        if (result.exitCode() != 0) {
+            log.warn("git fetch 失败: dir={}, branch={}", dir, branch);
+        }
+    }
+
+    /**
+     * 在指定目录执行 git log 取 3 条提交
+     * 有分支时基于已 fetch 的远程引用 origin/{branch} 查询，确保是最新提交
      */
     private List<String> runGitLog(String dir, String branch) {
+        List<String> args = new ArrayList<>();
+        args.add("log");
+        if (StringUtils.hasText(branch)) {
+            args.add("origin/" + branch);
+        }
+        args.add("-3");
+        args.add("--pretty=format:%h%x01%s%x01%an");
+        GitExecResult result = execGit(dir, args);
+        if (result.exitCode() != 0) {
+            log.debug("git log 执行失败: dir={}, ref={}", dir, branch);
+            return List.of();
+        }
+        return result.output().lines()
+                .map(String::trim)
+                .filter(StringUtils::hasText)
+                .map(this::formatCommitLine)
+                .limit(3)
+                .toList();
+    }
+
+    /**
+     * git 命令执行结果
+     */
+    private record GitExecResult(int exitCode, String output) {
+    }
+
+    /**
+     * 执行 git 命令（UTF-8 输出规避 Windows 编码问题，30 秒超时兜底）
+     */
+    private GitExecResult execGit(String dir, List<String> args) {
         try {
-            List<String> cmd = new ArrayList<>(List.of(
-                    "git", "-c", "i18n.logOutputEncoding=UTF-8",
-                    "log", "-3", "--pretty=format:%h%x01%s%x01%an"));
-            if (StringUtils.hasText(branch)) {
-                cmd.add(3, branch);
-            }
+            List<String> cmd = new ArrayList<>(List.of("git", "-c", "i18n.logOutputEncoding=UTF-8"));
+            cmd.addAll(args);
             ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.directory(new File(dir));
             pb.redirectErrorStream(true);
@@ -350,21 +392,12 @@ public class JenkinsMonitorService {
             }
             if (!process.waitFor(30, TimeUnit.SECONDS)) {
                 process.destroyForcibly();
-                return List.of();
+                return new GitExecResult(-1, output);
             }
-            if (process.exitValue() != 0) {
-                log.debug("git log 执行失败: dir={}, branch={}", dir, branch);
-                return List.of();
-            }
-            return output.lines()
-                    .map(String::trim)
-                    .filter(StringUtils::hasText)
-                    .map(this::formatCommitLine)
-                    .limit(3)
-                    .toList();
+            return new GitExecResult(process.exitValue(), output);
         } catch (Exception e) {
-            log.warn("获取 git 提交日志失败: dir={}, 原因={}", dir, e.getMessage());
-            return List.of();
+            log.warn("git 命令执行失败: dir={}, 原因={}", dir, e.getMessage());
+            return new GitExecResult(-1, "");
         }
     }
 

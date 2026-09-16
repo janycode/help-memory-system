@@ -32,6 +32,9 @@ application-prod.yml
 ## 前端构建产物（由Vite自动生成）
 backend/src/main/resources/static/
 
+## GitHub Issue 图片下载目录
+uploads/github/
+
 ## 数据库文件
 data/
 *.mv.db

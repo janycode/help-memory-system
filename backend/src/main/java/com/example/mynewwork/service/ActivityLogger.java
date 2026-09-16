@@ -78,6 +78,7 @@ public class ActivityLogger {
             case "COMPONENT" -> "技术组件";
             case "PROCESS" -> "业务流程";
             case "PROJECT" -> "项目";
+            case "GITHUB" -> "GitHub 指派任务";
             default -> module;
         };
     }

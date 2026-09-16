@@ -161,6 +161,12 @@ const router = createRouter({
           meta: { title: 'Jenkins监控', requiresAuth: true, toolsMenu: true }
         },
         {
+          path: 'github-issues/',
+          name: 'github-issues',
+          component: () => import('@/views/GitHubIssues.vue'),
+          meta: { title: 'GitHub 指派任务', requiresAuth: true }
+        },
+        {
           path: 'system/',
           name: 'system',
           component: () => import('@/views/SystemConfig.vue'),

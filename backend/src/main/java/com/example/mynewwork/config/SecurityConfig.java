@@ -145,6 +145,7 @@ public class SecurityConfig {
                     "/repositories/**",
                     "/snippets/**",
                     "/iterations/**",
+                    "/github-issues/**",
                     "/dict/**",
                     "/users/**",
                     "/menu-permissions/**",

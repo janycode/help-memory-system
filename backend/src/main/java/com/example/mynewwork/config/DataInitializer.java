@@ -71,7 +71,8 @@ public class DataInitializer implements CommandLineRunner {
             List<String> allMenus = List.of(
                     "home", "iterations", "search", "database", "rocketmq",
                     "environments", "components", "processes", "repositories",
-                    "snippets", "batch-so", "mq-send", "dict", "users", "menu-permissions", "system"
+                    "snippets", "batch-so", "mq-send", "jenkins-monitor", "github-issues",
+                    "dict", "users", "menu-permissions", "system"
             );
             userMenuPermissionService.saveAllowedMenus(admin.getId(), allMenus);
         }
