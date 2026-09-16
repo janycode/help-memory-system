@@ -53,14 +53,14 @@ public class DataInitializer implements CommandLineRunner {
             admin.setCreatedAt(LocalDateTime.now());
             admin.setUpdatedAt(LocalDateTime.now());
             userRepository.save(admin);
-            log.info("初始化管理员用户: admin/admin123");
+            log.info("Init admin user: admin/admin123");
         } else {
             User existing = userRepository.findByUsername("admin").orElse(null);
             if (existing != null && !passwordEncoder.matches("admin123", existing.getPassword())) {
                 existing.setPassword(passwordEncoder.encode("admin123"));
                 existing.setUpdatedAt(LocalDateTime.now());
                 userRepository.save(existing);
-                log.info("重置管理员用户密码: admin/admin123");
+                log.info("Reset admin password: admin/admin123");
             }
         }
     }
@@ -95,14 +95,14 @@ public class DataInitializer implements CommandLineRunner {
             user.setCreatedAt(LocalDateTime.now());
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);
-            log.info("初始化品牌用户: {}/{}", username, password);
+            log.info("Init brand user: {}/{}", username, password);
         } else {
             User existing = userRepository.findByUsername(username).orElse(null);
             if (existing != null && !passwordEncoder.matches(password, existing.getPassword())) {
                 existing.setPassword(passwordEncoder.encode(password));
                 existing.setUpdatedAt(LocalDateTime.now());
                 userRepository.save(existing);
-                log.info("重置品牌用户密码: {}/{}", username, password);
+                log.info("Reset brand password: {}/{}", username, password);
             }
         }
     }
@@ -167,12 +167,12 @@ public class DataInitializer implements CommandLineRunner {
                 dictItem("LOW", "低优先级", 3, "非紧急需求，延后处理")
         ));
 
-        log.info("字典数据初始化完成");
+        log.info("Dict data init done");
     }
 
     private void initSystemConfig() {
         initConfigIfEmpty("system.name", "新人筑基丹", "系统名称，用于登录页、首页和欢迎语");
-        log.info("系统配置初始化完成");
+        log.info("Sys config init done");
     }
 
     private void initConfigIfEmpty(String key, String value, String description) {
@@ -222,7 +222,7 @@ public class DataInitializer implements CommandLineRunner {
                 item.setUpdatedAt(LocalDateTime.now());
                 dictDataRepository.save(item);
             }
-            log.info("更新字典数据: {}", typeCode);
+            log.info("Update dict item: {}", typeCode);
         }
     }
 

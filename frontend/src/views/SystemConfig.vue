@@ -71,7 +71,7 @@ const fetchConfigs = async () => {
       })
     }
   } catch (error) {
-    console.error('获取配置失败:', error)
+    console.error('Get config failed:', error)
     ElMessage.error('获取配置失败')
   }
 }
@@ -85,7 +85,7 @@ const updateConfig = async (id: number) => {
     // 重新获取配置
     await fetchConfigs()
   } catch (error) {
-    console.error('更新配置失败:', error)
+    console.error('Update config failed:', error)
     ElMessage.error('更新配置失败')
   } finally {
     loading[id] = false

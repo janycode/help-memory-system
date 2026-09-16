@@ -58,7 +58,7 @@ public class SystemConfigController {
             @RequestBody Map<String, String> request) {
         String value = request.get("value");
         SystemConfig config = configService.updateConfig(id, value);
-        log.info("更新系统配置: {} = {}", config.getConfigKey(), value);
+        log.info("Update sys config: {} = {}", config.getConfigKey(), value);
         return ResponseEntity.ok(ApiResponse.success(config, "配置更新成功"));
     }
 
@@ -71,7 +71,7 @@ public class SystemConfigController {
                 config.getConfigValue(),
                 config.getDescription()
         );
-        log.info("创建系统配置: {} = {}", config.getConfigKey(), config.getConfigValue());
+        log.info("Create sys config: {} = {}", config.getConfigKey(), config.getConfigValue());
         return ResponseEntity.ok(ApiResponse.success(saved, "配置创建成功"));
     }
 
@@ -80,7 +80,7 @@ public class SystemConfigController {
     @Operation(summary = "删除系统配置（管理员权限）")
     public ResponseEntity<ApiResponse<Void>> deleteConfig(@PathVariable Long id) {
         configService.deleteConfig(id);
-        log.info("删除系统配置: {}", id);
+        log.info("Delete sys config: {}", id);
         return ResponseEntity.ok(ApiResponse.success(null, "配置删除成功"));
     }
 

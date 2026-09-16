@@ -50,7 +50,7 @@ public class SysDictService {
 
     @Transactional
     public SysDictType createDictType(SysDictType dictType) {
-        log.info("创建字典类型: {}", dictType.getTypeCode());
+        log.info("Create dict type: {}", dictType.getTypeCode());
 
         if (dictTypeRepository.existsByTypeCode(dictType.getTypeCode())) {
             throw new DuplicateEntityException("字典类型", "编码", dictType.getTypeCode());
@@ -61,7 +61,7 @@ public class SysDictService {
 
     @Transactional
     public SysDictType updateDictType(Long id, SysDictType dictTypeDetails) {
-        log.info("更新字典类型: {}", id);
+        log.info("Update dict type: {}", id);
 
         SysDictType dictType = getDictTypeById(id);
 
@@ -80,7 +80,7 @@ public class SysDictService {
 
     @Transactional
     public void deleteDictType(Long id) {
-        log.info("删除字典类型: {}", id);
+        log.info("Delete dict type: {}", id);
 
         SysDictType dictType = getDictTypeById(id);
         dictDataRepository.deleteByTypeCode(dictType.getTypeCode());
@@ -104,7 +104,7 @@ public class SysDictService {
 
     @Transactional
     public SysDictData createDictData(SysDictData dictData) {
-        log.info("创建字典数据: {} - {}", dictData.getTypeCode(), dictData.getDataValue());
+        log.info("Create dict item: {} - {}", dictData.getTypeCode(), dictData.getDataValue());
 
         if (dictDataRepository.existsByTypeCodeAndDataValue(dictData.getTypeCode(), dictData.getDataValue())) {
             throw new DuplicateEntityException("字典数据", "值", dictData.getDataValue());
@@ -115,7 +115,7 @@ public class SysDictService {
 
     @Transactional
     public SysDictData updateDictData(Long id, SysDictData dictDataDetails) {
-        log.info("更新字典数据: {}", id);
+        log.info("Update dict item: {}", id);
 
         SysDictData dictData = getDictDataById(id);
 
@@ -135,7 +135,7 @@ public class SysDictService {
 
     @Transactional
     public void deleteDictData(Long id) {
-        log.info("删除字典数据: {}", id);
+        log.info("Delete dict item: {}", id);
 
         if (!dictDataRepository.existsById(id)) {
             throw new EntityNotFoundException("字典数据", id);

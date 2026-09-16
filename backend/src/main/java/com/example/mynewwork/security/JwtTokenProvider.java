@@ -44,7 +44,7 @@ public class JwtTokenProvider {
             throw new IllegalStateException(
                     "JWT 密钥长度不足，至少需要 " + MIN_SECRET_LENGTH + " 个字符");
         }
-        log.info("JWT 配置初始化完成，令牌有效期: {}ms", jwtExpirationInMs);
+        log.info("JWT config init done, token TTL: {}ms", jwtExpirationInMs);
     }
 
     private Key getSigningKey() {
@@ -68,7 +68,7 @@ public class JwtTokenProvider {
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
 
-        log.debug("为用户 {} 生成 JWT 令牌", username);
+        log.debug("Generate JWT token for user {}", username);
         return token;
     }
 
@@ -102,15 +102,15 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token);
             return true;
         } catch (SignatureException ex) {
-            log.error("无效的 JWT 签名: {}", ex.getMessage());
+            log.error("Invalid JWT signature: {}", ex.getMessage());
         } catch (MalformedJwtException ex) {
-            log.error("无效的 JWT 令牌: {}", ex.getMessage());
+            log.error("Invalid JWT token: {}", ex.getMessage());
         } catch (ExpiredJwtException ex) {
-            log.error("JWT 令牌已过期: {}", ex.getMessage());
+            log.error("JWT token expired: {}", ex.getMessage());
         } catch (UnsupportedJwtException ex) {
-            log.error("不支持的 JWT 令牌: {}", ex.getMessage());
+            log.error("Unsupported JWT token: {}", ex.getMessage());
         } catch (IllegalArgumentException ex) {
-            log.error("JWT 声明字符串为空: {}", ex.getMessage());
+            log.error("JWT claims string empty: {}", ex.getMessage());
         }
         return false;
     }

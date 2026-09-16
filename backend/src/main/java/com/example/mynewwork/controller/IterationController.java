@@ -148,10 +148,10 @@ public class IterationController {
             List<Iteration> imported = iterationImportService.importFromDirectory(dirPath);
             return ResponseEntity.ok(ApiResponse.success(imported, "导入成功，共导入 " + imported.size() + " 条需求"));
         } catch (IOException e) {
-            log.error("导入需求IO异常", e);
+            log.error("Import issue IO error", e);
             return ResponseEntity.internalServerError().body(ApiResponse.error("导入失败: " + e.getMessage()));
         } catch (Exception e) {
-            log.error("导入需求异常", e);
+            log.error("Import issue error", e);
             return ResponseEntity.internalServerError().body(ApiResponse.error("导入失败: " + e.getMessage()));
         }
     }
@@ -209,10 +209,10 @@ public class IterationController {
             Map<String, Object> result = iterationImportService.checkAndImportNewFolders();
             return ResponseEntity.ok(ApiResponse.success(result, "检测完成"));
         } catch (IOException e) {
-            log.error("检测新文件夹IO异常", e);
+            log.error("Check new folder IO error", e);
             return ResponseEntity.internalServerError().body(ApiResponse.error("检测失败: " + e.getMessage()));
         } catch (Exception e) {
-            log.error("检测新文件夹异常", e);
+            log.error("Check new folder error", e);
             return ResponseEntity.internalServerError().body(ApiResponse.error("检测失败: " + e.getMessage()));
         }
     }

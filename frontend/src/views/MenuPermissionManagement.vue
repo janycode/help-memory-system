@@ -115,7 +115,7 @@ const fetchPermissions = async () => {
       isAdmin: item.username === 'admin'
     }))
   } catch (error) {
-    console.error('获取用户权限失败:', error)
+    console.error('Get user permissions failed:', error)
     ElMessage.error('获取用户权限失败')
   } finally {
     loading.value = false

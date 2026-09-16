@@ -33,9 +33,9 @@ const testApiCall = async () => {
   error.value = ''
 
   try {
-    console.log('发送API请求...')
+    console.log('Send API request...')
     const response = await request.get('/dashboard/stats')
-    console.log('收到响应:', response)
+    console.log('Response received:', response)
 
     // 尝试不同的数据提取方式
     if (response.data && response.data.data) {
@@ -46,9 +46,9 @@ const testApiCall = async () => {
       stats.value = response
     }
 
-    console.log('最终统计数据:', stats.value)
+    console.log('Final stats:', stats.value)
   } catch (err) {
-    console.error('API调用失败:', err)
+    console.error('API call failed:', err)
     error.value = err.message || '未知错误'
   } finally {
     loading.value = false

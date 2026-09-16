@@ -47,7 +47,7 @@ public class DashboardController {
     @GetMapping("/debug/data-check")
     @Operation(summary = "数据检查", description = "检查各表中的数据情况")
     public ResponseEntity<ApiResponse<Map<String, Object>>> debugDataCheck() {
-        log.info("执行数据检查");
+        log.info("Run data check");
 
         Map<String, Object> debugInfo = new HashMap<>();
 
@@ -85,7 +85,7 @@ public class DashboardController {
     @Operation(summary = "获取最近活动", description = "获取最近的用户活动日志")
     public ResponseEntity<ApiResponse<Object>> getRecentActivities(
             @RequestParam(defaultValue = "5") int limit) {
-        log.info("获取最近{}条活动", limit);
+        log.info("Get recent {} activities", limit);
 
         try {
             List<ActivityLog> activities = activityLogService.findRecentActivities(limit);
@@ -102,7 +102,7 @@ public class DashboardController {
 
             return ResponseEntity.ok(ApiResponse.success(result, "查询成功"));
         } catch (Exception e) {
-            log.error("获取最近活动时发生错误", e);
+            log.error("Get recent activities error", e);
             return ResponseEntity.ok(ApiResponse.error("获取最近活动失败"));
         }
     }
@@ -113,7 +113,7 @@ public class DashboardController {
     @GetMapping("/stats")
     @Operation(summary = "获取统计数据", description = "获取各模块的统计数据")
     public ResponseEntity<ApiResponse<DashboardStats>> getStats() {
-        log.info("获取仪表盘统计数据");
+        log.info("Get dashboard stats");
 
         try {
             DashboardStats stats = new DashboardStats();
@@ -125,7 +125,7 @@ public class DashboardController {
             long projectCount = projectRepository.countByActiveTrue();
             long iterationCount = iterationRepository.countByActiveTrue();
 
-            log.debug("统计数据 - 环境: {}, 组件: {}, 流程: {}, 项目: {}, 迭代: {}",
+            log.debug("Stats - env: {}, component: {}, process: {}, project: {}, iteration: {}",
                      environmentCount, componentCount, processCount, projectCount, iterationCount);
 
             stats.setEnvironments(environmentCount);
@@ -136,7 +136,7 @@ public class DashboardController {
 
             return ResponseEntity.ok(ApiResponse.success(stats, "查询成功"));
         } catch (Exception e) {
-            log.error("获取统计数据时发生错误", e);
+            log.error("Get stats error", e);
             return ResponseEntity.ok(ApiResponse.error("获取统计数据失败"));
         }
     }

@@ -32,7 +32,7 @@ public class DebugController {
         // 打印第一个环境的详细信息到日志
         if (!environments.isEmpty()) {
             Environment env = environments.get(0);
-            log.info("环境数据详情: ID={}, Name={}, URL={}, Username={}, Password={}",
+            log.info("Env detail: ID={}, Name={}, URL={}, Username={}, Password={}",
                     env.getId(), env.getName(), env.getUrl(), env.getUsername(), env.getPassword());
         }
 

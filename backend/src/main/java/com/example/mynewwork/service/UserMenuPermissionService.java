@@ -70,7 +70,7 @@ public class UserMenuPermissionService {
         permission.setUpdatedAt(LocalDateTime.now());
 
         repository.save(permission);
-        log.info("保存用户菜单权限: userId={}, menus={}", userId, menus);
+        log.info("Save menu permissions: userId={}, menus={}", userId, menus);
     }
 
     public List<UserMenuPermission> getAllPermissions() {
@@ -95,7 +95,7 @@ public class UserMenuPermissionService {
         try {
             return objectMapper.readValue(menusJson, new TypeReference<List<String>>() {});
         } catch (JsonProcessingException e) {
-            log.error("解析菜单权限失败: {}", menusJson, e);
+            log.error("Parse menu permissions failed: {}", menusJson, e);
             return new ArrayList<>(ALL_MENUS);
         }
     }

@@ -65,7 +65,7 @@ public class IterationImportService {
                         if (existing.isEmpty()) {
                             iteration.setLocalDirPath(entry.toString());
                             imported.add(iterationRepository.save(iteration));
-                            log.info("导入需求: {} - {}", iteration.getIssueNumber(), iteration.getTitle());
+                            log.info("Import issue: {} - {}", iteration.getIssueNumber(), iteration.getTitle());
                         } else {
                             // 更新已存在的需求，合并项目代码
                             Iteration exist = existing.get();
@@ -86,7 +86,7 @@ public class IterationImportService {
                                 exist.setReleaseNotes(iteration.getReleaseNotes());
                             }
                             iterationRepository.save(exist);
-                            log.info("更新已存在的需求: {} - {}", exist.getIssueNumber(), exist.getTitle());
+                            log.info("Update existing issue: {} - {}", exist.getIssueNumber(), exist.getTitle());
                         }
                     }
                 }
@@ -215,13 +215,13 @@ public class IterationImportService {
                                 releaseContent.append(content);
                             }
                         } catch (IOException e) {
-                            log.warn("读取文件失败: {}", file, e);
+                            log.warn("Read file failed: {}", file, e);
                         }
                     }
                 }
             }
         } catch (IOException e) {
-            log.warn("读取目录内容失败: {}", folder, e);
+            log.warn("Read folder failed: {}", folder, e);
         }
 
         if (notesContent.length() > 0) {
@@ -374,9 +374,9 @@ public class IterationImportService {
             }
 
             iterationRepository.save(iteration);
-            log.info("本地同步到页面: {} - {}", iteration.getIssueNumber(), iteration.getTitle());
+            log.info("Local to page: {} - {}", iteration.getIssueNumber(), iteration.getTitle());
         } catch (IOException e) {
-            log.error("同步失败: {}", iteration.getTitle(), e);
+            log.error("Sync failed: {}", iteration.getTitle(), e);
         }
     }
 
@@ -418,9 +418,9 @@ public class IterationImportService {
                 saveSyncHistory(iteration.getId(), "PAGE_TO_LOCAL", "releaseNotes", oldRelease, newRelease);
             }
 
-            log.info("页面同步到本地: {} - {}", iteration.getIssueNumber(), iteration.getTitle());
+            log.info("Page to local: {} - {}", iteration.getIssueNumber(), iteration.getTitle());
         } catch (IOException e) {
-            log.error("同步失败: {}", iteration.getTitle(), e);
+            log.error("Sync failed: {}", iteration.getTitle(), e);
         }
     }
 
@@ -477,7 +477,7 @@ public class IterationImportService {
      */
     private void updateImpactScope(Iteration iteration, Path dirPath) {
         if (!Files.exists(dirPath) || !Files.isDirectory(dirPath)) {
-            log.warn("目录不存在，跳过更新: {}", dirPath);
+            log.warn("Folder not exist, skip update: {}", dirPath);
             return;
         }
 
@@ -509,10 +509,10 @@ public class IterationImportService {
             }
             iteration.setImpactScope(impactScope.toString());
             iterationRepository.save(iteration);
-            log.info("更新文件列表: {} - {} 个文件", iteration.getIssueNumber(),
+            log.info("Update file list: {} - {} files", iteration.getIssueNumber(),
                     impactScope.length() > 0 ? impactScope.toString().split("\n").length : 0);
         } catch (IOException e) {
-            log.error("更新文件列表失败: {}", iteration.getIssueNumber(), e);
+            log.error("Update file list failed: {}", iteration.getIssueNumber(), e);
         }
     }
 
@@ -545,7 +545,7 @@ public class IterationImportService {
                             iterationRepository.save(localIteration);
                             importedCount++;
                             importedNames.add(entry.getFileName().toString());
-                            log.info("导入新需求: {} - {}", localIteration.getIssueNumber(), localIteration.getTitle());
+                            log.info("Import new issue: {} - {}", localIteration.getIssueNumber(), localIteration.getTitle());
                         }
                     }
                 }

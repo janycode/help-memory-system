@@ -270,7 +270,7 @@ const fetchSystemTitle = async () => {
       systemTitle.value = '新人筑基丹'
     }
   } catch (error) {
-    console.error('获取系统标题失败:', error)
+    console.error('Get title failed:', error)
     systemTitle.value = '新人筑基丹'
   }
 }

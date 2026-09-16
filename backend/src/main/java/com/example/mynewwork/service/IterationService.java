@@ -43,7 +43,7 @@ public class IterationService {
     );
 
     public Optional<Iteration> findById(Long id) {
-        log.debug("根据ID查询迭代: {}", id);
+        log.debug("Get iteration by id: {}", id);
         return iterationRepository.findByIdAndActiveTrue(id);
     }
 
@@ -52,7 +52,7 @@ public class IterationService {
     }
 
     public Page<Iteration> findAll(String status, String priority, Pageable pageable) {
-        log.debug("分页查询迭代, status={}, priority={}", status, priority);
+        log.debug("Page query iterations, status={}, priority={}", status, priority);
 
         Page<Iteration> page;
         if (status != null && !status.isEmpty()) {
@@ -74,22 +74,22 @@ public class IterationService {
     }
 
     public List<Iteration> findAllActive() {
-        log.debug("查询所有活跃的迭代");
+        log.debug("Query all active iterations");
         return iterationRepository.findByActiveTrue();
     }
 
     public List<Iteration> searchByKeyword(String keyword) {
-        log.debug("根据关键字搜索迭代: {}", keyword);
+        log.debug("Search iterations: {}", keyword);
         return iterationRepository.findActiveByKeyword(keyword);
     }
 
     public List<Iteration> findByStatus(String status) {
-        log.debug("按状态查询迭代: {}", status);
+        log.debug("Get iterations by status: {}", status);
         return iterationRepository.findByStatusAndActiveTrue(status);
     }
 
     public List<Iteration> findByPriority(String priority) {
-        log.debug("按优先级查询迭代: {}", priority);
+        log.debug("Get iterations by priority: {}", priority);
         return iterationRepository.findByPriorityAndActiveTrue(priority);
     }
 
@@ -99,7 +99,7 @@ public class IterationService {
 
     @Transactional
     public Iteration createIteration(Iteration iteration, Long userId) {
-        log.info("创建迭代: {}", iteration.getTitle());
+        log.info("Create iteration: {}", iteration.getTitle());
 
         iteration.setCreatedBy(userId);
         iteration.setCreatedAt(LocalDateTime.now());
@@ -117,7 +117,7 @@ public class IterationService {
 
     @Transactional
     public Iteration updateIteration(Long id, Iteration iterationDetails, Long userId) {
-        log.info("更新迭代信息, ID: {}", id);
+        log.info("Update iteration, id: {}", id);
 
         Iteration iteration = iterationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("迭代", id));
@@ -180,7 +180,7 @@ public class IterationService {
 
     @Transactional
     public void deleteIteration(Long id) {
-        log.info("删除迭代, ID: {}", id);
+        log.info("Delete iteration, id: {}", id);
 
         Iteration iteration = iterationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("迭代", id));
@@ -193,7 +193,7 @@ public class IterationService {
 
     @Transactional
     public void permanentlyDeleteIteration(Long id) {
-        log.info("永久删除迭代, ID: {}", id);
+        log.info("Hard delete iteration, id: {}", id);
 
         if (!iterationRepository.existsById(id)) {
             throw new EntityNotFoundException("迭代", id);
@@ -208,7 +208,7 @@ public class IterationService {
     private void createLocalDirAndFiles(Iteration iteration) {
         IterationImportConfig config = importConfigRepository.findByActiveTrue().orElse(null);
         if (config == null || config.getBaseDirPath() == null) {
-            log.debug("未配置导入目录，跳过创建本地目录");
+            log.debug("No import folder configured, skip local folder");
             return;
         }
 
@@ -235,7 +235,7 @@ public class IterationService {
 
             iterationRepository.save(iteration);
         } catch (IOException e) {
-            log.error("创建本地目录失败: {}", e.getMessage(), e);
+            log.error("Create local folder failed: {}", e.getMessage(), e);
         }
     }
 
@@ -291,9 +291,9 @@ public class IterationService {
                     });
             iteration.setImpactScope(impactScope.toString());
             iterationRepository.save(iteration);
-            log.info("更新 impactScope: {}", iteration.getIssueNumber());
+            log.info("Update impactScope: {}", iteration.getIssueNumber());
         } catch (IOException e) {
-            log.error("更新 impactScope 失败: {}", e.getMessage(), e);
+            log.error("Update impactScope failed: {}", e.getMessage(), e);
         }
     }
 
@@ -307,7 +307,7 @@ public class IterationService {
             if (!Boolean.TRUE.equals(iteration.getHasTodos())) {
                 iteration.setHasTodos(true);
                 iterationRepository.save(iteration);
-                log.info("标记有待办: {}", iteration.getIssueNumber());
+                log.info("Mark has todo: {}", iteration.getIssueNumber());
             }
         } else {
             if (Boolean.TRUE.equals(iteration.getHasTodos())) {
@@ -324,7 +324,7 @@ public class IterationService {
             if (!Files.exists(dirPath)) Files.createDirectories(dirPath);
             Files.writeString(dirPath.resolve(fileName), content);
         } catch (IOException e) {
-            log.warn("写入本地文件失败: {}/{}", iteration.getLocalDirPath(), fileName);
+            log.warn("Write local file failed: {}/{}", iteration.getLocalDirPath(), fileName);
         }
     }
 

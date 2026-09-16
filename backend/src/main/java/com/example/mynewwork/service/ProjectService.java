@@ -36,7 +36,7 @@ public class ProjectService {
      * @return 项目信息
      */
     public Optional<Project> findById(Long id) {
-        log.debug("根据ID查询项目: {}", id);
+        log.debug("Get project by id: {}", id);
         return projectRepository.findByIdAndActiveTrue(id);
     }
 
@@ -51,7 +51,7 @@ public class ProjectService {
     }
 
     public Page<Project> findAll(String status, Pageable pageable) {
-        log.debug("分页查询项目, status={}", status);
+        log.debug("Page query projects, status={}", status);
         return projectRepository.findFiltered(status, pageable);
     }
 
@@ -61,7 +61,7 @@ public class ProjectService {
      * @return 活跃的项目列表
      */
     public List<Project> findAllActive() {
-        log.debug("查询所有活跃的项目");
+        log.debug("Query all active projects");
         return projectRepository.findByActiveTrue();
     }
 
@@ -72,7 +72,7 @@ public class ProjectService {
      * @return 项目列表
      */
     public List<Project> findByProjectFullName(String projectFullName) {
-        log.debug("根据项目全称查询项目: {}", projectFullName);
+        log.debug("Get project by full name: {}", projectFullName);
         return projectRepository.findByProjectFullNameAndActiveTrue(projectFullName);
     }
 
@@ -83,7 +83,7 @@ public class ProjectService {
      * @return 匹配的项目列表
      */
     public List<Project> searchByKeyword(String keyword) {
-        log.debug("根据关键字搜索项目: {}", keyword);
+        log.debug("Search projects: {}", keyword);
         return projectRepository.findActiveByKeyword(keyword);
     }
 
@@ -96,7 +96,7 @@ public class ProjectService {
      */
     @Transactional
     public Project createProject(Project project, Long userId) {
-        log.info("创建项目: {}", project.getName());
+        log.info("Create project: {}", project.getName());
 
         // 检查项目名称是否已存在
         if (projectRepository.existsByNameAndActiveTrue(project.getName())) {
@@ -121,7 +121,7 @@ public class ProjectService {
      */
     @Transactional
     public Project updateProject(Long id, Project projectDetails, Long userId) {
-        log.info("更新项目信息, ID: {}", id);
+        log.info("Update project, id: {}", id);
 
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("项目", id));
@@ -155,7 +155,7 @@ public class ProjectService {
      */
     @Transactional
     public void deleteProject(Long id) {
-        log.info("删除项目, ID: {}", id);
+        log.info("Delete project, id: {}", id);
 
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("项目", id));
@@ -173,7 +173,7 @@ public class ProjectService {
      */
     @Transactional
     public void permanentlyDeleteProject(Long id) {
-        log.info("永久删除项目, ID: {}", id);
+        log.info("Hard delete project, id: {}", id);
 
         if (!projectRepository.existsById(id)) {
             throw new EntityNotFoundException("项目", id);

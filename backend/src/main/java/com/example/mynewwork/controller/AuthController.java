@@ -41,7 +41,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> login(
             @RequestBody @Valid LoginRequest loginRequest,
             HttpServletRequest request) {
-        log.info("用户登录: {}", loginRequest.getUsername());
+        log.info("User login: {}", loginRequest.getUsername());
 
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
@@ -71,7 +71,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<User>> register(
             @RequestBody @Valid RegisterRequest registerRequest,
             HttpServletRequest request) {
-        log.info("用户注册: {}", registerRequest.getUsername());
+        log.info("User register: {}", registerRequest.getUsername());
 
         User user = new User();
         user.setUsername(registerRequest.getUsername());
@@ -102,7 +102,7 @@ public class AuthController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody @Valid ChangePasswordRequest request,
             HttpServletRequest httpRequest) {
-        log.info("修改密码: userId={}", userPrincipal.getUser().getId());
+        log.info("Change password: userId={}", userPrincipal.getUser().getId());
 
         userService.changePassword(userPrincipal.getUser().getId(), request.getOldPassword(), request.getNewPassword());
         

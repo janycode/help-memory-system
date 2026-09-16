@@ -36,7 +36,7 @@ public class BusinessProcessService {
      * @return 业务流程信息
      */
     public Optional<BusinessProcess> findById(Long id) {
-        log.debug("根据ID查询业务流程: {}", id);
+        log.debug("Get process by id: {}", id);
         return businessProcessRepository.findByIdAndActiveTrue(id);
     }
 
@@ -51,7 +51,7 @@ public class BusinessProcessService {
     }
 
     public Page<BusinessProcess> findAll(String category, String environmentType, Pageable pageable) {
-        log.debug("分页查询业务流程, category={}, environmentType={}", category, environmentType);
+        log.debug("Page query processes, category={}, environmentType={}", category, environmentType);
         return businessProcessRepository.findFiltered(category, environmentType, pageable);
     }
 
@@ -61,7 +61,7 @@ public class BusinessProcessService {
      * @return 活跃的业务流程列表
      */
     public List<BusinessProcess> findAllActive() {
-        log.debug("查询所有活跃的业务流程");
+        log.debug("Query all active processes");
         return businessProcessRepository.findByActiveTrue();
     }
 
@@ -72,7 +72,7 @@ public class BusinessProcessService {
      * @return 业务流程列表
      */
     public List<BusinessProcess> findByCategory(String category) {
-        log.debug("根据分类查询业务流程: {}", category);
+        log.debug("Get processes by category: {}", category);
         return businessProcessRepository.findByCategory(category);
     }
 
@@ -82,7 +82,7 @@ public class BusinessProcessService {
      * @return 按优先级排序的业务流程列表
      */
     public List<BusinessProcess> findAllOrderByPriority() {
-        log.debug("查询按优先级排序的业务流程");
+        log.debug("Query processes by priority");
         return businessProcessRepository.findByActiveTrueOrderByPriorityDesc();
     }
 
@@ -93,7 +93,7 @@ public class BusinessProcessService {
      * @return 匹配的业务流程列表
      */
     public List<BusinessProcess> searchByKeyword(String keyword) {
-        log.debug("根据关键字搜索业务流程: {}", keyword);
+        log.debug("Search processes: {}", keyword);
         return businessProcessRepository.findActiveByKeyword(keyword);
     }
 
@@ -106,7 +106,7 @@ public class BusinessProcessService {
      */
     @Transactional
     public BusinessProcess createProcess(BusinessProcess process, Long userId) {
-        log.info("创建业务流程: {}", process.getName());
+        log.info("Create process: {}", process.getName());
 
         // 检查流程名称是否已存在
         if (businessProcessRepository.existsByNameAndActiveTrue(process.getName())) {
@@ -131,7 +131,7 @@ public class BusinessProcessService {
      */
     @Transactional
     public BusinessProcess updateProcess(Long id, BusinessProcess processDetails, Long userId) {
-        log.info("更新业务流程, ID: {}", id);
+        log.info("Update process, id: {}", id);
 
         BusinessProcess process = businessProcessRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("业务流程", id));
@@ -167,7 +167,7 @@ public class BusinessProcessService {
      */
     @Transactional
     public void deleteProcess(Long id) {
-        log.info("删除业务流程, ID: {}", id);
+        log.info("Delete process, id: {}", id);
 
         BusinessProcess process = businessProcessRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("业务流程", id));
@@ -185,7 +185,7 @@ public class BusinessProcessService {
      */
     @Transactional
     public void permanentlyDeleteProcess(Long id) {
-        log.info("永久删除业务流程, ID: {}", id);
+        log.info("Hard delete process, id: {}", id);
 
         if (!businessProcessRepository.existsById(id)) {
             throw new EntityNotFoundException("业务流程", id);

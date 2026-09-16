@@ -34,7 +34,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint, Se
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
-        log.warn("未认证的请求: {} {}, 原因: {}",
+        log.warn("Unauthenticated request: {} {}, reason: {}",
                 request.getMethod(), request.getRequestURI(), authException.getMessage());
 
         ApiResponse<Void> apiResponse = ApiResponse.unauthorized();

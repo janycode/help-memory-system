@@ -180,7 +180,7 @@ const fetchUsers = async () => {
     users.value = response.data.content
     total.value = response.data.totalElements
   } catch (error) {
-    console.error('获取用户列表失败:', error)
+    console.error('Get user list failed:', error)
   } finally {
     loading.value = false
   }

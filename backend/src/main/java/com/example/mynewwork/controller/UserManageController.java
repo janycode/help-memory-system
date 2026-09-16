@@ -69,7 +69,7 @@ public class UserManageController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "创建用户")
     public ResponseEntity<ApiResponse<User>> createUser(@Valid @RequestBody User user) {
-        log.info("管理员创建用户: {}", user.getUsername());
+        log.info("Admin create user: {}", user.getUsername());
         User created = userService.createUser(user);
         created.setPassword(null);
         return ResponseEntity.ok(ApiResponse.success(created, "用户创建成功"));
@@ -81,7 +81,7 @@ public class UserManageController {
     public ResponseEntity<ApiResponse<User>> updateUser(
             @PathVariable Long id,
             @Valid @RequestBody User userDetails) {
-        log.info("管理员更新用户: {}", id);
+        log.info("Admin update user: {}", id);
         User updated = userService.updateUser(id, userDetails);
         updated.setPassword(null);
         return ResponseEntity.ok(ApiResponse.success(updated, "用户更新成功"));
@@ -91,7 +91,7 @@ public class UserManageController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "删除用户")
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long id) {
-        log.info("管理员删除用户: {}", id);
+        log.info("Admin delete user: {}", id);
         userService.deleteUser(id);
         return ResponseEntity.ok(ApiResponse.success(null, "用户删除成功"));
     }
@@ -102,7 +102,7 @@ public class UserManageController {
     public ResponseEntity<ApiResponse<Void>> resetPassword(
             @PathVariable Long id,
             @RequestBody PasswordResetRequest request) {
-        log.info("管理员重置用户密码: {}", id);
+        log.info("Admin reset user password: {}", id);
         userService.updatePassword(id, request.getNewPassword());
         return ResponseEntity.ok(ApiResponse.success(null, "密码重置成功"));
     }
@@ -111,7 +111,7 @@ public class UserManageController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "启用/禁用用户")
     public ResponseEntity<ApiResponse<User>> toggleUserStatus(@PathVariable Long id) {
-        log.info("管理员切换用户状态: {}", id);
+        log.info("Admin toggle user status: {}", id);
         User user = userService.findById(id)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
         user.setEnabled(!Boolean.TRUE.equals(user.getEnabled()));

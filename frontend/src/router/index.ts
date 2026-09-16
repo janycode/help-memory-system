@@ -155,6 +155,12 @@ const router = createRouter({
           meta: { title: 'MQ自动称重', requiresAuth: false, toolsMenu: true }
         },
         {
+          path: 'tools/jenkins-monitor/',
+          name: 'jenkins-monitor',
+          component: () => import('@/views/JenkinsMonitor.vue'),
+          meta: { title: 'Jenkins监控', requiresAuth: true, toolsMenu: true }
+        },
+        {
           path: 'system/',
           name: 'system',
           component: () => import('@/views/SystemConfig.vue'),

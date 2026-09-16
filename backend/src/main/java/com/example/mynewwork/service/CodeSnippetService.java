@@ -21,7 +21,7 @@ public class CodeSnippetService {
     private final CodeSnippetRepository codeSnippetRepository;
 
     public Optional<CodeSnippet> findById(Long id) {
-        log.debug("根据ID查询代码片段: {}", id);
+        log.debug("Get snippet by id: {}", id);
         return codeSnippetRepository.findById(id);
     }
 
@@ -30,7 +30,7 @@ public class CodeSnippetService {
     }
 
     public Page<CodeSnippet> findAll(String language, Pageable pageable) {
-        log.debug("分页查询代码片段, language={}", language);
+        log.debug("Page query snippets, language={}", language);
         if (language != null && !language.isEmpty()) {
             return codeSnippetRepository.findByLanguage(language, pageable);
         }
@@ -38,29 +38,29 @@ public class CodeSnippetService {
     }
 
     public List<CodeSnippet> findAllList() {
-        log.debug("查询所有代码片段");
+        log.debug("Query all snippets");
         return codeSnippetRepository.findAll();
     }
 
     public List<CodeSnippet> findByLanguage(String language) {
-        log.debug("根据语言查询代码片段: {}", language);
+        log.debug("Get snippets by language: {}", language);
         return codeSnippetRepository.findByLanguage(language);
     }
 
     public List<CodeSnippet> searchByKeyword(String keyword) {
-        log.debug("搜索代码片段: {}", keyword);
+        log.debug("Search snippets: {}", keyword);
         return codeSnippetRepository.searchByKeyword(keyword);
     }
 
     @Transactional
     public CodeSnippet save(CodeSnippet codeSnippet) {
-        log.debug("保存代码片段: {}", codeSnippet.getTitle());
+        log.debug("Save snippet: {}", codeSnippet.getTitle());
         return codeSnippetRepository.save(codeSnippet);
     }
 
     @Transactional
     public CodeSnippet update(Long id, CodeSnippet codeSnippet) {
-        log.debug("更新代码片段: {}", id);
+        log.debug("Update snippet: {}", id);
         CodeSnippet existing = codeSnippetRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("代码片段不存在"));
         existing.setTitle(codeSnippet.getTitle());
@@ -73,7 +73,7 @@ public class CodeSnippetService {
 
     @Transactional
     public void delete(Long id) {
-        log.debug("删除代码片段: {}", id);
+        log.debug("Delete snippet: {}", id);
         codeSnippetRepository.deleteById(id);
     }
 }

@@ -41,7 +41,7 @@ const openUrl = () => {
     }
     window.open(finalUrl, '_blank')
   } catch (error) {
-    console.error('打开URL失败:', error)
+    console.error('Open URL failed:', error)
   }
 }
 </script>

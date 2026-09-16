@@ -27,7 +27,7 @@ async function searchSnippetsInContent(keyword: string) {
 
     return { data: filteredSnippets }
   } catch (error) {
-    console.error('搜索代码片段失败:', error)
+    console.error('Search snippets failed:', error)
     return { data: [] }
   }
 }

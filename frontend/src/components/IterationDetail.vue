@@ -679,7 +679,7 @@ const loadFileContent = async (type: 'notes' | 'release') => {
       }
     }
   } catch (error) {
-    console.error('读取文件失败:', error)
+    console.error('Read file failed:', error)
   }
 }
 
@@ -701,7 +701,7 @@ const checkFileUpdates = async () => {
         hasUpdate = true
       }
     } catch (error) {
-      console.error('检查文件更新失败:', error)
+      console.error('Check file update failed:', error)
     }
   }
 
@@ -713,7 +713,7 @@ const checkFileUpdates = async () => {
         hasUpdate = true
       }
     } catch (error) {
-      console.error('检查文件更新失败:', error)
+      console.error('Check file update failed:', error)
     }
   }
 }
@@ -841,7 +841,7 @@ const loadSyncHistory = async () => {
     if (currentIterationId !== id) return
     syncHistory.value = response.data || []
   } catch (error) {
-    console.error('加载同步历史失败:', error)
+    console.error('Load sync history failed:', error)
   }
 }
 

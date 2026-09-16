@@ -38,7 +38,7 @@ public class UserService {
      * @return 用户信息
      */
     public Optional<User> findByUsername(String username) {
-        log.debug("根据用户名查询用户: {}", username);
+        log.debug("Get user by username: {}", username);
         return userRepository.findByUsername(username);
     }
 
@@ -49,7 +49,7 @@ public class UserService {
      * @return 用户信息
      */
     public Optional<User> findByEmail(String email) {
-        log.debug("根据邮箱查询用户: {}", email);
+        log.debug("Get user by email: {}", email);
         return userRepository.findByEmail(email);
     }
 
@@ -60,7 +60,7 @@ public class UserService {
      * @return 用户信息
      */
     public Optional<User> findById(Long id) {
-        log.debug("根据ID查询用户: {}", id);
+        log.debug("Get user by id: {}", id);
         return userRepository.findById(id);
     }
 
@@ -71,7 +71,7 @@ public class UserService {
      * @return 用户分页数据
      */
     public Page<User> findAll(Pageable pageable) {
-        log.debug("分页查询所有用户");
+        log.debug("Page query all users");
         return userRepository.findAll(pageable);
     }
 
@@ -82,7 +82,7 @@ public class UserService {
      * @return 匹配的用户列表
      */
     public List<User> searchByKeyword(String keyword) {
-        log.debug("根据关键字搜索用户: {}", keyword);
+        log.debug("Search users: {}", keyword);
         return userRepository.findByKeyword(keyword);
     }
 
@@ -94,7 +94,7 @@ public class UserService {
      */
     @Transactional
     public User createUser(User user) {
-        log.info("创建用户: {}", user.getUsername());
+        log.info("Create user: {}", user.getUsername());
 
         // 检查用户名和邮箱是否已存在
         if (userRepository.existsByUsername(user.getUsername())) {
@@ -122,7 +122,7 @@ public class UserService {
      */
     @Transactional
     public User updateUser(Long id, User userDetails) {
-        log.info("更新用户信息, ID: {}", id);
+        log.info("Update user, id: {}", id);
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("用户", id));
@@ -161,7 +161,7 @@ public class UserService {
      */
     @Transactional
     public void updatePassword(Long id, String newPassword) {
-        log.info("更新用户密码, ID: {}", id);
+        log.info("Update user password, id: {}", id);
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("用户", id));
@@ -181,7 +181,7 @@ public class UserService {
      */
     @Transactional
     public void changePassword(Long userId, String oldPassword, String newPassword) {
-        log.info("修改用户密码, ID: {}", userId);
+        log.info("Change user password, id: {}", userId);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("用户", userId));
@@ -202,7 +202,7 @@ public class UserService {
      */
     @Transactional
     public void updateLastLoginTime(Long id) {
-        log.debug("更新用户最后登录时间, ID: {}", id);
+        log.debug("Update last login, id: {}", id);
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("用户", id));
@@ -218,7 +218,7 @@ public class UserService {
      */
     @Transactional
     public void deleteUser(Long id) {
-        log.info("删除用户, ID: {}", id);
+        log.info("Delete user, id: {}", id);
 
         if (!userRepository.existsById(id)) {
             throw new EntityNotFoundException("用户", id);

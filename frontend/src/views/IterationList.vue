@@ -363,7 +363,7 @@ const selectIteration = async (item: Iteration) => {
   try {
     await iterationStore.fetchIteration(item.id)
   } catch (error) {
-    console.error('获取迭代详情失败:', error)
+    console.error('Get iteration detail failed:', error)
   }
 }
 
@@ -475,7 +475,7 @@ const showImportDialog = async () => {
       importDirPath.value = response.data.baseDirPath
     }
   } catch (error) {
-    console.error('获取导入配置失败:', error)
+    console.error('Get import config failed:', error)
   }
   importDialogVisible.value = true
 }
@@ -519,7 +519,7 @@ const handleRefreshDirs = async () => {
     // 刷新列表
     fetchList()
   } catch (error: any) {
-    console.error('刷新目录失败:', error)
+    console.error('Refresh folder failed:', error)
     ElMessage.error(error.message || '刷新失败')
   } finally {
     refreshing.value = false
@@ -533,7 +533,7 @@ const performAutoSync = async () => {
       fetchList()
     }
   } catch (error) {
-    console.error('自动同步失败:', error)
+    console.error('Auto sync failed:', error)
   }
 }
 
@@ -545,7 +545,7 @@ const checkNewFoldersPeriodically = async () => {
       fetchList()
     }
   } catch (error) {
-    console.error('检测新文件夹失败:', error)
+    console.error('Detect new folder failed:', error)
   }
 }
 

@@ -183,7 +183,7 @@ const fetchActivities = async () => {
     const response = await activityApi.getMyActivities()
     activities.value = response.data
   } catch (error) {
-    console.error('获取活动记录失败:', error)
+    console.error('Get activity log failed:', error)
   }
 }
 

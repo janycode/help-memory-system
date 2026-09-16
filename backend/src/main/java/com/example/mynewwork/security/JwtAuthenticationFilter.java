@@ -52,10 +52,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.debug("设置用户认证信息: {}", username);
+                log.debug("Set user auth: {}", username);
             }
         } catch (Exception ex) {
-            log.error("无法设置用户认证信息", ex);
+            log.error("Set user auth failed", ex);
         }
 
         filterChain.doFilter(request, response);

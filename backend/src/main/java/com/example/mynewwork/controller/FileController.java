@@ -34,7 +34,7 @@ public class FileController {
             String content = Files.readString(filePath);
             return ResponseEntity.ok(ApiResponse.success(Map.of("content", content, "path", path)));
         } catch (IOException e) {
-            log.error("读取文件失败: {}", path, e);
+            log.error("Read file failed: {}", path, e);
             return ResponseEntity.internalServerError().body(ApiResponse.error("读取文件失败: " + e.getMessage()));
         }
     }
@@ -58,7 +58,7 @@ public class FileController {
             Files.writeString(filePath, content != null ? content : "");
             return ResponseEntity.ok(ApiResponse.success(null, "文件保存成功"));
         } catch (IOException e) {
-            log.error("写入文件失败: {}", path, e);
+            log.error("Write file failed: {}", path, e);
             return ResponseEntity.internalServerError().body(ApiResponse.error("写入文件失败: " + e.getMessage()));
         }
     }
@@ -86,7 +86,7 @@ public class FileController {
                     "lastModified", currentModified
             )));
         } catch (IOException e) {
-            log.error("检查文件更新失败: {}", path, e);
+            log.error("Check file update failed: {}", path, e);
             return ResponseEntity.internalServerError().body(ApiResponse.error("检查文件更新失败: " + e.getMessage()));
         }
     }
@@ -115,7 +115,7 @@ public class FileController {
             }
             return ResponseEntity.ok(ApiResponse.success(null, "已打开"));
         } catch (Exception e) {
-            log.error("打开文件失败: {}", path, e);
+            log.error("Open file failed: {}", path, e);
             return ResponseEntity.internalServerError().body(ApiResponse.error("打开失败: " + e.getMessage()));
         }
     }

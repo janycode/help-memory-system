@@ -527,7 +527,7 @@ const loadRecentActivities = async () => {
       recentActivities.value = response.data
     }
   } catch (error) {
-    console.error('加载最近活动失败:', error)
+    console.error('Load recent activities failed:', error)
   }
 }
 
@@ -550,7 +550,7 @@ const handleEnvironmentSubmit = async () => {
     environmentDialog.visible = false
     loadStats()
   } catch (error) {
-    console.error('创建环境失败:', error)
+    console.error('Create env failed:', error)
     ElMessage.error('创建失败')
   } finally {
     environmentDialog.submitting = false
@@ -572,7 +572,7 @@ const handleComponentSubmit = async () => {
     componentDialog.visible = false
     loadStats()
   } catch (error) {
-    console.error('创建组件失败:', error)
+    console.error('Create component failed:', error)
     ElMessage.error('创建失败')
   } finally {
     componentDialog.submitting = false
@@ -594,7 +594,7 @@ const handleProcessSubmit = async () => {
     processDialog.visible = false
     loadStats()
   } catch (error) {
-    console.error('创建流程失败:', error)
+    console.error('Create process failed:', error)
     ElMessage.error('创建失败')
   } finally {
     processDialog.submitting = false
@@ -616,7 +616,7 @@ const handleProjectSubmit = async () => {
     projectDialog.visible = false
     loadStats()
   } catch (error) {
-    console.error('创建项目失败:', error)
+    console.error('Create project failed:', error)
     ElMessage.error('创建失败')
   } finally {
     projectDialog.submitting = false
@@ -638,7 +638,7 @@ const handleSnippetSubmit = async () => {
     snippetDialog.visible = false
     loadStats()
   } catch (error) {
-    console.error('创建代码片段失败:', error)
+    console.error('Create snippet failed:', error)
     ElMessage.error('创建失败')
   } finally {
     snippetDialog.submitting = false
@@ -660,7 +660,7 @@ const handleIterationSubmit = async () => {
     iterationDialog.visible = false
     loadStats()
   } catch (error) {
-    console.error('创建迭代失败:', error)
+    console.error('Create iteration failed:', error)
     ElMessage.error('创建失败')
   } finally {
     iterationDialog.submitting = false
@@ -726,7 +726,7 @@ const loadStats = async () => {
       stats.value.snippets = 0
     }
   } catch (error) {
-    console.error('加载统计数据失败:', error)
+    console.error('Load stats failed:', error)
   }
 }
 

@@ -30,7 +30,7 @@ const fetchDatabasePath = async () => {
     const response = await systemApi.getDatabasePath()
     databasePath.value = response.data.path
   } catch (error) {
-    console.error('获取数据库路径失败:', error)
+    console.error('Get db path failed:', error)
     // 失败时使用默认路径
     databasePath.value = '数据库路径获取失败'
   }

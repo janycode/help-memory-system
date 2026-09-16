@@ -44,7 +44,7 @@ public class SearchController {
     @GetMapping
     @Operation(summary = "全局搜索", description = "跨模块搜索所有内容")
     public ResponseEntity<ApiResponse<SearchResult>> search(@RequestParam String q) {
-        log.info("全局搜索: {}", q);
+        log.info("Global search: {}", q);
 
         SearchResult result = new SearchResult();
         result.setKeyword(q);

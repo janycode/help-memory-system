@@ -120,8 +120,8 @@ public class BusinessToolController {
 
                     try {
                         String requestBody = objectMapper.writeValueAsString(defaultFields);
-                        log.info("[SO] 发起请求: bookingNo={}, url={}", bookingNo, apiUrl);
-                        log.info("[SO] 请求体: {}", requestBody);
+                        log.info("[SO] Send request: bookingNo={}, url={}", bookingNo, apiUrl);
+                        log.info("[SO] Request body: {}", requestBody);
 
                         HttpRequest httpRequest = HttpRequest.newBuilder()
                                 .uri(uri)
@@ -132,7 +132,7 @@ public class BusinessToolController {
                                 .build();
 
                         HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-                        log.info("[SO] 响应: bookingNo={}, status={}, body={}", bookingNo, response.statusCode(), response.body());
+                        log.info("[SO] Response: bookingNo={}, status={}, body={}", bookingNo, response.statusCode(), response.body());
 
                         Map<String, Object> result = new HashMap<>();
                         result.put("bookingNo", bookingNo);
@@ -158,7 +158,7 @@ public class BusinessToolController {
                         creationLog.setEnvironment(environment);
                         soCreationLogRepository.save(creationLog);
                     } catch (Exception e) {
-                        log.error("[SO] 请求失败: bookingNo={}, error={}", bookingNo, e.getMessage(), e);
+                        log.error("[SO] Request failed: bookingNo={}, error={}", bookingNo, e.getMessage(), e);
                         Map<String, Object> errorData = new HashMap<>();
                         errorData.put("bookingNo", bookingNo);
                         errorData.put("error", e.getClass().getSimpleName() + ": " + e.getMessage());
@@ -185,7 +185,7 @@ public class BusinessToolController {
                 emitter.complete();
 
             } catch (Exception e) {
-                log.error("[SO] 批量创建异常", e);
+                log.error("[SO] Batch create error", e);
                 try {
                     emitter.send(SseEmitter.event().name("error").data(Map.of("error", e.getMessage())));
                 } catch (Exception ignored) {}
@@ -300,7 +300,7 @@ public class BusinessToolController {
                         emitter.send(SseEmitter.event().name("receive-success").data(resultData));
 
                     } catch (Exception e) {
-                        log.error("[SO] 接单失败: bookingNo={}", bookingNo, e);
+                        log.error("[SO] Accept failed: bookingNo={}", bookingNo, e);
                         Map<String, Object> errorData = new HashMap<>();
                         errorData.put("bookingNo", bookingNo);
                         errorData.put("error", e.getMessage());
@@ -322,7 +322,7 @@ public class BusinessToolController {
                 emitter.complete();
 
             } catch (Exception e) {
-                log.error("[SO] 批量接单异常", e);
+                log.error("[SO] Batch accept error", e);
                 try {
                     emitter.send(SseEmitter.event().name("error").data(Map.of("error", e.getMessage())));
                 } catch (Exception ignored) {}
@@ -344,7 +344,7 @@ public class BusinessToolController {
             String targetUrl = (String) request.get("targetUrl");
             String env = (String) request.get("env");
 
-            log.info("[MQ] 获取Topic列表: targetUrl={}, env={}", targetUrl, env);
+            log.info("[MQ] Get topic list: targetUrl={}, env={}", targetUrl, env);
 
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                     .uri(URI.create(targetUrl))
@@ -396,7 +396,7 @@ public class BusinessToolController {
             return ApiResponse.success(result);
 
         } catch (Exception e) {
-            log.error("[MQ] 获取Topic列表失败", e);
+            log.error("[MQ] Get topic list failed", e);
             return ApiResponse.error("获取Topic列表失败: " + e.getMessage());
         }
     }
@@ -413,7 +413,7 @@ public class BusinessToolController {
             }
 
             String content = Files.readString(Paths.get(filePath));
-            log.info("[MQ] 预览Java文件: {}", filePath);
+            log.info("[MQ] Preview Java file: {}", filePath);
 
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("content", content);
@@ -422,13 +422,13 @@ public class BusinessToolController {
             return ApiResponse.success(result);
 
         } catch (java.nio.file.NoSuchFileException e) {
-            log.error("[MQ] Java文件不存在: {}", e.getMessage());
+            log.error("[MQ] Java file not found: {}", e.getMessage());
             return ApiResponse.error("文件不存在: " + e.getMessage());
         } catch (java.nio.file.AccessDeniedException e) {
-            log.error("[MQ] Java文件访问权限不足: {}", e.getMessage());
+            log.error("[MQ] Java file access denied: {}", e.getMessage());
             return ApiResponse.error("文件访问权限不足: " + e.getMessage());
         } catch (Exception e) {
-            log.error("[MQ] 预览Java文件失败", e);
+            log.error("[MQ] Preview Java file failed", e);
             return ApiResponse.error("预览Java文件失败: " + e.getMessage());
         }
     }
@@ -445,7 +445,7 @@ public class BusinessToolController {
             }
 
             String content = Files.readString(Paths.get(filePath));
-            log.info("[MQ] 解析Java文件: {}", filePath);
+            log.info("[MQ] Parse Java file: {}", filePath);
 
             String tag = extractTag(content);
             Map<String, Object> messageBody = extractFields(content);
@@ -457,13 +457,13 @@ public class BusinessToolController {
             return ApiResponse.success(result);
 
         } catch (java.nio.file.NoSuchFileException e) {
-            log.error("[MQ] Java文件不存在: {}", e.getMessage());
+            log.error("[MQ] Java file not found: {}", e.getMessage());
             return ApiResponse.error("文件不存在: " + e.getMessage());
         } catch (java.nio.file.AccessDeniedException e) {
-            log.error("[MQ] Java文件访问权限不足: {}", e.getMessage());
+            log.error("[MQ] Java file access denied: {}", e.getMessage());
             return ApiResponse.error("文件访问权限不足: " + e.getMessage());
         } catch (Exception e) {
-            log.error("[MQ] 解析Java文件失败", e);
+            log.error("[MQ] Parse Java file failed", e);
             return ApiResponse.error("解析Java文件失败: " + e.getMessage());
         }
     }
@@ -483,7 +483,7 @@ public class BusinessToolController {
             }
 
             String content = new String(file.getBytes(), StandardCharsets.UTF_8);
-            log.info("[MQ] 解析上传的Java文件: {}", file.getOriginalFilename());
+            log.info("[MQ] Parse uploaded Java file: {}", file.getOriginalFilename());
 
             String tag = extractTag(content);
             Map<String, Object> messageBody = extractFields(content);
@@ -496,7 +496,7 @@ public class BusinessToolController {
             return ApiResponse.success(result);
 
         } catch (Exception e) {
-            log.error("[MQ] 解析上传的Java文件失败", e);
+            log.error("[MQ] Parse uploaded file failed", e);
             return ApiResponse.error("解析Java文件失败: " + e.getMessage());
         }
     }
@@ -512,7 +512,7 @@ public class BusinessToolController {
             }
 
             String content = new String(file.getBytes(), StandardCharsets.UTF_8);
-            log.info("[MQ] 预览上传的Java文件: {}", file.getOriginalFilename());
+            log.info("[MQ] Preview uploaded Java file: {}", file.getOriginalFilename());
 
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("content", content);
@@ -521,7 +521,7 @@ public class BusinessToolController {
             return ApiResponse.success(result);
 
         } catch (Exception e) {
-            log.error("[MQ] 预览上传的Java文件失败", e);
+            log.error("[MQ] Preview uploaded file failed", e);
             return ApiResponse.error("预览Java文件失败: " + e.getMessage());
         }
     }
@@ -593,7 +593,7 @@ public class BusinessToolController {
             payload.put("traceEnabled", traceEnabled);
 
             String postData = objectMapper.writeValueAsString(payload);
-            log.info("[MQ] 发送消息: targetUrl={}, topic={}", targetUrl, topic);
+            log.info("[MQ] Send message: targetUrl={}, topic={}", targetUrl, topic);
 
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                     .uri(URI.create(targetUrl))
@@ -611,11 +611,11 @@ public class BusinessToolController {
             requestBuilder.POST(HttpRequest.BodyPublishers.ofString(postData));
             HttpResponse<String> response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
 
-            log.info("[MQ] 响应: status={}", response.statusCode());
+            log.info("[MQ] Response: status={}", response.statusCode());
             return ApiResponse.success(parseJsonRaw(response.body()));
 
         } catch (Exception e) {
-            log.error("[MQ] 发送失败", e);
+            log.error("[MQ] Send failed", e);
             return ApiResponse.error("发送失败: " + extractRootCause(e));
         }
     }
@@ -692,7 +692,7 @@ public class BusinessToolController {
             com.example.mynewwork.util.HashidsCompat hashids = new com.example.mynewwork.util.HashidsCompat(salt, length);
             return ApiResponse.success(Map.of("result", hashids.encode(input)));
         } catch (Exception e) {
-            log.error("[HashId] 编码失败", e);
+            log.error("[HashId] Encode failed", e);
             return ApiResponse.error("编码失败: " + e.getMessage());
         }
     }
@@ -709,7 +709,7 @@ public class BusinessToolController {
             com.example.mynewwork.util.HashidsCompat hashids = new com.example.mynewwork.util.HashidsCompat(salt, length);
             return ApiResponse.success(Map.of("result", hashids.decode(input)));
         } catch (Exception e) {
-            log.error("[HashId] 解码失败", e);
+            log.error("[HashId] Decode failed", e);
             return ApiResponse.error("解码失败: " + e.getMessage());
         }
     }

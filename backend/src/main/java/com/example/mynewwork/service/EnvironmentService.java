@@ -36,7 +36,7 @@ public class EnvironmentService {
      * @return 环境配置信息
      */
     public Optional<Environment> findById(Long id) {
-        log.debug("根据ID查询环境配置: {}", id);
+        log.debug("Get env by id: {}", id);
         return environmentRepository.findByIdAndActiveTrue(id);
     }
 
@@ -51,7 +51,7 @@ public class EnvironmentService {
     }
 
     public Page<Environment> findAll(String type, Pageable pageable) {
-        log.debug("分页查询环境配置, type={}", type);
+        log.debug("Page query envs, type={}", type);
         return environmentRepository.findFiltered(type, pageable);
     }
 
@@ -61,7 +61,7 @@ public class EnvironmentService {
      * @return 活跃的环境配置列表
      */
     public List<Environment> findAllActive() {
-        log.debug("查询所有活跃的环境配置");
+        log.debug("Query all active envs");
         return environmentRepository.findByActiveTrue();
     }
 
@@ -72,7 +72,7 @@ public class EnvironmentService {
      * @return 环境配置列表
      */
     public List<Environment> findByType(String type) {
-        log.debug("根据类型查询环境配置: {}", type);
+        log.debug("Get envs by type: {}", type);
         return environmentRepository.findByType(type);
     }
 
@@ -83,7 +83,7 @@ public class EnvironmentService {
      * @return 匹配的环境配置列表
      */
     public List<Environment> searchByKeyword(String keyword) {
-        log.debug("根据关键字搜索环境配置: {}", keyword);
+        log.debug("Search envs: {}", keyword);
         return environmentRepository.findActiveByKeyword(keyword);
     }
 
@@ -96,7 +96,7 @@ public class EnvironmentService {
      */
     @Transactional
     public Environment createEnvironment(Environment environment, Long userId) {
-        log.info("创建环境配置: {}", environment.getName());
+        log.info("Create env: {}", environment.getName());
 
         // 检查环境名称是否已存在
         if (environmentRepository.existsByNameAndActiveTrue(environment.getName())) {
@@ -121,7 +121,7 @@ public class EnvironmentService {
      */
     @Transactional
     public Environment updateEnvironment(Long id, Environment environmentDetails, Long userId) {
-        log.info("更新环境配置, ID: {}", id);
+        log.info("Update env, id: {}", id);
 
         Environment environment = environmentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("环境", id));
@@ -160,7 +160,7 @@ public class EnvironmentService {
      */
     @Transactional
     public void deleteEnvironment(Long id) {
-        log.info("删除环境配置, ID: {}", id);
+        log.info("Delete env, id: {}", id);
 
         Environment environment = environmentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("环境", id));
@@ -178,7 +178,7 @@ public class EnvironmentService {
      */
     @Transactional
     public void permanentlyDeleteEnvironment(Long id) {
-        log.info("永久删除环境配置, ID: {}", id);
+        log.info("Hard delete env, id: {}", id);
 
         if (!environmentRepository.existsById(id)) {
             throw new EntityNotFoundException("环境", id);

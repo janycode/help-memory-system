@@ -55,7 +55,7 @@ public class SysDictController {
     @PostMapping("/types")
     @Operation(summary = "创建字典类型")
     public ResponseEntity<ApiResponse<SysDictType>> createDictType(@Valid @RequestBody SysDictType dictType) {
-        log.info("创建字典类型: {}", dictType.getTypeCode());
+        log.info("Create dict type: {}", dictType.getTypeCode());
         SysDictType created = sysDictService.createDictType(dictType);
         return ResponseEntity.ok(ApiResponse.success(created, "创建成功"));
     }
@@ -64,7 +64,7 @@ public class SysDictController {
     @Operation(summary = "更新字典类型")
     public ResponseEntity<ApiResponse<SysDictType>> updateDictType(
             @PathVariable Long id, @Valid @RequestBody SysDictType dictType) {
-        log.info("更新字典类型: {}", id);
+        log.info("Update dict type: {}", id);
         SysDictType updated = sysDictService.updateDictType(id, dictType);
         return ResponseEntity.ok(ApiResponse.success(updated, "更新成功"));
     }
@@ -72,7 +72,7 @@ public class SysDictController {
     @DeleteMapping("/types/{id}")
     @Operation(summary = "删除字典类型")
     public ResponseEntity<ApiResponse<Void>> deleteDictType(@PathVariable Long id) {
-        log.info("删除字典类型: {}", id);
+        log.info("Delete dict type: {}", id);
         sysDictService.deleteDictType(id);
         return ResponseEntity.ok(ApiResponse.success(null, "删除成功"));
     }
@@ -101,7 +101,7 @@ public class SysDictController {
     @PostMapping("/data")
     @Operation(summary = "创建字典数据")
     public ResponseEntity<ApiResponse<SysDictData>> createDictData(@Valid @RequestBody SysDictData dictData) {
-        log.info("创建字典数据: {} - {}", dictData.getTypeCode(), dictData.getDataValue());
+        log.info("Create dict item: {} - {}", dictData.getTypeCode(), dictData.getDataValue());
         SysDictData created = sysDictService.createDictData(dictData);
         return ResponseEntity.ok(ApiResponse.success(created, "创建成功"));
     }
@@ -110,7 +110,7 @@ public class SysDictController {
     @Operation(summary = "更新字典数据")
     public ResponseEntity<ApiResponse<SysDictData>> updateDictData(
             @PathVariable Long id, @Valid @RequestBody SysDictData dictData) {
-        log.info("更新字典数据: {}", id);
+        log.info("Update dict item: {}", id);
         SysDictData updated = sysDictService.updateDictData(id, dictData);
         return ResponseEntity.ok(ApiResponse.success(updated, "更新成功"));
     }
@@ -118,7 +118,7 @@ public class SysDictController {
     @DeleteMapping("/data/id/{id}")
     @Operation(summary = "删除字典数据")
     public ResponseEntity<ApiResponse<Void>> deleteDictData(@PathVariable Long id) {
-        log.info("删除字典数据: {}", id);
+        log.info("Delete dict item: {}", id);
         sysDictService.deleteDictData(id);
         return ResponseEntity.ok(ApiResponse.success(null, "删除成功"));
     }

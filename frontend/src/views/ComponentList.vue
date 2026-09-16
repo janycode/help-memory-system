@@ -404,7 +404,7 @@ const copyToClipboard = async (text: string) => {
     await navigator.clipboard.writeText(text)
     ElMessage.success('已复制到剪贴板')
   } catch (error) {
-    console.error('复制失败:', error)
+    console.error('Copy failed:', error)
     ElMessage.error('复制失败，请手动复制')
   }
 }

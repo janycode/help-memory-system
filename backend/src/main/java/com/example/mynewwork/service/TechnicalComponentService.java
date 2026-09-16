@@ -40,7 +40,7 @@ public class TechnicalComponentService {
      * @return 技术组件信息
      */
     public Optional<TechnicalComponent> findById(Long id) {
-        log.debug("根据ID查询技术组件: {}", id);
+        log.debug("Get component by id: {}", id);
         return technicalComponentRepository.findByIdAndActiveTrue(id);
     }
 
@@ -55,7 +55,7 @@ public class TechnicalComponentService {
     }
 
     public Page<TechnicalComponent> findAll(String category, String environmentType, Pageable pageable) {
-        log.debug("分页查询技术组件, category={}, environmentType={}", category, environmentType);
+        log.debug("Page query components, category={}, environmentType={}", category, environmentType);
         return technicalComponentRepository.findFiltered(category, environmentType, pageable);
     }
 
@@ -65,7 +65,7 @@ public class TechnicalComponentService {
      * @return 活跃的技术组件列表
      */
     public List<TechnicalComponent> findAllActive() {
-        log.debug("查询所有活跃的技术组件");
+        log.debug("Query all active components");
         return technicalComponentRepository.findByActiveTrue();
     }
 
@@ -76,7 +76,7 @@ public class TechnicalComponentService {
      * @return 技术组件列表
      */
     public List<TechnicalComponent> findByCategory(String category) {
-        log.debug("根据分类查询技术组件: {}", category);
+        log.debug("Get components by category: {}", category);
         return technicalComponentRepository.findByCategory(category);
     }
 
@@ -87,7 +87,7 @@ public class TechnicalComponentService {
      * @return 技术组件列表
      */
     public List<TechnicalComponent> findByEnvironmentId(Long environmentId) {
-        log.debug("根据环境ID查询技术组件: {}", environmentId);
+        log.debug("Get components by env id: {}", environmentId);
         return technicalComponentRepository.findByEnvironmentIdAndActiveTrue(environmentId);
     }
 
@@ -98,7 +98,7 @@ public class TechnicalComponentService {
      * @return 匹配的技术组件列表
      */
     public List<TechnicalComponent> searchByKeyword(String keyword) {
-        log.debug("根据关键字搜索技术组件: {}", keyword);
+        log.debug("Search components: {}", keyword);
         return technicalComponentRepository.findActiveByKeyword(keyword);
     }
 
@@ -111,7 +111,7 @@ public class TechnicalComponentService {
      */
     @Transactional
     public TechnicalComponent createComponent(TechnicalComponent component, Long userId) {
-        log.info("创建技术组件: {}", component.getName());
+        log.info("Create component: {}", component.getName());
 
         // 检查组件名称是否已存在
         if (technicalComponentRepository.existsByNameAndActiveTrue(component.getName())) {
@@ -136,7 +136,7 @@ public class TechnicalComponentService {
      */
     @Transactional
     public TechnicalComponent updateComponent(Long id, TechnicalComponent componentDetails, Long userId) {
-        log.info("更新技术组件, ID: {}", id);
+        log.info("Update component, id: {}", id);
 
         TechnicalComponent component = technicalComponentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("技术组件", id));
@@ -208,7 +208,7 @@ public class TechnicalComponentService {
                 return new HealthCheckResult(true, elapsed, host + ":" + port + " 可达");
             }
         } catch (Exception e) {
-            log.warn("健康检查失败, componentId={}, error={}", id, e.getMessage());
+            log.warn("Health check failed, componentId={}, error={}", id, e.getMessage());
             return new HealthCheckResult(false, 0, "连接失败: " + e.getMessage());
         }
     }
@@ -220,7 +220,7 @@ public class TechnicalComponentService {
      */
     @Transactional
     public void deleteComponent(Long id) {
-        log.info("删除技术组件, ID: {}", id);
+        log.info("Delete component, id: {}", id);
 
         TechnicalComponent component = technicalComponentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("技术组件", id));
@@ -238,7 +238,7 @@ public class TechnicalComponentService {
      */
     @Transactional
     public void permanentlyDeleteComponent(Long id) {
-        log.info("永久删除技术组件, ID: {}", id);
+        log.info("Hard delete component, id: {}", id);
 
         if (!technicalComponentRepository.existsById(id)) {
             throw new EntityNotFoundException("技术组件", id);

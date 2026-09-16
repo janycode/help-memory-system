@@ -53,7 +53,7 @@ jobs:
         if: success()
         run: |
           COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --format='· %s (%an)' --no-merges 2>/dev/null || echo "· 无法获取提交记录")
-          CONTENT="✅ GitHub自动构建完成"
+          CONTENT="✅ help-memory-system 助记单项目 自动构建完成"
           CONTENT="${CONTENT}\n项目：${{ github.repository }}"
           CONTENT="${CONTENT}\n分支：${{ github.ref_name }}"
           CONTENT="${CONTENT}\n提交记录：\n${COMMITS}"
@@ -71,7 +71,7 @@ jobs:
         if: failure()
         run: |
           COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --format='· %s (%an)' --no-merges 2>/dev/null || echo "· 无法获取提交记录")
-          CONTENT="❌ GitHub自动构建失败"
+          CONTENT="❌ help-memory-system 助记单项目 自动构建失败"
           CONTENT="${CONTENT}\n项目：${{ github.repository }}"
           CONTENT="${CONTENT}\n分支：${{ github.ref_name }}"
           CONTENT="${CONTENT}\n提交记录：\n${COMMITS}"
