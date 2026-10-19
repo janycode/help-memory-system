@@ -1,5 +1,10 @@
 <template>
-  <div class="rocketmq-container">
+  <PageContainer class="rocketmq-page" :scrollable="false">
+    <PageHeader
+      title="RocketMQ 消息发送"
+      description="按环境向 RocketMQ 主题发送消息，支持请求体预览、历史记录与 Java 文件解析"
+    />
+
     <div class="main-content">
       <div class="config-panel">
         <div class="url-config-header" @click="urlConfigExpanded = !urlConfigExpanded">
@@ -248,7 +253,7 @@
         <el-button @click="javaPreviewVisible = false">关闭</el-button>
       </template>
     </el-dialog>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -258,6 +263,8 @@ import { rocketmqApi } from '@/api/rocketmq'
 import type { RocketMqEnvironment } from '@/types/rocketmq'
 import { normalizeDomain } from '@/utils/domain'
 import { useEnvConfig } from '@/composables/useEnvConfig'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
 
@@ -837,11 +844,10 @@ watch(messageBodyJson, (val) => {
 </script>
 
 <style scoped>
-.rocketmq-container {
-  padding: .625rem 1rem;
-  height: 100%;
+.rocketmq-page :deep(.page-container__inner) {
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .main-content {

@@ -23,7 +23,9 @@ const MIGRATED_VIEWS = [
   'views/Profile.vue',
   'views/HashId.vue',
   'views/Database.vue',
-  'views/IterationList.vue'
+  'views/IterationList.vue',
+  'views/RocketMQ.vue',
+  'views/MqSend.vue'
 ]
 
 // 共享展示层，逐令牌化
@@ -44,8 +46,14 @@ const ALLOWED_DIALOG_WIDTHS = new Set([
   'var(--app-dialog-width-lg)'
 ])
 
-// 定高特例白名单，格式 相对 src 的路径:宽度值
-const SPECIAL_DIALOG_WIDTHS = new Set(['views/GitHubIssues.vue:min(1180px, 94vw)'])
+// 定高或宽幅特例白名单，格式 相对 src 的路径:宽度值
+// MQ 工具页的请求体与代码预览需要超出 800 档的宽度，保留百分比写法
+const SPECIAL_DIALOG_WIDTHS = new Set([
+  'views/GitHubIssues.vue:min(1180px, 94vw)',
+  'views/RocketMQ.vue:90%',
+  'views/RocketMQ.vue:80%',
+  'views/MqSend.vue:90%'
+])
 
 // 已被全局规则取代的局部选择器
 const LEGACY_SELECTORS = [

@@ -1,5 +1,10 @@
 <template>
-  <div class="mq-send-container">
+  <PageContainer class="mq-send-page" :scrollable="false">
+    <PageHeader
+      title="MQ 自动称重"
+      description="构造并发送称重消息，支持多环境切换与请求体预览"
+    />
+
     <div class="main-content">
       <!-- 配置面板 -->
       <div class="config-panel">
@@ -125,7 +130,7 @@
       <pre class="json-box request-preview-body" v-html="highlightJson(currentPayload)"></pre>
     </el-dialog>
     </div>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -134,6 +139,8 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 
 const userStore = useUserStore()
 
@@ -368,11 +375,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.mq-send-container {
-  padding: 10px 16px;
-  height: 100%;
+.mq-send-page :deep(.page-container__inner) {
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .main-content {
