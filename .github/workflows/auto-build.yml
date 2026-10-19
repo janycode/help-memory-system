@@ -41,7 +41,7 @@ jobs:
 
       # ========== 第二步：构建后端 ==========
       - name: 配置JDK 21（后端）
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'

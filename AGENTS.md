@@ -58,6 +58,7 @@ cd ../backend && mvn clean package -DskipTests
 - **CI 顺序与本地一致**：`.github/workflows/auto-build.yml` 已改为前端先行（pnpm 安装、架构不变量检查、构建），再打包后端，最后上传 `backend/target/*.jar` 与 `backend/src/main/resources/static`。此前存在的顺序颠倒、使用 npm、上传不存在的 `frontend/dist` 三个问题均已修复。
 - **CI 会跑架构闸门**：工作流在前端构建前执行 `pnpm check:ui`，不变量不通过则构建失败。新页面若使用 `PageContainer` 却未登记 `MIGRATED_VIEWS`，CI 会拦住。
 - **CI 通知依赖密钥**：企业微信通知读取 `secrets.QYWX_WEBHOOK_URL`，未配置时该步骤自动跳过，不会把构建判为失败。
+- **CI action 版本待升级**：运行时提示 checkout、setup-node、upload-artifact、pnpm/action-setup 仍为 v4 主版本（Node 20 运行时已弃用），最新主版本分别是 v7、v7、v7、v6。已在用的 setup-java 已升至 v5。升级需逐个验证，勿一次性全部跳版本。
 - **H2 相对路径**：JDBC URL `jdbc:h2:file:../data/mynewwork` 相对 `backend/` 目录，数据库文件在项目根目录 `data/`（已 gitignore）。删掉 `data/*` 可重置数据库。
 - **无测试套件**：前后端均无测试。`mvn test` 运行 0 个测试。
 - **首次启动初始化**：`DataInitializer.java` 创建 `admin/admin123` 与 `testuser/123456`，并初始化字典、菜单权限、系统配置。**注意**：admin 密码每次启动若与 `admin123` 不一致都会被重置。
