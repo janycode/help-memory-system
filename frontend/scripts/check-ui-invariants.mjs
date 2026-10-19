@@ -22,7 +22,8 @@ const MIGRATED_VIEWS = [
   'views/JenkinsMonitor.vue',
   'views/Profile.vue',
   'views/HashId.vue',
-  'views/Database.vue'
+  'views/Database.vue',
+  'views/IterationList.vue'
 ]
 
 // 共享展示层，逐令牌化
