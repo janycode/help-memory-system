@@ -402,33 +402,6 @@ onMounted(() => {
   margin: 0;
 }
 
-.search-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.search-inputs {
-  display: flex;
-  gap: 16px;
-  flex: 1;
-}
-
-.search-input {
-  width: 600px;
-}
-
-.filter-select {
-  width: auto;
-  min-width: 120px;
-}
-
-.search-button {
-  margin-left: auto;
-}
-
 .copyable-text {
   cursor: pointer;
   display: flex;

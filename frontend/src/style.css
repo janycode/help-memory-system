@@ -95,32 +95,32 @@ html.dark body {
 
 .search-bar {
   display: flex;
-  gap: 12px;
+  gap: var(--app-space-3);
   align-items: center;
-  margin-bottom: 16px;
-  padding: 16px 20px;
-  background: #fff;
-  border-radius: var(--card-border-radius);
-  box-shadow: var(--card-shadow);
-}
-
-html.dark .search-bar {
-  background: #1d1e1f;
+  margin-bottom: var(--app-space-4);
+  padding: var(--app-space-4) var(--app-space-5);
+  background: var(--app-bg-surface);
+  border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-card);
 }
 
 .search-inputs {
   display: flex;
-  gap: 12px;
+  gap: var(--app-space-3);
   flex: 1;
   align-items: center;
 }
 
 .search-inputs .search-input {
-  max-width: 320px;
+  width: var(--app-search-input-width);
 }
 
 .filter-select {
-  width: 160px;
+  width: var(--app-search-select-width);
+}
+
+.search-button {
+  margin-left: auto;
 }
 
 /* 表格容器 */
@@ -167,8 +167,17 @@ html.dark .form-container {
 
 /* 对话框 */
 .el-dialog {
+  --el-dialog-margin-top: 6vh;
   border-radius: 12px !important;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: var(--app-dialog-max-height);
+}
+
+/* 定高弹窗自行管理高度，不受统一上限约束 */
+.el-dialog.prompt-dialog {
+  max-height: none;
 }
 
 .el-dialog__header {
@@ -178,6 +187,8 @@ html.dark .form-container {
 
 .el-dialog__body {
   padding: 20px 24px;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .el-dialog__footer {

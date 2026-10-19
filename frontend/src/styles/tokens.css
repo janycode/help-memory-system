@@ -28,7 +28,8 @@
 
   /* 语义颜色，全部指向 Element Plus 变量，暗色自动生效 */
   --app-bg-page: var(--el-bg-color-page);
-  --app-bg-surface: var(--el-bg-color);
+  /* 卡片面用 overlay 变量：亮色 #fff，暗色 #1d1e1f，与页面底色形成层次 */
+  --app-bg-surface: var(--el-bg-color-overlay);
   --app-text-primary: var(--el-text-color-primary);
   --app-text-regular: var(--el-text-color-regular);
   --app-text-secondary: var(--el-text-color-secondary);

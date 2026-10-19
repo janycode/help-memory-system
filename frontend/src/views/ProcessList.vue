@@ -489,38 +489,6 @@ useKeyboardShortcuts(pageShortcuts)
   margin: 0;
 }
 
-.search-bar {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.search-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.search-inputs {
-  display: flex;
-  gap: 16px;
-  flex: 1;
-}
-
-.search-input {
-  width: 600px;
-}
-
-.filter-select {
-  width: auto;
-  min-width: 120px;
-}
-
-.search-button {
-  margin-left: auto;
-}
-
 .pagination-wrapper {
   margin-top: 20px;
   display: flex;
