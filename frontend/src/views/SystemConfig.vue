@@ -1,52 +1,49 @@
 <template>
-  <div class="system-config">
-    <div class="container">
-      <div class="page-header">
-        <h1 class="page-title">系统配置</h1>
-        <p class="page-description">管理系统全局配置项</p>
-      </div>
+  <PageContainer :max-width="1200">
+    <PageHeader title="系统配置" description="管理系统全局配置项" />
       
-      <div class="config-list">
-        <el-card v-for="config in configs" :key="config.id" class="config-card">
-          <template #header>
-            <div class="config-header">
-              <div>
-                <span class="config-key">{{ getConfigName(config.configKey) }}</span>
-                <span class="config-subtitle">{{ getConfigLocation(config.configKey) }}</span>
-              </div>
-              <span class="config-description">{{ config.description }}</span>
+    <div class="config-list">
+      <el-card v-for="config in configs" :key="config.id" class="config-card">
+        <template #header>
+          <div class="config-header">
+            <div>
+              <span class="config-key">{{ getConfigName(config.configKey) }}</span>
+              <span class="config-subtitle">{{ getConfigLocation(config.configKey) }}</span>
             </div>
-          </template>
-          <div class="config-body">
-            <el-input 
-              v-model="editingConfigs[config.id]" 
-              placeholder="请输入配置值"
-              class="config-input"
-            />
-            <div class="config-tip">
-              <el-tag size="small" :type="getConfigEffectType(config.configKey)">{{ getConfigEffect(config.configKey) }}</el-tag>
-            </div>
-            <div class="config-actions">
-              <el-button 
-                type="primary" 
-                size="small" 
-                @click="updateConfig(config.id)"
-                :loading="loading[config.id]"
-              >
-                保存
-              </el-button>
-            </div>
+            <span class="config-description">{{ config.description }}</span>
           </div>
-        </el-card>
-      </div>
+        </template>
+        <div class="config-body">
+          <el-input 
+            v-model="editingConfigs[config.id]" 
+            placeholder="请输入配置值"
+            class="config-input"
+          />
+          <div class="config-tip">
+            <el-tag size="small" :type="getConfigEffectType(config.configKey)">{{ getConfigEffect(config.configKey) }}</el-tag>
+          </div>
+          <div class="config-actions">
+            <el-button 
+              type="primary" 
+              size="small" 
+              @click="updateConfig(config.id)"
+              :loading="loading[config.id]"
+            >
+              保存
+            </el-button>
+          </div>
+        </div>
+      </el-card>
     </div>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, reactive } from 'vue'
 import { systemApi } from '@/api/system'
 import { ElMessage, ElCard, ElInput, ElButton } from 'element-plus'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 
 interface SystemConfig {
   id: number
@@ -142,34 +139,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.system-config {
-  min-height: 100vh;
-  padding: 20px;
-  background-color: #f5f7fa;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.page-header {
-  margin-bottom: 30px;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 8px;
-}
-
-.page-description {
-  font-size: 14px;
-  color: #606266;
-  margin: 0;
-}
-
 .config-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
@@ -193,20 +162,20 @@ onMounted(() => {
 .config-key {
   font-size: 16px;
   font-weight: 500;
-  color: #303133;
+  color: var(--app-text-primary);
   display: block;
   margin-bottom: 4px;
 }
 
 .config-subtitle {
   font-size: 12px;
-  color: #606266;
+  color: var(--app-text-regular);
   display: block;
 }
 
 .config-description {
   font-size: 12px;
-  color: #909399;
+  color: var(--app-text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

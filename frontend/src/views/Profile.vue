@@ -1,5 +1,7 @@
 <template>
-  <div class="profile-page">
+  <PageContainer>
+    <PageHeader title="个人中心" description="查看账号信息与操作记录" />
+
     <el-row :gutter="20">
       <el-col :span="8">
         <el-card class="profile-card">
@@ -96,12 +98,14 @@
         </el-card>
       </el-col>
     </el-row>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { useUserStore } from '@/stores/user'
 import { authApi } from '@/api/user'
 import { activityApi, type ActivityLog } from '@/api/activity'
@@ -193,10 +197,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.profile-page {
-  padding: 20px;
-}
-
 .profile-card {
   text-align: center;
 }
@@ -210,8 +210,8 @@ onMounted(() => {
 }
 
 .info-item {
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  padding: var(--app-space-2) 0;
+  border-bottom: 1px solid var(--app-border-light);
 }
 
 .info-item:last-child {
@@ -219,8 +219,8 @@ onMounted(() => {
 }
 
 .info-item label {
-  color: #666;
-  margin-right: 10px;
+  color: var(--app-text-regular);
+  margin-right: var(--app-space-3);
 }
 
 .card-header {
@@ -230,14 +230,14 @@ onMounted(() => {
 .activity-content {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--app-space-3);
 }
 
 .activity-module {
-  color: #409eff;
+  color: var(--el-color-primary);
 }
 
 .activity-desc {
-  color: #666;
+  color: var(--app-text-regular);
 }
 </style>

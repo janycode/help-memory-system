@@ -2,6 +2,8 @@
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { hashidApi } from '@/api/hashid'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 
 const mode = ref<'encode' | 'decode'>('decode')
 const input = ref('')
@@ -55,12 +57,10 @@ const handleReset = () => {
 </script>
 
 <template>
-  <div class="hashid-page">
-    <el-card shadow="never">
-      <template #header>
-        <span class="page-title">HashId 加解密工具</span>
-      </template>
+  <PageContainer :max-width="640">
+    <PageHeader title="HashId 加解密工具" description="在 HashId 字符串与整数之间转换" />
 
+    <el-card shadow="never">
       <el-form label-position="top">
         <el-form-item label="模式">
           <el-radio-group v-model="mode">
@@ -100,23 +100,12 @@ const handleReset = () => {
       </template>
       <div class="result-content">{{ resultDisplay }}</div>
     </el-card>
-  </div>
+  </PageContainer>
 </template>
 
 <style scoped>
-.hashid-page {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.page-title {
-  font-size: 18px;
-  font-weight: 600;
-}
-
 .result-card {
-  margin-top: 16px;
+  margin-top: var(--app-space-4);
 }
 
 .result-content {
@@ -124,8 +113,8 @@ const handleReset = () => {
   font-weight: 600;
   color: var(--el-color-primary);
   word-break: break-all;
-  padding: 12px;
+  padding: var(--app-space-3);
   background: var(--el-fill-color-light);
-  border-radius: 4px;
+  border-radius: var(--app-radius-control);
 }
 </style>

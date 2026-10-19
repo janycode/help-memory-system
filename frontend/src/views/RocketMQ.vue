@@ -1,5 +1,10 @@
 <template>
-  <div class="rocketmq-container">
+  <PageContainer fill :scrollable="false">
+    <PageHeader
+      title="RocketMQ 消息发送"
+      description="按环境向 RocketMQ 主题发送消息，支持请求体预览、历史记录与 Java 文件解析"
+    />
+
     <div class="main-content">
       <div class="config-panel">
         <div class="url-config-header" @click="urlConfigExpanded = !urlConfigExpanded">
@@ -184,11 +189,11 @@
       </div>
     </div>
 
-    <el-dialog v-model="requestPreviewVisible" title="请求体完整预览" width="90%" :close-on-click-modal="false">
+    <el-dialog v-model="requestPreviewVisible" title="请求体完整预览" width="90%" :close-on-click-modal="false" destroy-on-close>
       <pre class="json-box request-preview-body" v-html="highlightJson(buildPayloadForDisplay())"></pre>
     </el-dialog>
 
-    <el-dialog v-model="historyDialogVisible" title="历史消息" width="80%" :close-on-click-modal="false">
+    <el-dialog v-model="historyDialogVisible" title="历史消息" width="80%" :close-on-click-modal="false" destroy-on-close>
       <div class="history-toolbar">
         <span class="history-count">共 {{ filteredHistoryList.length }}/{{ MAX_HISTORY }} 条记录</span>
         <el-button size="small" type="danger" @click="clearHistory" :disabled="filteredHistoryList.length === 0">清空历史</el-button>
@@ -237,7 +242,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog v-model="javaPreviewVisible" title="Java文件预览" width="80%" :close-on-click-modal="false">
+    <el-dialog v-model="javaPreviewVisible" title="Java文件预览" width="80%" :close-on-click-modal="false" destroy-on-close>
       <div class="java-preview-header">
         <span class="java-preview-path">{{ javaPreviewFilePath }}</span>
       </div>
@@ -248,7 +253,7 @@
         <el-button @click="javaPreviewVisible = false">关闭</el-button>
       </template>
     </el-dialog>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -258,6 +263,8 @@ import { rocketmqApi } from '@/api/rocketmq'
 import type { RocketMqEnvironment } from '@/types/rocketmq'
 import { normalizeDomain } from '@/utils/domain'
 import { useEnvConfig } from '@/composables/useEnvConfig'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
 
@@ -837,12 +844,6 @@ watch(messageBodyJson, (val) => {
 </script>
 
 <style scoped>
-.rocketmq-container {
-  padding: .625rem 1rem;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
 
 .main-content {
   display: flex;
@@ -878,7 +879,7 @@ watch(messageBodyJson, (val) => {
 .preview-panel,
 .send-panel,
 .result-panel {
-  background: #fff;
+  background: var(--app-bg-surface);
   border-radius: .375rem;
   padding: .625rem .75rem;
   box-shadow: 0 .0625rem .375rem 0 rgba(0, 0, 0, 0.08);
@@ -1287,7 +1288,7 @@ watch(messageBodyJson, (val) => {
   border: none;
   outline: none;
   box-sizing: border-box;
-  background: #fff;
+  background: var(--app-bg-surface);
 }
 
 .panel-title {
@@ -1409,7 +1410,7 @@ watch(messageBodyJson, (val) => {
 }
 
 .history-section {
-  background: #fff;
+  background: var(--app-bg-surface);
   border: .0625rem solid #ebeef5;
   border-radius: .25rem;
   padding: .375rem .5rem;
@@ -1477,7 +1478,7 @@ watch(messageBodyJson, (val) => {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: .75rem;
   line-height: 1.6;
-  background: #fff;
+  background: var(--app-bg-surface);
   white-space: pre;
   overflow-x: auto;
 }

@@ -1558,7 +1558,7 @@ onUnmounted(() => {
 .diff-new {
   flex: 1;
   min-width: 0;
-  background: #fff;
+  background: var(--app-bg-surface);
 }
 
 .diff-label {

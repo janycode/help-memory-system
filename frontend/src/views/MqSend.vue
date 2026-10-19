@@ -1,5 +1,10 @@
 <template>
-  <div class="mq-send-container">
+  <PageContainer fill :scrollable="false">
+    <PageHeader
+      title="MQ 自动称重"
+      description="构造并发送称重消息，支持多环境切换与请求体预览"
+    />
+
     <div class="main-content">
       <!-- 配置面板 -->
       <div class="config-panel">
@@ -121,11 +126,11 @@
         </div>
       </div>
 
-    <el-dialog v-model="requestPreviewVisible" title="请求体完整预览" width="90%" :close-on-click-modal="false">
+    <el-dialog v-model="requestPreviewVisible" title="请求体完整预览" width="90%" :close-on-click-modal="false" destroy-on-close>
       <pre class="json-box request-preview-body" v-html="highlightJson(currentPayload)"></pre>
     </el-dialog>
     </div>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -134,6 +139,8 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 
 const userStore = useUserStore()
 
@@ -368,12 +375,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.mq-send-container {
-  padding: 10px 16px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
 
 .main-content {
   display: flex;
@@ -386,7 +387,7 @@ onMounted(() => {
 .config-panel,
 .preview-panel,
 .result-panel {
-  background: #fff;
+  background: var(--app-bg-surface);
   border-radius: 6px;
   padding: 10px 12px;
   box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.08);

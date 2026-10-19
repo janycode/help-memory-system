@@ -1,161 +1,161 @@
 <template>
-  <div class="dashboard">
-    <div class="container">
-      <!-- 搜索区域 -->
-      <el-card class="global-search-card" :shadow="'never'">
-        <div class="search-layout">
-          <div class="search-box-section">
-            <el-input
-              v-model="searchKeyword"
-              placeholder="搜索项目、组件、流程、技术资料..."
-              clearable
-              @keyup.enter="handleGlobalSearch"
-              class="search-input"
-            >
-              <template #prefix>
-                <el-icon class="search-icon"><Search /></el-icon>
-              </template>
-            </el-input>
-            <el-button type="primary" @click="handleGlobalSearch" class="search-btn">
-              搜索
-            </el-button>
-          </div>
+  <PageContainer>
+    <PageHeader title="首页" description="全局检索与最近动态" />
 
-          <!-- 搜索历史 -->
-          <div v-if="searchHistory.length > 0" class="search-history-section">
-            <div class="history-content">
-              <div class="history-header">
-                <span class="history-title">搜索历史</span>
-                <el-button type="text" @click="clearSearchHistory" size="small">清除</el-button>
-              </div>
-              <div class="history-list">
-                <el-tag
-                  v-for="(item, index) in searchHistory.slice(0, 10)"
-                  :key="index"
-                  class="history-tag"
-                  @click="selectSearchHistory(item)"
-                  closable
-                  @close.stop="removeSearchHistory(index)"
-                >
-                  {{ item }}
-                </el-tag>
-              </div>
+    <!-- 搜索区域 -->
+    <el-card class="global-search-card" shadow="never">
+      <div class="search-layout">
+        <div class="search-box-section">
+          <el-input
+            v-model="searchKeyword"
+            placeholder="搜索项目、组件、流程、技术资料..."
+            clearable
+            @keyup.enter="handleGlobalSearch"
+            class="search-input"
+          >
+            <template #prefix>
+              <el-icon class="search-icon"><Search /></el-icon>
+            </template>
+          </el-input>
+          <el-button type="primary" @click="handleGlobalSearch" class="search-btn">
+            搜索
+          </el-button>
+        </div>
+
+        <!-- 搜索历史 -->
+        <div v-if="searchHistory.length > 0" class="search-history-section">
+          <div class="history-content">
+            <div class="history-header">
+              <span class="history-title">搜索历史</span>
+              <el-button type="text" @click="clearSearchHistory" size="small">清除</el-button>
+            </div>
+            <div class="history-list">
+              <el-tag
+                v-for="(item, index) in searchHistory.slice(0, 10)"
+                :key="index"
+                class="history-tag"
+                @click="selectSearchHistory(item)"
+                closable
+                @close.stop="removeSearchHistory(index)"
+              >
+                {{ item }}
+              </el-tag>
             </div>
           </div>
         </div>
-      </el-card>
+      </div>
+    </el-card>
 
-      <!-- 统计卡片 -->
-      <div class="stats-row">
-        <div class="stat-card" @click="navigateTo('/environments')">
-          <div class="stat-icon environment">
-            <el-icon :size="24"><Monitor /></el-icon>
-          </div>
-          <div class="stat-info">
-            <div class="stat-number">{{ stats.environments }}</div>
-            <div class="stat-label">环境管理</div>
-          </div>
+    <!-- 统计卡片 -->
+    <div class="stats-row">
+      <div class="stat-card" @click="navigateTo('/environments')">
+        <div class="stat-icon environment">
+          <el-icon :size="24"><Monitor /></el-icon>
         </div>
-
-        <div class="stat-card" @click="navigateTo('/components')">
-          <div class="stat-icon component">
-            <el-icon :size="24"><Tickets /></el-icon>
-          </div>
-          <div class="stat-info">
-            <div class="stat-number">{{ stats.components }}</div>
-            <div class="stat-label">技术组件</div>
-          </div>
-        </div>
-
-        <div class="stat-card" @click="navigateTo('/processes')">
-          <div class="stat-icon process">
-            <el-icon :size="24"><Document /></el-icon>
-          </div>
-          <div class="stat-info">
-            <div class="stat-number">{{ stats.processes }}</div>
-            <div class="stat-label">业务流程</div>
-          </div>
-        </div>
-
-        <div class="stat-card" @click="navigateTo('/repositories')">
-          <div class="stat-icon project">
-            <el-icon :size="24"><UserFilled /></el-icon>
-          </div>
-          <div class="stat-info">
-            <div class="stat-number">{{ stats.projects }}</div>
-            <div class="stat-label">代码仓库</div>
-          </div>
-        </div>
-
-        <div class="stat-card" @click="navigateTo('/iterations')">
-          <div class="stat-icon iteration">
-            <el-icon :size="24"><List /></el-icon>
-          </div>
-          <div class="stat-info">
-            <div class="stat-number">{{ stats.iterations }}</div>
-            <div class="stat-label">迭代管理</div>
-          </div>
-        </div>
-
-        <div class="stat-card" @click="navigateTo('/snippets')">
-          <div class="stat-icon snippet">
-            <el-icon :size="24"><Bell /></el-icon>
-          </div>
-          <div class="stat-info">
-            <div class="stat-number">{{ stats.snippets }}</div>
-            <div class="stat-label">代码片段</div>
-          </div>
+        <div class="stat-info">
+          <div class="stat-number">{{ stats.environments }}</div>
+          <div class="stat-label">环境管理</div>
         </div>
       </div>
 
-      <!-- 快速操作 -->
-      <div class="quick-actions">
-        <h3 class="section-title">快速操作</h3>
-        <div class="action-buttons">
-          <el-button type="primary" class="action-btn blue" @click="showAddEnvironmentDialog">
-            创建环境信息
-          </el-button>
-          <el-button type="success" class="action-btn green" @click="showAddComponentDialog">
-            创建技术组件
-          </el-button>
-          <el-button type="warning" class="action-btn orange" @click="showAddProcessDialog">
-            创建业务流程
-          </el-button>
-          <el-button type="info" class="action-btn gray" @click="showAddProjectDialog">
-            创建代码仓库
-          </el-button>
-          <el-button class="action-btn purple" @click="showAddIterationDialog">
-            创建迭代任务
-          </el-button>
-          <el-button type="danger" class="action-btn red" @click="showAddSnippetDialog">
-            创建代码片段
-          </el-button>
+      <div class="stat-card" @click="navigateTo('/components')">
+        <div class="stat-icon component">
+          <el-icon :size="24"><Tickets /></el-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-number">{{ stats.components }}</div>
+          <div class="stat-label">技术组件</div>
         </div>
       </div>
 
-      <!-- 最近活动 -->
-      <div class="recent-activities">
-        <h3 class="section-title">最近活动</h3>
-        <el-table :data="recentActivities" stripe style="width: 100%" v-if="recentActivities.length > 0">
-          <el-table-column prop="createdAt" label="时间" min-width="170">
-            <template #default="{ row }">
-              {{ formatDate(row.createdAt) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="用户" width="100">
-            <template #default="{ row }">
-              <el-tag size="small" type="primary">{{ row.username || 'admin' }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="module" label="操作" min-width="120" />
-          <el-table-column prop="description" label="模块" min-width="150" />
-        </el-table>
-        <el-empty v-else description="暂无活动记录" />
+      <div class="stat-card" @click="navigateTo('/processes')">
+        <div class="stat-icon process">
+          <el-icon :size="24"><Document /></el-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-number">{{ stats.processes }}</div>
+          <div class="stat-label">业务流程</div>
+        </div>
+      </div>
+
+      <div class="stat-card" @click="navigateTo('/repositories')">
+        <div class="stat-icon project">
+          <el-icon :size="24"><UserFilled /></el-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-number">{{ stats.projects }}</div>
+          <div class="stat-label">代码仓库</div>
+        </div>
+      </div>
+
+      <div class="stat-card" @click="navigateTo('/iterations')">
+        <div class="stat-icon iteration">
+          <el-icon :size="24"><List /></el-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-number">{{ stats.iterations }}</div>
+          <div class="stat-label">迭代管理</div>
+        </div>
+      </div>
+
+      <div class="stat-card" @click="navigateTo('/snippets')">
+        <div class="stat-icon snippet">
+          <el-icon :size="24"><Bell /></el-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-number">{{ stats.snippets }}</div>
+          <div class="stat-label">代码片段</div>
+        </div>
       </div>
     </div>
 
+    <!-- 快速操作 -->
+    <div class="quick-actions">
+      <h3 class="section-title">快速操作</h3>
+      <div class="action-buttons">
+        <el-button type="primary" class="action-btn blue" @click="showAddEnvironmentDialog">
+          创建环境信息
+        </el-button>
+        <el-button type="success" class="action-btn green" @click="showAddComponentDialog">
+          创建技术组件
+        </el-button>
+        <el-button type="warning" class="action-btn orange" @click="showAddProcessDialog">
+          创建业务流程
+        </el-button>
+        <el-button type="info" class="action-btn gray" @click="showAddProjectDialog">
+          创建代码仓库
+        </el-button>
+        <el-button class="action-btn purple" @click="showAddIterationDialog">
+          创建迭代任务
+        </el-button>
+        <el-button type="danger" class="action-btn red" @click="showAddSnippetDialog">
+          创建代码片段
+        </el-button>
+      </div>
+    </div>
+
+    <!-- 最近活动 -->
+    <div class="recent-activities">
+      <h3 class="section-title">最近活动</h3>
+      <el-table :data="recentActivities" stripe style="width: 100%" v-if="recentActivities.length > 0">
+        <el-table-column prop="createdAt" label="时间" min-width="170">
+          <template #default="{ row }">
+            {{ formatDate(row.createdAt) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="用户" width="100">
+          <template #default="{ row }">
+            <el-tag size="small" type="primary">{{ row.username || 'admin' }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="module" label="操作" min-width="120" />
+        <el-table-column prop="description" label="模块" min-width="150" />
+      </el-table>
+      <el-empty v-else description="暂无活动记录" />
+    </div>
+
     <!-- 环境新增弹窗 -->
-    <el-dialog v-model="environmentDialog.visible" title="新增环境" width="600px" destroy-on-close>
+    <el-dialog v-model="environmentDialog.visible" title="新增环境" width="var(--app-dialog-width-md)" destroy-on-close>
       <el-form :model="environmentDialog.formData" :rules="environmentDialog.rules" ref="environmentDialog.formRef" label-width="100px">
         <el-form-item label="环境名称" prop="name">
           <el-input v-model="environmentDialog.formData.name" placeholder="请输入环境名称" />
@@ -185,213 +185,213 @@
     </el-dialog>
 
     <!-- 组件新增弹窗 -->
-    <el-dialog v-model="componentDialog.visible" title="新增组件" width="600px" destroy-on-close>
-      <el-form :model="componentDialog.formData" :rules="componentDialog.rules" ref="componentDialog.formRef" label-width="100px">
-        <el-form-item label="组件名称" prop="name">
-          <el-input v-model="componentDialog.formData.name" placeholder="请输入组件名称" />
-        </el-form-item>
-        <el-form-item label="组件分类" prop="category">
-          <el-select v-model="componentDialog.formData.category" placeholder="请选择组件分类">
-            <el-option v-for="item in componentDialog.categoryOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="环境" prop="environmentId">
-          <el-select v-model="componentDialog.formData.environmentId" placeholder="请选择环境" clearable>
-            <el-option v-for="env in componentDialog.environments" :key="env.id" :label="getEnvironmentDisplayLabel(env)" :value="env.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="版本" prop="version">
-          <el-input v-model="componentDialog.formData.version" placeholder="请输入版本号" />
-        </el-form-item>
-        <el-form-item label="访问地址" prop="url">
-          <el-input v-model="componentDialog.formData.url" placeholder="请输入访问地址" />
-        </el-form-item>
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="componentDialog.formData.username" placeholder="请输入用户名" />
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="componentDialog.formData.password" type="password" placeholder="请输入密码" show-password />
-        </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="componentDialog.formData.description" type="textarea" :rows="3" placeholder="请输入描述" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="componentDialog.visible = false">取消</el-button>
-        <el-button type="primary" @click="handleComponentSubmit" :loading="componentDialog.submitting">确定</el-button>
-      </template>
-    </el-dialog>
+  <el-dialog v-model="componentDialog.visible" title="新增组件" width="var(--app-dialog-width-md)" destroy-on-close>
+    <el-form :model="componentDialog.formData" :rules="componentDialog.rules" ref="componentDialog.formRef" label-width="100px">
+      <el-form-item label="组件名称" prop="name">
+        <el-input v-model="componentDialog.formData.name" placeholder="请输入组件名称" />
+      </el-form-item>
+      <el-form-item label="组件分类" prop="category">
+        <el-select v-model="componentDialog.formData.category" placeholder="请选择组件分类">
+          <el-option v-for="item in componentDialog.categoryOptions" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="环境" prop="environmentId">
+        <el-select v-model="componentDialog.formData.environmentId" placeholder="请选择环境" clearable>
+          <el-option v-for="env in componentDialog.environments" :key="env.id" :label="getEnvironmentDisplayLabel(env)" :value="env.id" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="版本" prop="version">
+        <el-input v-model="componentDialog.formData.version" placeholder="请输入版本号" />
+      </el-form-item>
+      <el-form-item label="访问地址" prop="url">
+        <el-input v-model="componentDialog.formData.url" placeholder="请输入访问地址" />
+      </el-form-item>
+      <el-form-item label="用户名" prop="username">
+        <el-input v-model="componentDialog.formData.username" placeholder="请输入用户名" />
+      </el-form-item>
+      <el-form-item label="密码" prop="password">
+        <el-input v-model="componentDialog.formData.password" type="password" placeholder="请输入密码" show-password />
+      </el-form-item>
+      <el-form-item label="描述" prop="description">
+        <el-input v-model="componentDialog.formData.description" type="textarea" :rows="3" placeholder="请输入描述" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="componentDialog.visible = false">取消</el-button>
+      <el-button type="primary" @click="handleComponentSubmit" :loading="componentDialog.submitting">确定</el-button>
+    </template>
+  </el-dialog>
 
     <!-- 流程新增弹窗 -->
-    <el-dialog v-model="processDialog.visible" title="新增流程" width="700px" destroy-on-close>
-      <el-form :model="processDialog.formData" :rules="processDialog.rules" ref="processDialog.formRef" label-width="100px">
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="流程名称" prop="name">
-              <el-input v-model="processDialog.formData.name" placeholder="请输入流程名称" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="流程分类" prop="category">
-              <el-select v-model="processDialog.formData.category" placeholder="请选择流程分类">
-                <el-option v-for="item in processDialog.categoryOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="环境" prop="environmentId">
-              <el-select v-model="processDialog.formData.environmentId" placeholder="请选择环境" clearable>
-                <el-option label="不区分环境" :value="null" />
-                <el-option v-for="env in processDialog.environments" :key="env.id" :label="getEnvironmentDisplayLabel(env)" :value="env.id" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="优先级" prop="priority">
-              <el-input-number v-model="processDialog.formData.priority" :min="0" :max="100" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="processDialog.formData.description" type="textarea" :rows="3" placeholder="请输入描述" />
-        </el-form-item>
-        <el-form-item label="流程步骤" prop="processFlow">
-          <el-input v-model="processDialog.formData.processFlow" type="textarea" :rows="5" placeholder="请输入流程步骤说明" />
-        </el-form-item>
-        <el-form-item label="注意事项" prop="precautions">
-          <el-input v-model="processDialog.formData.precautions" type="textarea" :rows="3" placeholder="请输入注意事项" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="processDialog.visible = false">取消</el-button>
-        <el-button type="primary" @click="handleProcessSubmit" :loading="processDialog.submitting">确定</el-button>
-      </template>
-    </el-dialog>
+  <el-dialog v-model="processDialog.visible" title="新增流程" width="var(--app-dialog-width-md)" destroy-on-close>
+    <el-form :model="processDialog.formData" :rules="processDialog.rules" ref="processDialog.formRef" label-width="100px">
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="流程名称" prop="name">
+            <el-input v-model="processDialog.formData.name" placeholder="请输入流程名称" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="流程分类" prop="category">
+            <el-select v-model="processDialog.formData.category" placeholder="请选择流程分类">
+              <el-option v-for="item in processDialog.categoryOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="环境" prop="environmentId">
+            <el-select v-model="processDialog.formData.environmentId" placeholder="请选择环境" clearable>
+              <el-option label="不区分环境" :value="null" />
+              <el-option v-for="env in processDialog.environments" :key="env.id" :label="getEnvironmentDisplayLabel(env)" :value="env.id" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="优先级" prop="priority">
+            <el-input-number v-model="processDialog.formData.priority" :min="0" :max="100" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-form-item label="描述" prop="description">
+        <el-input v-model="processDialog.formData.description" type="textarea" :rows="3" placeholder="请输入描述" />
+      </el-form-item>
+      <el-form-item label="流程步骤" prop="processFlow">
+        <el-input v-model="processDialog.formData.processFlow" type="textarea" :rows="5" placeholder="请输入流程步骤说明" />
+      </el-form-item>
+      <el-form-item label="注意事项" prop="precautions">
+        <el-input v-model="processDialog.formData.precautions" type="textarea" :rows="3" placeholder="请输入注意事项" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="processDialog.visible = false">取消</el-button>
+      <el-button type="primary" @click="handleProcessSubmit" :loading="processDialog.submitting">确定</el-button>
+    </template>
+  </el-dialog>
 
     <!-- 项目新增弹窗 -->
-    <el-dialog v-model="projectDialog.visible" title="新增代码仓库" width="700px" destroy-on-close>
-      <el-form :model="projectDialog.formData" :rules="projectDialog.rules" ref="projectDialog.formRef" label-width="100px">
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="代码仓库名称" prop="name">
-              <el-input v-model="projectDialog.formData.name" placeholder="请输入代码仓库名称" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="代码仓库状态" prop="status">
-              <el-select v-model="projectDialog.formData.status" placeholder="请选择代码仓库状态">
-                <el-option v-for="item in projectDialog.statusOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="项目全称" prop="projectFullName">
-              <el-input v-model="projectDialog.formData.projectFullName" placeholder="请输入项目全称" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="端口号" prop="port">
-              <el-input v-model="projectDialog.formData.port" placeholder="请输入端口号" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-form-item label="代码仓库" prop="codeRepository">
-          <el-input v-model="projectDialog.formData.codeRepository" placeholder="请输入代码仓库地址" />
-        </el-form-item>
-        <el-form-item label="文档位置" prop="documentPath">
-          <el-input v-model="projectDialog.formData.documentPath" placeholder="请输入文档位置" />
-        </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="projectDialog.formData.description" type="textarea" :rows="3" placeholder="请输入描述" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="projectDialog.visible = false">取消</el-button>
-        <el-button type="primary" @click="handleProjectSubmit" :loading="projectDialog.submitting">确定</el-button>
-      </template>
-    </el-dialog>
+  <el-dialog v-model="projectDialog.visible" title="新增代码仓库" width="var(--app-dialog-width-md)" destroy-on-close>
+    <el-form :model="projectDialog.formData" :rules="projectDialog.rules" ref="projectDialog.formRef" label-width="100px">
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="代码仓库名称" prop="name">
+            <el-input v-model="projectDialog.formData.name" placeholder="请输入代码仓库名称" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="代码仓库状态" prop="status">
+            <el-select v-model="projectDialog.formData.status" placeholder="请选择代码仓库状态">
+              <el-option v-for="item in projectDialog.statusOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="项目全称" prop="projectFullName">
+            <el-input v-model="projectDialog.formData.projectFullName" placeholder="请输入项目全称" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="端口号" prop="port">
+            <el-input v-model="projectDialog.formData.port" placeholder="请输入端口号" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-form-item label="代码仓库" prop="codeRepository">
+        <el-input v-model="projectDialog.formData.codeRepository" placeholder="请输入代码仓库地址" />
+      </el-form-item>
+      <el-form-item label="文档位置" prop="documentPath">
+        <el-input v-model="projectDialog.formData.documentPath" placeholder="请输入文档位置" />
+      </el-form-item>
+      <el-form-item label="描述" prop="description">
+        <el-input v-model="projectDialog.formData.description" type="textarea" :rows="3" placeholder="请输入描述" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="projectDialog.visible = false">取消</el-button>
+      <el-button type="primary" @click="handleProjectSubmit" :loading="projectDialog.submitting">确定</el-button>
+    </template>
+  </el-dialog>
 
     <!-- 代码片段新增弹窗 -->
-    <el-dialog v-model="snippetDialog.visible" title="新增代码片段" width="800px" destroy-on-close>
-      <el-form :model="snippetDialog.formData" :rules="snippetDialog.rules" ref="snippetDialog.formRef" label-width="100px">
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="snippetDialog.formData.title" placeholder="请输入标题" />
-        </el-form-item>
-        <el-form-item label="编程语言" prop="language">
-          <el-select v-model="snippetDialog.formData.language" placeholder="请选择编程语言" class="full-width">
-            <el-option label="Java" value="java" />
-            <el-option label="Vue" value="vue" />
-            <el-option label="JavaScript" value="javascript" />
-            <el-option label="SQL" value="sql" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="标签" prop="tags">
-          <el-input v-model="snippetDialog.formData.tags" placeholder="请输入标签，多个标签用逗号分隔" />
-        </el-form-item>
-        <el-form-item label="代码" prop="code">
-          <el-input v-model="snippetDialog.formData.code" type="textarea" :rows="15" placeholder="请输入代码" class="code-textarea" />
-        </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="snippetDialog.formData.description" type="textarea" :rows="2" placeholder="请输入描述" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="snippetDialog.visible = false">取消</el-button>
-        <el-button type="primary" @click="handleSnippetSubmit" :loading="snippetDialog.submitting">确定</el-button>
-      </template>
-    </el-dialog>
+  <el-dialog v-model="snippetDialog.visible" title="新增代码片段" width="var(--app-dialog-width-lg)" destroy-on-close>
+    <el-form :model="snippetDialog.formData" :rules="snippetDialog.rules" ref="snippetDialog.formRef" label-width="100px">
+      <el-form-item label="标题" prop="title">
+        <el-input v-model="snippetDialog.formData.title" placeholder="请输入标题" />
+      </el-form-item>
+      <el-form-item label="编程语言" prop="language">
+        <el-select v-model="snippetDialog.formData.language" placeholder="请选择编程语言" class="full-width">
+          <el-option label="Java" value="java" />
+          <el-option label="Vue" value="vue" />
+          <el-option label="JavaScript" value="javascript" />
+          <el-option label="SQL" value="sql" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="标签" prop="tags">
+        <el-input v-model="snippetDialog.formData.tags" placeholder="请输入标签，多个标签用逗号分隔" />
+      </el-form-item>
+      <el-form-item label="代码" prop="code">
+        <el-input v-model="snippetDialog.formData.code" type="textarea" :rows="15" placeholder="请输入代码" class="code-textarea" />
+      </el-form-item>
+      <el-form-item label="描述" prop="description">
+        <el-input v-model="snippetDialog.formData.description" type="textarea" :rows="2" placeholder="请输入描述" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="snippetDialog.visible = false">取消</el-button>
+      <el-button type="primary" @click="handleSnippetSubmit" :loading="snippetDialog.submitting">确定</el-button>
+    </template>
+  </el-dialog>
 
     <!-- 迭代新增弹窗 -->
-    <el-dialog v-model="iterationDialog.visible" title="新增迭代任务" width="600px" destroy-on-close>
-      <el-form :model="iterationDialog.formData" :rules="iterationDialog.rules" ref="iterationDialog.formRef" label-width="100px">
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="Issue编号" prop="issueNumber">
-              <el-input v-model="iterationDialog.formData.issueNumber" placeholder="如：ISSUE-123" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="项目简称" prop="projectCode">
-              <el-input v-model="iterationDialog.formData.projectCode" placeholder="如：mynewwork" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-form-item label="需求概要" prop="title">
-          <el-input v-model="iterationDialog.formData.title" placeholder="需求概要描述" />
-        </el-form-item>
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="状态" prop="status">
-              <el-select v-model="iterationDialog.formData.status" placeholder="请选择状态">
-                <el-option label="需求提出" value="pending" />
-                <el-option label="开发中" value="developing" />
-                <el-option label="测试中" value="testing" />
-                <el-option label="已上线" value="released" />
-                <el-option label="已关闭" value="closed" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="优先级" prop="priority">
-              <el-select v-model="iterationDialog.formData.priority" placeholder="请选择优先级">
-                <el-option label="高" value="high" />
-                <el-option label="中" value="medium" />
-                <el-option label="低" value="low" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-      <template #footer>
-        <el-button @click="iterationDialog.visible = false">取消</el-button>
-        <el-button type="primary" @click="handleIterationSubmit" :loading="iterationDialog.submitting">确定</el-button>
-      </template>
-    </el-dialog>
-  </div>
+  <el-dialog v-model="iterationDialog.visible" title="新增迭代任务" width="var(--app-dialog-width-md)" destroy-on-close>
+    <el-form :model="iterationDialog.formData" :rules="iterationDialog.rules" ref="iterationDialog.formRef" label-width="100px">
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="Issue编号" prop="issueNumber">
+            <el-input v-model="iterationDialog.formData.issueNumber" placeholder="如：ISSUE-123" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="项目简称" prop="projectCode">
+            <el-input v-model="iterationDialog.formData.projectCode" placeholder="如：mynewwork" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-form-item label="需求概要" prop="title">
+        <el-input v-model="iterationDialog.formData.title" placeholder="需求概要描述" />
+      </el-form-item>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="状态" prop="status">
+            <el-select v-model="iterationDialog.formData.status" placeholder="请选择状态">
+              <el-option label="需求提出" value="pending" />
+              <el-option label="开发中" value="developing" />
+              <el-option label="测试中" value="testing" />
+              <el-option label="已上线" value="released" />
+              <el-option label="已关闭" value="closed" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="优先级" prop="priority">
+            <el-select v-model="iterationDialog.formData.priority" placeholder="请选择优先级">
+              <el-option label="高" value="high" />
+              <el-option label="中" value="medium" />
+              <el-option label="低" value="low" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </el-form>
+    <template #footer>
+      <el-button @click="iterationDialog.visible = false">取消</el-button>
+      <el-button type="primary" @click="handleIterationSubmit" :loading="iterationDialog.submitting">确定</el-button>
+    </template>
+  </el-dialog>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -399,6 +399,8 @@ import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import request from '@/api/request'
 import { activityApi, type ActivityLog } from '@/api/activity'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { Search, Monitor, Cpu, Document, Folder, Plus, Tickets, UserFilled, Bell, List } from '@element-plus/icons-vue'
 import { systemApi } from '@/api/system'
 import { ElMessage } from 'element-plus'
@@ -766,27 +768,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.dashboard {
-  min-height: 100%;
-}
-
-/* ===== 页面标题 ===== */
-.page-header {
-  margin-bottom: 20px;
-}
-
-.page-header h1 {
-  font-size: 22px;
-  font-weight: 600;
-  color: #1d2129;
-  margin: 0;
-}
-
-.page-description {
-  color: #86909c;
-  font-size: 14px;
-  margin-top: 4px;
-}
 
 /* ===== 全局搜索卡片 ===== */
 .global-search-card {
@@ -889,7 +870,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 16px;
   padding: 22px 24px;
-  background: #fff;
+  background: var(--app-bg-surface);
   border-radius: var(--card-border-radius);
   box-shadow: var(--card-shadow);
   cursor: pointer;
@@ -961,7 +942,7 @@ html.dark .stat-card {
 
 /* ===== 快速操作 ===== */
 .quick-actions {
-  background: #fff;
+  background: var(--app-bg-surface);
   border-radius: var(--card-border-radius);
   box-shadow: var(--card-shadow);
   padding: 20px 24px;
@@ -1026,7 +1007,7 @@ html.dark .quick-actions {
 
 /* ===== 最近活动 ===== */
 .recent-activities {
-  background: #fff;
+  background: var(--app-bg-surface);
   border-radius: var(--card-border-radius);
   box-shadow: var(--card-shadow);
   padding: 20px 24px;

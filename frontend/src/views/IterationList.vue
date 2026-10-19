@@ -1,209 +1,213 @@
 <template>
-  <div class="iteration-board">
-    <!-- 左侧面板：需求列表 -->
-    <div class="board-left">
-      <div class="left-header">
-        <h3 class="board-title">开发记录</h3>
-        <div class="header-actions">
-          <el-tooltip content="刷新目录" placement="top">
-            <el-button size="small" @click="handleRefreshDirs" :loading="refreshing">
-              <el-icon><Refresh /></el-icon>
+  <PageContainer fill>
+    <PageHeader title="迭代管理" description="左侧选择开发记录，右侧查看与编辑需求详情" />
+
+    <div class="iteration-board">
+      <!-- 左侧面板：需求列表 -->
+      <div class="board-left">
+        <div class="left-header">
+          <h3 class="board-title">开发记录</h3>
+          <div class="header-actions">
+            <el-tooltip content="刷新目录" placement="top">
+              <el-button size="small" @click="handleRefreshDirs" :loading="refreshing">
+                <el-icon><Refresh /></el-icon>
+              </el-button>
+            </el-tooltip>
+            <el-button size="small" @click="showImportDialog">
+              <el-icon><Upload /></el-icon>
+              导入
             </el-button>
-          </el-tooltip>
-          <el-button size="small" @click="showImportDialog">
-            <el-icon><Upload /></el-icon>
-            导入
-          </el-button>
-          <el-button type="primary" size="small" @click="handleAdd">
-            <el-icon><Plus /></el-icon>
-            新建
-          </el-button>
-        </div>
-      </div>
-
-      <!-- 搜索和筛选 -->
-      <div class="left-filters">
-        <el-input
-          v-model="searchKeyword"
-          placeholder="搜索编号、项目、标题..."
-          clearable
-          size="small"
-          @keyup.enter="handleSearch"
-          @clear="handleSearch"
-        >
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-        </el-input>
-        <div class="filter-row">
-          <el-select v-model="filterStatus" placeholder="状态" clearable size="small" @change="handleFilter">
-            <el-option
-              v-for="item in statusOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-          <el-select v-model="filterPriority" placeholder="优先级" clearable size="small" @change="handleFilter">
-            <el-option
-              v-for="item in priorityOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </div>
-      </div>
-
-      <!-- 需求列表 -->
-      <div class="issue-list" v-loading="iterationStore.isLoading">
-        <div
-          v-for="item in iterationStore.iterations"
-          :key="item.id"
-          class="issue-card"
-          :class="{ active: selectedId === item.id }"
-          @click="selectIteration(item)"
-        >
-          <div class="issue-card-header">
-            <span class="issue-number">#{{ item.issueNumber }}</span>
-            <span class="issue-project">{{ item.projectCode }}</span>
-            <el-tag v-if="item.hasTodos" type="warning" size="small" effect="dark" class="todos-tag">
-              有待办
-            </el-tag>
-          </div>
-          <div class="issue-card-title" :class="{ 'status-done': item.status === 'DONE' }">{{ item.title }}</div>
-          <div class="issue-card-footer">
-            <el-tag
-              size="small"
-              effect="light"
-              :style="{ color: getStatusColor(item.status), borderColor: getStatusColor(item.status), backgroundColor: getStatusColor(item.status) + '15' }"
-            >
-              {{ getStatusLabel(item.status) }}
-            </el-tag>
-            <el-tag
-              :type="getPriorityTagType(item.priority)"
-              size="small"
-              effect="plain"
-            >
-              {{ getPriorityLabel(item.priority) }}
-            </el-tag>
-            <span class="issue-time" v-if="item.completedAt" :title="'完成于 ' + formatDateTime(item.completedAt)">
-              {{ formatDateTime(item.completedAt) }}
-            </span>
-            <span class="issue-time" v-else>{{ formatDateTime(item.createdAt) }}</span>
+            <el-button type="primary" size="small" @click="handleAdd">
+              <el-icon><Plus /></el-icon>
+              新建
+            </el-button>
           </div>
         </div>
 
-        <el-empty v-if="!iterationStore.isLoading && iterationStore.iterations.length === 0" description="暂无需求" />
+        <!-- 搜索和筛选 -->
+        <div class="left-filters">
+          <el-input
+            v-model="searchKeyword"
+            placeholder="搜索编号、项目、标题..."
+            clearable
+            size="small"
+            @keyup.enter="handleSearch"
+            @clear="handleSearch"
+          >
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+          </el-input>
+          <div class="filter-row">
+            <el-select v-model="filterStatus" placeholder="状态" clearable size="small" @change="handleFilter">
+              <el-option
+                v-for="item in statusOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+            <el-select v-model="filterPriority" placeholder="优先级" clearable size="small" @change="handleFilter">
+              <el-option
+                v-for="item in priorityOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </div>
+        </div>
+
+        <!-- 需求列表 -->
+        <div class="issue-list" v-loading="iterationStore.isLoading">
+          <div
+            v-for="item in iterationStore.iterations"
+            :key="item.id"
+            class="issue-card"
+            :class="{ active: selectedId === item.id }"
+            @click="selectIteration(item)"
+          >
+            <div class="issue-card-header">
+              <span class="issue-number">#{{ item.issueNumber }}</span>
+              <span class="issue-project">{{ item.projectCode }}</span>
+              <el-tag v-if="item.hasTodos" type="warning" size="small" effect="dark" class="todos-tag">
+                有待办
+              </el-tag>
+            </div>
+            <div class="issue-card-title" :class="{ 'status-done': item.status === 'DONE' }">{{ item.title }}</div>
+            <div class="issue-card-footer">
+              <el-tag
+                size="small"
+                effect="light"
+                :style="{ color: getStatusColor(item.status), borderColor: getStatusColor(item.status), backgroundColor: getStatusColor(item.status) + '15' }"
+              >
+                {{ getStatusLabel(item.status) }}
+              </el-tag>
+              <el-tag
+                :type="getPriorityTagType(item.priority)"
+                size="small"
+                effect="plain"
+              >
+                {{ getPriorityLabel(item.priority) }}
+              </el-tag>
+              <span class="issue-time" v-if="item.completedAt" :title="'完成于 ' + formatDateTime(item.completedAt)">
+                {{ formatDateTime(item.completedAt) }}
+              </span>
+              <span class="issue-time" v-else>{{ formatDateTime(item.createdAt) }}</span>
+            </div>
+          </div>
+
+          <el-empty v-if="!iterationStore.isLoading && iterationStore.iterations.length === 0" description="暂无需求" />
+        </div>
+
+        <!-- 分页 -->
+        <div class="left-pagination" v-if="iterationStore.pagination?.totalElements">
+          <PaginationBar
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :total="iterationStore.pagination?.totalElements || 0"
+            layout="total, prev, pager, next"
+            small
+            @current-change="handlePageChange"
+          />
+        </div>
       </div>
 
-      <!-- 分页 -->
-      <div class="left-pagination" v-if="iterationStore.pagination?.totalElements">
-        <el-pagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :total="iterationStore.pagination?.totalElements || 0"
-          layout="total, prev, pager, next"
-          small
-          @current-change="handlePageChange"
+      <!-- 右侧面板：需求详情 -->
+      <div class="board-right">
+        <IterationDetail
+          :iteration="selectedIteration"
+          @edit="handleEdit"
+          @delete="handleDelete"
+          @update-status="handleUpdateStatus"
+          @update-priority="handleUpdatePriority"
+          @auto-save="handleAutoSave"
         />
       </div>
+
+      <!-- 新建/编辑弹窗 -->
+      <el-dialog
+        v-model="dialogVisible"
+        :title="isEdit ? '编辑需求' : '新建需求'"
+        width="var(--app-dialog-width-md)"
+        destroy-on-close
+        :close-on-click-modal="false"
+      >
+        <el-form :model="formData" :rules="rules" ref="formRef" label-width="90px">
+          <el-form-item label="编号" prop="issueNumber">
+            <el-input v-model="formData.issueNumber" placeholder="如Issue编号" />
+          </el-form-item>
+          <el-form-item label="项目简称" prop="projectCode">
+            <el-input v-model="formData.projectCode" placeholder="如：order-service" />
+          </el-form-item>
+          <el-form-item label="需求标题" prop="title">
+            <el-input v-model="formData.title" placeholder="需求概要描述" />
+          </el-form-item>
+          <el-form-item label="需求文档URL">
+            <el-input v-model="formData.issueUrl" placeholder="如GitHub Issue URL" />
+          </el-form-item>
+          <el-row :gutter="16">
+            <el-col :span="12">
+              <el-form-item label="状态" prop="status">
+                <el-select v-model="formData.status" placeholder="请选择状态" style="width: 100%">
+                  <el-option
+                    v-for="item in statusOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="优先级" prop="priority">
+                <el-select v-model="formData.priority" placeholder="请选择优先级" style="width: 100%">
+                  <el-option
+                    v-for="item in priorityOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+        <template #footer>
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleSubmit" :loading="submitting">
+            {{ isEdit ? '保存' : '创建需求' }}
+          </el-button>
+        </template>
+      </el-dialog>
+
+      <!-- 导入弹窗 -->
+      <el-dialog
+        v-model="importDialogVisible"
+        title="从目录导入需求"
+        width="var(--app-dialog-width-sm)"
+        destroy-on-close
+      >
+        <el-form label-width="90px">
+          <el-form-item label="目录路径">
+            <el-input v-model="importDirPath" placeholder="如：D:\work\07_需求" />
+          </el-form-item>
+          <el-form-item>
+            <el-text type="info" size="small">
+              文件夹格式：#编号-项目简称-需求标题<br/>
+              文件夹内 .txt 文件将作为开发笔记，.md 文件将作为发布文档
+            </el-text>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <el-button @click="importDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleImport" :loading="importing">
+            导入
+          </el-button>
+        </template>
+      </el-dialog>
     </div>
-
-    <!-- 右侧面板：需求详情 -->
-    <div class="board-right">
-      <IterationDetail
-        :iteration="selectedIteration"
-        @edit="handleEdit"
-        @delete="handleDelete"
-        @update-status="handleUpdateStatus"
-        @update-priority="handleUpdatePriority"
-        @auto-save="handleAutoSave"
-      />
-    </div>
-
-    <!-- 新建/编辑弹窗 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="isEdit ? '编辑需求' : '新建需求'"
-      width="500px"
-      destroy-on-close
-      :close-on-click-modal="false"
-    >
-      <el-form :model="formData" :rules="rules" ref="formRef" label-width="90px">
-        <el-form-item label="编号" prop="issueNumber">
-          <el-input v-model="formData.issueNumber" placeholder="如Issue编号" />
-        </el-form-item>
-        <el-form-item label="项目简称" prop="projectCode">
-          <el-input v-model="formData.projectCode" placeholder="如：order-service" />
-        </el-form-item>
-        <el-form-item label="需求标题" prop="title">
-          <el-input v-model="formData.title" placeholder="需求概要描述" />
-        </el-form-item>
-        <el-form-item label="需求文档URL">
-          <el-input v-model="formData.issueUrl" placeholder="如GitHub Issue URL" />
-        </el-form-item>
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="状态" prop="status">
-              <el-select v-model="formData.status" placeholder="请选择状态" style="width: 100%">
-                <el-option
-                  v-for="item in statusOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="优先级" prop="priority">
-              <el-select v-model="formData.priority" placeholder="请选择优先级" style="width: 100%">
-                <el-option
-                  v-for="item in priorityOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit" :loading="submitting">
-          {{ isEdit ? '保存' : '创建需求' }}
-        </el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 导入弹窗 -->
-    <el-dialog
-      v-model="importDialogVisible"
-      title="从目录导入需求"
-      width="500px"
-      destroy-on-close
-    >
-      <el-form label-width="90px">
-        <el-form-item label="目录路径">
-          <el-input v-model="importDirPath" placeholder="如：D:\work\07_需求" />
-        </el-form-item>
-        <el-form-item>
-          <el-text type="info" size="small">
-            文件夹格式：#编号-项目简称-需求标题<br/>
-            文件夹内 .txt 文件将作为开发笔记，.md 文件将作为发布文档
-          </el-text>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="importDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleImport" :loading="importing">
-          导入
-        </el-button>
-      </template>
-    </el-dialog>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -215,6 +219,9 @@ import type { Iteration } from '@/types/iteration'
 import { IterationStatusMap, IterationPriorityMap } from '@/types/iteration'
 import { getImportConfig, importFromDirectory, autoSync, checkNewFolders, refreshFileLists } from '@/api/iteration'
 import IterationDetail from '@/components/IterationDetail.vue'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
+import PaginationBar from '@/components/PaginationBar.vue'
 
 const iterationStore = useIterationStore()
 
@@ -570,10 +577,9 @@ onUnmounted(() => {
 .iteration-board {
   display: flex;
   flex: 1;
-  height: 100%;
-  min-height: 500px;
-  background: #f7f8fa;
-  border-radius: 8px;
+  min-height: 0;
+  background: var(--el-fill-color-light);
+  border-radius: var(--app-radius-card);
   overflow: hidden;
 }
 
@@ -581,7 +587,7 @@ onUnmounted(() => {
 .board-left {
   width: 340px;
   min-width: 300px;
-  background: #fff;
+  background: var(--app-bg-surface);
   border-right: 1px solid #e4e7ed;
   display: flex;
   flex-direction: column;
@@ -709,7 +715,7 @@ onUnmounted(() => {
 /* 右侧面板 */
 .board-right {
   flex: 1;
-  background: #fff;
+  background: var(--app-bg-surface);
   overflow: hidden;
   display: flex;
   flex-direction: column;

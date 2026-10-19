@@ -2,7 +2,7 @@
   <el-dialog
     v-model="visible"
     title="连接信息"
-    width="650px"
+    width="var(--app-dialog-width-md)"
     :close-on-click-modal="false"
     destroy-on-close
   >

@@ -1,15 +1,14 @@
 <template>
-  <div class="component-list">
-    <div class="page-header">
-      <h2>技术组件</h2>
-      <div style="display: flex; gap: 8px; align-items: center;">
+  <PageContainer>
+    <PageHeader title="技术组件">
+      <template #actions>
         <ColumnSelector :columns="columnDefs" @toggle="toggle" @reset="reset" />
         <el-button type="primary" @click="handleAdd">
           <el-icon><Plus /></el-icon>
           新增组件
         </el-button>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- 搜索栏 -->
     <div class="search-bar">
@@ -45,80 +44,78 @@
     </div>
 
     <!-- 组件列表 -->
-    <el-table :data="componentStore.components" v-loading="componentStore.isLoading" stripe>
-      <el-table-column prop="name" label="组件名称" min-width="150" v-if="isVisible('name')" />
-      <el-table-column prop="environmentType" label="环境" max-width="110" v-if="isVisible('environment')">
-        <template #default="{ row }">
-          <el-tag v-if="row.environmentType" :type="getEnvironmentTypeTagType(row.environmentType)">
-            {{ getEnvironmentTypeLabel(row.environmentType) }}
-          </el-tag>
-          <el-tag v-else-if="row.environmentId" :type="getEnvironmentTagType(row.environmentId)">
-            {{ getEnvironmentLabel(row.environmentId) }}
-          </el-tag>
-          <span v-else>-</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="category" label="分类" min-width="150" v-if="isVisible('category')">
-        <template #default="{ row }">
-          <el-tag :type="getCategoryTagType(row.category)">{{ getCategoryLabel(row.category) }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="version" label="版本" width="100" v-if="isVisible('version')" />
-      <el-table-column prop="url" label="访问地址" min-width="400" v-if="isVisible('url')">
-        <template #default="{ row }">
-          <UrlLink v-if="row.url" :url="row.url" />
-          <span v-else>-</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="用户名" width="150" v-if="isVisible('username')">
-        <template #default="{ row }">
-          <span v-if="row.username" class="copyable-text" @click="copyToClipboard(row.username)">
-            {{ row.username }}
-            <el-icon class="copy-icon"><CopyDocument /></el-icon>
-          </span>
-          <span v-else>-</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="密码" width="150" v-if="isVisible('password')">
-        <template #default="{ row }">
-          <PasswordDisplay v-if="row.password" :password="row.password" />
-          <span v-else>-</span>
-        </template>
-      </el-table-column>
-<!--      <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />-->
-      <el-table-column label="操作" width="350" fixed="right">
-        <template #default="{ row }">
-          <el-button type="primary" link @click="handleView(row)">查看</el-button>
-          <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-          <el-button type="primary" link @click="showConnectionStrings(row)">连接</el-button>
-          <el-button type="primary" link @click="copyComponentInfo(row)">文本复制</el-button>
-          <el-popconfirm title="确定删除该组件吗？" @confirm="handleDelete(row.id)">
-            <template #reference>
-              <el-button type="danger" link>删除</el-button>
-            </template>
-          </el-popconfirm>
-        </template>
-      </el-table-column>
-    </el-table>
+    <el-card class="table-card" shadow="never">
+      <el-table :data="componentStore.components" v-loading="componentStore.isLoading" stripe>
+        <el-table-column prop="name" label="组件名称" min-width="150" v-if="isVisible('name')" />
+        <el-table-column prop="environmentType" label="环境" max-width="110" v-if="isVisible('environment')">
+          <template #default="{ row }">
+            <el-tag v-if="row.environmentType" :type="getEnvironmentTypeTagType(row.environmentType)">
+              {{ getEnvironmentTypeLabel(row.environmentType) }}
+            </el-tag>
+            <el-tag v-else-if="row.environmentId" :type="getEnvironmentTagType(row.environmentId)">
+              {{ getEnvironmentLabel(row.environmentId) }}
+            </el-tag>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="category" label="分类" min-width="150" v-if="isVisible('category')">
+          <template #default="{ row }">
+            <el-tag :type="getCategoryTagType(row.category)">{{ getCategoryLabel(row.category) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="version" label="版本" width="100" v-if="isVisible('version')" />
+        <el-table-column prop="url" label="访问地址" min-width="400" v-if="isVisible('url')">
+          <template #default="{ row }">
+            <UrlLink v-if="row.url" :url="row.url" />
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="用户名" width="150" v-if="isVisible('username')">
+          <template #default="{ row }">
+            <span v-if="row.username" class="copyable-text" @click="copyToClipboard(row.username)">
+              {{ row.username }}
+              <el-icon class="copy-icon"><CopyDocument /></el-icon>
+            </span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="密码" width="150" v-if="isVisible('password')">
+          <template #default="{ row }">
+            <PasswordDisplay v-if="row.password" :password="row.password" />
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+  <!--      <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />-->
+        <el-table-column label="操作" width="350" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link @click="handleView(row)">查看</el-button>
+            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+            <el-button type="primary" link @click="showConnectionStrings(row)">连接</el-button>
+            <el-button type="primary" link @click="copyComponentInfo(row)">文本复制</el-button>
+            <el-popconfirm title="确定删除该组件吗？" @confirm="handleDelete(row.id)">
+              <template #reference>
+                <el-button type="danger" link>删除</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
 
     <!-- 分页 -->
-    <div class="pagination-wrapper">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="componentStore.pagination?.totalElements || 0"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handlePageChange"
-      />
-    </div>
+    <PaginationBar
+      :current-page="currentPage"
+      :page-size="pageSize"
+      :total="componentStore.pagination?.totalElements || 0"
+      @size-change="handleSizeChange"
+      @current-change="handlePageChange"
+    />
 
     <!-- 新增/编辑/查看对话框 -->
     <el-dialog
       v-model="dialogVisible"
       :title="viewMode ? '技术组件详情' : isEdit ? '编辑组件' : '新增组件'"
-      width="600px"
+      width="var(--app-dialog-width-md)"
       destroy-on-close
     >
       <el-form :model="formData" :rules="viewMode ? {} : rules" ref="formRef" label-width="100px">
@@ -178,7 +175,7 @@
 
     <!-- 连接信息对话框 -->
     <ConnectionStringDialog ref="connectionDialogRef" />
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -195,6 +192,9 @@ import UrlLink from '@/components/UrlLink.vue'
 import PasswordDisplay from '@/components/PasswordDisplay.vue'
 import ConnectionStringDialog from '@/components/ConnectionStringDialog.vue'
 import ColumnSelector from '@/components/ColumnSelector.vue'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
+import PaginationBar from '@/components/PaginationBar.vue'
 import { useColumnVisibility, type ColumnDef } from '@/composables/useColumnVisibility'
 
 const componentStore = useComponentStore()
@@ -487,52 +487,6 @@ useKeyboardShortcuts(pageShortcuts)
 </script>
 
 <style scoped>
-.component-list {
-  padding: 20px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.page-header h2 {
-  margin: 0;
-}
-
-.search-bar {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.search-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.search-inputs {
-  display: flex;
-  gap: 16px;
-  flex: 1;
-}
-
-.search-input {
-  width: 600px;
-}
-
-.filter-select {
-  width: auto;
-  min-width: 120px;
-}
-
-.search-button {
-  margin-left: auto;
-}
 
 .copyable-text {
   cursor: pointer;
@@ -542,7 +496,7 @@ useKeyboardShortcuts(pageShortcuts)
 }
 
 .copyable-text:hover {
-  color: #409eff;
+  color: var(--el-color-primary);
 }
 
 .copy-icon {
@@ -550,9 +504,4 @@ useKeyboardShortcuts(pageShortcuts)
   opacity: 0.7;
 }
 
-.pagination-wrapper {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
-}
 </style>

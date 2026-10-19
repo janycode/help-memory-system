@@ -1,15 +1,16 @@
 <template>
-  <div class="jenkins-monitor">
-    <div class="page-header">
-      <div>
-        <h2 class="page-title">Jenkins 监控</h2>
-        <p class="page-desc">每 30 秒轮询一次 Jenkins 构建状态，检测到新的成功构建时自动推送企业微信机器人通知</p>
-      </div>
-      <el-button type="primary" @click="openCreate">
-        <el-icon><Plus /></el-icon>
-        新增配置
-      </el-button>
-    </div>
+  <PageContainer fill>
+    <PageHeader
+      title="Jenkins 监控"
+      description="每 30 秒轮询一次 Jenkins 构建状态，检测到新的成功构建时自动推送企业微信机器人通知"
+    >
+      <template #actions>
+        <el-button type="primary" @click="openCreate">
+          <el-icon><Plus /></el-icon>
+          新增配置
+        </el-button>
+      </template>
+    </PageHeader>
 
     <el-card shadow="never" class="table-card">
       <el-table :data="configs" v-loading="loading" stripe>
@@ -62,10 +63,9 @@
     <el-dialog
       v-model="dialogVisible"
       :title="isEdit ? '编辑监控配置' : '新增监控配置'"
-      width="560px"
+      width="var(--app-dialog-width-md)"
       :close-on-click-modal="false"
-      @closed="resetForm"
-    >
+      @closed="resetForm" destroy-on-close>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
         <el-form-item label="Job 名称" prop="jobName">
           <el-select
@@ -121,7 +121,7 @@
     </el-dialog>
 
     <!-- 测试结果弹窗 -->
-    <el-dialog v-model="testResultVisible" title="连接测试结果" width="500px">
+    <el-dialog v-model="testResultVisible" title="连接测试结果" width="var(--app-dialog-width-sm)" destroy-on-close>
       <el-alert
         v-if="testResult.ok"
         type="success"
@@ -135,7 +135,7 @@
         </el-tag>
       </div>
     </el-dialog>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -143,6 +143,8 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import {
   getJenkinsMonitorConfigs,
   createJenkinsMonitorConfig,
@@ -332,33 +334,6 @@ onMounted(fetchConfigs)
 </script>
 
 <style scoped>
-.jenkins-monitor {
-  height: 100%;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  overflow-y: auto;
-}
-
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.page-desc {
-  margin: 6px 0 0;
-  font-size: 13px;
-  color: #86909c;
-}
-
 .table-card {
   flex: 1;
   overflow: hidden;
@@ -369,7 +344,7 @@ onMounted(fetchConfigs)
 }
 
 .text-muted {
-  color: #c0c4cc;
+  color: var(--app-text-placeholder);
 }
 
 .test-jobs {

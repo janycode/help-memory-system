@@ -1,15 +1,14 @@
 <template>
-  <div class="environment-list">
-    <div class="page-header">
-      <h2>环境管理</h2>
-      <div style="display: flex; gap: 8px; align-items: center;">
+  <PageContainer>
+    <PageHeader title="环境管理">
+      <template #actions>
         <ColumnSelector :columns="columnDefs" @toggle="toggle" @reset="reset" />
         <el-button type="primary" @click="handleAdd">
           <el-icon><Plus /></el-icon>
           新增环境
         </el-button>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <div class="search-bar">
       <div class="search-inputs">
@@ -35,64 +34,62 @@
       </el-button>
     </div>
 
-    <el-table :data="environmentStore.environments" v-loading="environmentStore.isLoading" stripe>
-      <el-table-column prop="name" label="环境名称" max-width="100" v-if="isVisible('name')" />
-      <el-table-column prop="type" label="环境" width="110" v-if="isVisible('type')">
-        <template #default="{ row }">
-          <el-tag :type="getTypeTagType(row.type)">{{ getTypeLabel(row.type) }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="url" label="访问地址" min-width="200" v-if="isVisible('url')">
-        <template #default="{ row }">
-          <UrlLink v-if="row.url" :url="row.url" />
-          <span v-else>-</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="用户名" width="150" v-if="isVisible('username')">
-        <template #default="{ row }">
-          <span v-if="row.username" class="copyable-text" @click="copyToClipboard(row.username)">
-            {{ row.username }}
-            <el-icon class="copy-icon"><CopyDocument /></el-icon>
-          </span>
-          <span v-else>-</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="密码" width="200" v-if="isVisible('password')">
-        <template #default="{ row }">
-          <PasswordDisplay v-if="row.password" :password="row.password" />
-          <span v-else>-</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="240" fixed="right">
-        <template #default="{ row }">
-          <el-button type="primary" link @click="handleView(row)">查看</el-button>
-          <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-          <el-button type="primary" link @click="copyEnvironmentInfo(row)">文本复制</el-button>
-          <el-popconfirm title="确定删除该环境吗？" @confirm="handleDelete(row.id)">
-            <template #reference>
-              <el-button type="danger" link>删除</el-button>
-            </template>
-          </el-popconfirm>
-        </template>
-      </el-table-column>
-    </el-table>
+    <el-card class="table-card" shadow="never">
+      <el-table :data="environmentStore.environments" v-loading="environmentStore.isLoading" stripe>
+        <el-table-column prop="name" label="环境名称" max-width="100" v-if="isVisible('name')" />
+        <el-table-column prop="type" label="环境" width="110" v-if="isVisible('type')">
+          <template #default="{ row }">
+            <el-tag :type="getTypeTagType(row.type)">{{ getTypeLabel(row.type) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="url" label="访问地址" min-width="200" v-if="isVisible('url')">
+          <template #default="{ row }">
+            <UrlLink v-if="row.url" :url="row.url" />
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="用户名" width="150" v-if="isVisible('username')">
+          <template #default="{ row }">
+            <span v-if="row.username" class="copyable-text" @click="copyToClipboard(row.username)">
+              {{ row.username }}
+              <el-icon class="copy-icon"><CopyDocument /></el-icon>
+            </span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="密码" width="200" v-if="isVisible('password')">
+          <template #default="{ row }">
+            <PasswordDisplay v-if="row.password" :password="row.password" />
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="240" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link @click="handleView(row)">查看</el-button>
+            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+            <el-button type="primary" link @click="copyEnvironmentInfo(row)">文本复制</el-button>
+            <el-popconfirm title="确定删除该环境吗？" @confirm="handleDelete(row.id)">
+              <template #reference>
+                <el-button type="danger" link>删除</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
 
-    <div class="pagination-wrapper">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="environmentStore.pagination?.totalElements || 0"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handlePageChange"
-      />
-    </div>
+    <PaginationBar
+      :current-page="currentPage"
+      :page-size="pageSize"
+      :total="environmentStore.pagination?.totalElements || 0"
+      @size-change="handleSizeChange"
+      @current-change="handlePageChange"
+    />
 
     <el-dialog
       v-model="dialogVisible"
       :title="viewMode ? '环境详情' : isEdit ? '编辑环境' : '新增环境'"
-      width="600px"
+      width="var(--app-dialog-width-md)"
       destroy-on-close
     >
       <el-form :model="formData" :rules="viewMode ? {} : rules" ref="formRef" label-width="100px">
@@ -145,7 +142,7 @@
         <el-button @click="dialogVisible = false" v-else>关闭</el-button>
       </template>
     </el-dialog>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -156,6 +153,9 @@ import { useEnvironmentStore } from '@/stores/environment'
 import { useDictStore } from '@/stores/dict'
 import type { Environment } from '@/types/environment'
 import ColumnSelector from '@/components/ColumnSelector.vue'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
+import PaginationBar from '@/components/PaginationBar.vue'
 import { useColumnVisibility, type ColumnDef } from '@/composables/useColumnVisibility'
 import PasswordDisplay from '@/components/PasswordDisplay.vue'
 import UrlLink from '@/components/UrlLink.vue'
@@ -387,47 +387,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.environment-list {
-  padding: 20px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.page-header h2 {
-  margin: 0;
-}
-
-.search-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.search-inputs {
-  display: flex;
-  gap: 16px;
-  flex: 1;
-}
-
-.search-input {
-  width: 600px;
-}
-
-.filter-select {
-  width: auto;
-  min-width: 120px;
-}
-
-.search-button {
-  margin-left: auto;
-}
 
 .copyable-text {
   cursor: pointer;
@@ -437,7 +396,7 @@ onMounted(() => {
 }
 
 .copyable-text:hover {
-  color: #409eff;
+  color: var(--el-color-primary);
 }
 
 .copy-icon {
@@ -445,9 +404,4 @@ onMounted(() => {
   opacity: 0.7;
 }
 
-.pagination-wrapper {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
-}
 </style>

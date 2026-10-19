@@ -1,0 +1,78 @@
+/* 设计令牌层：视觉值的唯一定义处，组件与页面只引用不写字面值 */
+:root {
+  /* Element Plus 调色板覆盖 */
+  --el-color-primary: #409eff;
+  --el-color-primary-light-3: #79bbff;
+  --el-color-success: #67c23a;
+  --el-color-warning: #e6a23c;
+  --el-color-danger: #f56c6c;
+  --el-color-info: #909399;
+
+  /* 布局外壳 */
+  --sidebar-bg: #1a1a2e;
+  --sidebar-text: #a0aec0;
+  --sidebar-active-text: #ffffff;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.06);
+  --sidebar-active-bg: rgba(64, 158, 255, 0.15);
+  --header-bg: #ffffff;
+  --content-bg: #f5f7fa;
+
+  /* 间距刻度，4px 基数 */
+  --app-space-1: 4px;
+  --app-space-2: 8px;
+  --app-space-3: 12px;
+  --app-space-4: 16px;
+  --app-space-5: 20px;
+  --app-space-6: 24px;
+  --app-space-8: 32px;
+
+  /* 页面容器 */
+  --app-page-max-width: 1600px;
+  --app-page-narrow-max-width: 1200px;
+  --app-page-padding-y: var(--app-space-5);
+  --app-page-padding-x: var(--app-space-6);
+
+  /* 字号 */
+  --app-font-size-page-title: 20px;
+  --app-font-size-section-title: 15px;
+  --app-font-size-body: 14px;
+  --app-font-size-secondary: 13px;
+
+  /* 圆角与阴影 */
+  --app-radius-card: 8px;
+  --app-radius-control: 6px;
+  --app-shadow-card: 0 2px 12px rgba(0, 0, 0, 0.04);
+  --app-shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+  /* 语义颜色，全部指向 Element Plus 变量，暗色自动生效 */
+  --app-bg-page: var(--el-bg-color-page);
+  /* 卡片面用 overlay 变量：亮色 #fff，暗色 #1d1e1f，与页面底色形成层次 */
+  --app-bg-surface: var(--el-bg-color-overlay);
+  --app-text-primary: var(--el-text-color-primary);
+  --app-text-regular: var(--el-text-color-regular);
+  --app-text-secondary: var(--el-text-color-secondary);
+  --app-text-placeholder: var(--el-text-color-placeholder);
+  --app-border-base: var(--el-border-color-lighter);
+  --app-border-light: var(--el-border-color-extra-light);
+  --app-fill-light: var(--el-fill-color-light);
+
+  /* 搜索栏 */
+  --app-search-input-width: 320px;
+  --app-search-select-width: 160px;
+  --app-search-gap: var(--app-space-2);
+
+  /* 弹窗档位 */
+  --app-dialog-width-sm: 480px;
+  --app-dialog-width-md: 640px;
+  --app-dialog-width-lg: 800px;
+  --app-dialog-max-height: 85vh;
+
+  /* 兼容既有引用 */
+  --card-shadow: var(--app-shadow-card);
+  --card-border-radius: var(--app-radius-card);
+}
+
+html.dark {
+  --app-shadow-card: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --app-shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
