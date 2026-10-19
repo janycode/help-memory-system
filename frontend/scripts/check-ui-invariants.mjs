@@ -14,7 +14,15 @@ const MIGRATED_VIEWS = [
   'views/ComponentList.vue',
   'views/ProcessList.vue',
   'views/ProjectList.vue',
-  'views/SnippetList.vue'
+  'views/SnippetList.vue',
+  'views/DictManagement.vue',
+  'views/UserManagement.vue',
+  'views/MenuPermissionManagement.vue',
+  'views/SystemConfig.vue',
+  'views/JenkinsMonitor.vue',
+  'views/Profile.vue',
+  'views/HashId.vue',
+  'views/Database.vue'
 ]
 
 // 共享展示层，逐令牌化

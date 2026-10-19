@@ -1,128 +1,125 @@
 <template>
-  <div class="user-management">
-    <div class="container">
-      <div class="page-header">
-        <h1 class="page-title">用户管理</h1>
-        <p class="page-description">管理系统用户账号</p>
+  <PageContainer :max-width="1200">
+    <PageHeader title="用户管理" description="管理系统用户账号">
+      <template #actions>
         <el-button type="primary" @click="handleAdd">
           <el-icon><Plus /></el-icon>
           新增用户
         </el-button>
-      </div>
+      </template>
+    </PageHeader>
 
-      <el-card class="content-card">
-        <el-table :data="users" v-loading="loading" stripe>
-          <el-table-column prop="username" label="用户名" width="120" />
-          <el-table-column prop="fullName" label="姓名" width="120" />
-          <el-table-column prop="email" label="邮箱" min-width="180" />
-          <el-table-column prop="department" label="部门" width="120" />
-          <el-table-column prop="position" label="职位" width="120" />
-          <el-table-column prop="roles" label="角色" width="120">
-            <template #default="{ row }">
-              <el-tag v-for="role in row.roles" :key="role" :type="role === 'ADMIN' ? 'danger' : 'primary'" size="small" style="margin-right: 4px">
-                {{ role === 'ADMIN' ? '管理员' : '用户' }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="enabled" label="状态" width="80">
-            <template #default="{ row }">
-              <el-tag :type="row.enabled ? 'success' : 'danger'" size="small">
-                {{ row.enabled ? '启用' : '禁用' }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="lastLoginAt" label="最后登录" width="180">
-            <template #default="{ row }">
-              {{ row.lastLoginAt ? formatDate(row.lastLoginAt) : '从未登录' }}
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="280" fixed="right">
-            <template #default="{ row }">
-              <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-              <el-button type="warning" link @click="handleResetPassword(row)">重置密码</el-button>
-              <el-button :type="row.enabled ? 'danger' : 'success'" link @click="handleToggleStatus(row)">
-                {{ row.enabled ? '禁用' : '启用' }}
-              </el-button>
-              <el-popconfirm title="确定删除该用户吗？" @confirm="handleDelete(row.id)">
-                <template #reference>
-                  <el-button type="danger" link>删除</el-button>
-                </template>
-              </el-popconfirm>
-            </template>
-          </el-table-column>
-        </el-table>
+    <el-card class="content-card">
+      <el-table :data="users" v-loading="loading" stripe>
+        <el-table-column prop="username" label="用户名" width="120" />
+        <el-table-column prop="fullName" label="姓名" width="120" />
+        <el-table-column prop="email" label="邮箱" min-width="180" />
+        <el-table-column prop="department" label="部门" width="120" />
+        <el-table-column prop="position" label="职位" width="120" />
+        <el-table-column prop="roles" label="角色" width="120">
+          <template #default="{ row }">
+            <el-tag v-for="role in row.roles" :key="role" :type="role === 'ADMIN' ? 'danger' : 'primary'" size="small" style="margin-right: 4px">
+              {{ role === 'ADMIN' ? '管理员' : '用户' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="enabled" label="状态" width="80">
+          <template #default="{ row }">
+            <el-tag :type="row.enabled ? 'success' : 'danger'" size="small">
+              {{ row.enabled ? '启用' : '禁用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="lastLoginAt" label="最后登录" width="180">
+          <template #default="{ row }">
+            {{ row.lastLoginAt ? formatDate(row.lastLoginAt) : '从未登录' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="280" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+            <el-button type="warning" link @click="handleResetPassword(row)">重置密码</el-button>
+            <el-button :type="row.enabled ? 'danger' : 'success'" link @click="handleToggleStatus(row)">
+              {{ row.enabled ? '禁用' : '启用' }}
+            </el-button>
+            <el-popconfirm title="确定删除该用户吗？" @confirm="handleDelete(row.id)">
+              <template #reference>
+                <el-button type="danger" link>删除</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-table-column>
+      </el-table>
 
-        <div class="pagination-wrapper">
-          <el-pagination
-            v-model:current-page="currentPage"
-            v-model:page-size="pageSize"
-            :total="total"
-            :page-sizes="[10, 20, 50, 100]"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="fetchUsers"
-            @current-change="fetchUsers"
-          />
-        </div>
-      </el-card>
+      <PaginationBar
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        @size-change="fetchUsers"
+        @current-change="fetchUsers"
+      />
+    </el-card>
 
-      <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑用户' : '新增用户'" width="500px" destroy-on-close>
-        <el-form :model="formData" :rules="rules" ref="formRef" label-width="80px">
-          <el-form-item label="用户名" prop="username" v-if="!isEdit">
-            <el-input v-model="formData.username" placeholder="请输入用户名" />
-          </el-form-item>
-          <el-form-item label="用户名" v-else>
-            <el-input :value="formData.username" disabled />
-          </el-form-item>
-          <el-form-item label="密码" prop="password" v-if="!isEdit">
-            <el-input v-model="formData.password" type="password" placeholder="请输入密码" show-password />
-          </el-form-item>
-          <el-form-item label="姓名" prop="fullName">
-            <el-input v-model="formData.fullName" placeholder="请输入姓名" />
-          </el-form-item>
-          <el-form-item label="邮箱" prop="email">
-            <el-input v-model="formData.email" placeholder="请输入邮箱" />
-          </el-form-item>
-          <el-form-item label="部门" prop="department">
-            <el-input v-model="formData.department" placeholder="请输入部门" />
-          </el-form-item>
-          <el-form-item label="职位" prop="position">
-            <el-input v-model="formData.position" placeholder="请输入职位" />
-          </el-form-item>
-          <el-form-item label="角色" prop="roles">
-            <el-checkbox-group v-model="formData.roles">
-              <el-checkbox label="ADMIN">管理员</el-checkbox>
-              <el-checkbox label="USER">普通用户</el-checkbox>
-            </el-checkbox-group>
-          </el-form-item>
-        </el-form>
-        <template #footer>
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSubmit" :loading="submitting">确定</el-button>
-        </template>
-      </el-dialog>
+    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑用户' : '新增用户'" width="640px" destroy-on-close>
+      <el-form :model="formData" :rules="rules" ref="formRef" label-width="80px">
+        <el-form-item label="用户名" prop="username" v-if="!isEdit">
+          <el-input v-model="formData.username" placeholder="请输入用户名" />
+        </el-form-item>
+        <el-form-item label="用户名" v-else>
+          <el-input :value="formData.username" disabled />
+        </el-form-item>
+        <el-form-item label="密码" prop="password" v-if="!isEdit">
+          <el-input v-model="formData.password" type="password" placeholder="请输入密码" show-password />
+        </el-form-item>
+        <el-form-item label="姓名" prop="fullName">
+          <el-input v-model="formData.fullName" placeholder="请输入姓名" />
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="formData.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="部门" prop="department">
+          <el-input v-model="formData.department" placeholder="请输入部门" />
+        </el-form-item>
+        <el-form-item label="职位" prop="position">
+          <el-input v-model="formData.position" placeholder="请输入职位" />
+        </el-form-item>
+        <el-form-item label="角色" prop="roles">
+          <el-checkbox-group v-model="formData.roles">
+            <el-checkbox label="ADMIN">管理员</el-checkbox>
+            <el-checkbox label="USER">普通用户</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmit" :loading="submitting">确定</el-button>
+      </template>
+    </el-dialog>
 
-      <el-dialog v-model="resetPasswordVisible" title="重置密码" width="400px">
-        <el-form :model="resetPasswordData" :rules="resetPasswordRules" ref="resetPasswordFormRef" label-width="80px">
-          <el-form-item label="用户">
-            <el-input :value="resetPasswordData.username" disabled />
-          </el-form-item>
-          <el-form-item label="新密码" prop="newPassword">
-            <el-input v-model="resetPasswordData.newPassword" type="password" placeholder="请输入新密码" show-password />
-          </el-form-item>
-        </el-form>
-        <template #footer>
-          <el-button @click="resetPasswordVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleResetPasswordSubmit" :loading="submitting">确定</el-button>
-        </template>
-      </el-dialog>
-    </div>
-  </div>
+    <el-dialog v-model="resetPasswordVisible" title="重置密码" width="480px">
+      <el-form :model="resetPasswordData" :rules="resetPasswordRules" ref="resetPasswordFormRef" label-width="80px">
+        <el-form-item label="用户">
+          <el-input :value="resetPasswordData.username" disabled />
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input v-model="resetPasswordData.newPassword" type="password" placeholder="请输入新密码" show-password />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="resetPasswordVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleResetPasswordSubmit" :loading="submitting">确定</el-button>
+      </template>
+    </el-dialog>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
+import PaginationBar from '@/components/PaginationBar.vue'
 import { userApi } from '@/api/user'
 import type { User, UserCreateRequest, UserUpdateRequest } from '@/types/user'
 
@@ -300,53 +297,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.user-management {
-  min-height: 100vh;
-  padding: 20px;
-  background-color: #f5f7fa;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.page-header {
-  margin-bottom: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.page-header .el-button {
-  align-self: flex-start;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
-  margin: 0;
-}
-
-.page-description {
-  font-size: 14px;
-  color: #606266;
-  margin: 0;
-}
-
 .content-card {
   margin-bottom: 20px;
   transition: all 0.3s;
 }
 
 .content-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.pagination-wrapper {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
+  box-shadow: var(--app-shadow-card);
 }
 </style>

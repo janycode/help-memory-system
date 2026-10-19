@@ -1,74 +1,71 @@
 <template>
-  <div class="menu-permission-management">
-    <div class="container">
-      <div class="page-header">
-        <h1 class="page-title">菜单权限管理</h1>
-        <p class="page-description">配置不同用户可访问的菜单，管理员可访问所有菜单</p>
+  <PageContainer :max-width="1200">
+    <PageHeader title="菜单权限管理" description="配置不同用户可访问的菜单，管理员可访问所有菜单" />
+
+    <el-card class="content-card">
+      <div class="toolbar">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索用户名或姓名..."
+          clearable
+          style="width: 240px"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
+        <div class="toolbar-right">
+          <el-tag type="info" size="small">共 {{ filteredUsers.length }} 个用户</el-tag>
+        </div>
       </div>
 
-      <el-card class="content-card">
-        <div class="toolbar">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="搜索用户名或姓名..."
-            clearable
-            style="width: 240px"
-          >
-            <template #prefix>
-              <el-icon><Search /></el-icon>
-            </template>
-          </el-input>
-          <div class="toolbar-right">
-            <el-tag type="info" size="small">共 {{ filteredUsers.length }} 个用户</el-tag>
-          </div>
-        </div>
-
-        <el-table :data="filteredUsers" v-loading="loading" stripe>
-          <el-table-column prop="username" label="用户名" width="120" />
-          <el-table-column prop="fullName" label="姓名" width="120" />
-          <el-table-column label="菜单权限" min-width="500">
-            <template #default="{ row }">
-              <el-checkbox-group v-model="row.allowedMenus" :disabled="row.isAdmin">
-                <el-checkbox
-                  v-for="menu in allMenus"
-                  :key="menu.code"
-                  :label="menu.code"
-                  :disabled="row.isAdmin || PUBLIC_MENUS.includes(menu.code)"
-                >
-                  {{ menu.name }}
-                  <el-tag v-if="PUBLIC_MENUS.includes(menu.code)" type="info" size="small" style="margin-left: 4px">
-                    公开
-                  </el-tag>
-                </el-checkbox>
-              </el-checkbox-group>
-              <el-tag v-if="row.isAdmin" type="success" size="small" style="margin-left: 8px">
-                管理员（全部权限）
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="100" fixed="right">
-            <template #default="{ row }">
-              <el-button
-                type="primary"
-                size="small"
-                @click="savePermissions(row)"
-                :loading="row.saving"
-                :disabled="row.isAdmin"
+      <el-table :data="filteredUsers" v-loading="loading" stripe>
+        <el-table-column prop="username" label="用户名" width="120" />
+        <el-table-column prop="fullName" label="姓名" width="120" />
+        <el-table-column label="菜单权限" min-width="500">
+          <template #default="{ row }">
+            <el-checkbox-group v-model="row.allowedMenus" :disabled="row.isAdmin">
+              <el-checkbox
+                v-for="menu in allMenus"
+                :key="menu.code"
+                :label="menu.code"
+                :disabled="row.isAdmin || PUBLIC_MENUS.includes(menu.code)"
               >
-                保存
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-card>
-    </div>
-  </div>
+                {{ menu.name }}
+                <el-tag v-if="PUBLIC_MENUS.includes(menu.code)" type="info" size="small" style="margin-left: 4px">
+                  公开
+                </el-tag>
+              </el-checkbox>
+            </el-checkbox-group>
+            <el-tag v-if="row.isAdmin" type="success" size="small" style="margin-left: 8px">
+              管理员（全部权限）
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="100" fixed="right">
+          <template #default="{ row }">
+            <el-button
+              type="primary"
+              size="small"
+              @click="savePermissions(row)"
+              :loading="row.saving"
+              :disabled="row.isAdmin"
+            >
+              保存
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { userMenuPermissionApi, type UserPermissionDTO } from '@/api/userMenuPermission'
 
 const loading = ref(false)
@@ -140,43 +137,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.menu-permission-management {
-  min-height: 100vh;
-  padding: 20px;
-  background-color: #f5f7fa;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.page-header {
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.page-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: #303133;
-  margin: 0;
-}
-
-.page-description {
-  font-size: 13px;
-  color: #909399;
-  margin: 0;
-}
-
 .content-card {
   transition: all 0.3s;
 }
 
 .content-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--app-shadow-card);
 }
 
 .toolbar {

@@ -1,12 +1,10 @@
 <template>
-  <div class="database-container">
-    <div class="page-header">
-      <h2>本地数据库</h2>
-      <div class="db-info">
+  <PageContainer class="database-page">
+    <PageHeader title="本地数据库">
+      <template #actions>
         <el-tag type="info">数据库文件路径: {{ databasePath }}</el-tag>
-      </div>
-    </div>
-    
+      </template>
+    </PageHeader>    
     <div class="h2-console-wrapper">
       <iframe
         src="/h2-console"
@@ -16,12 +14,14 @@
         class="h2-console-iframe"
       ></iframe>
     </div>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { systemApi } from '@/api/system'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 
 const databasePath = ref('')
 
@@ -42,39 +42,20 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.database-container {
-  padding: 20px;
-  height: 100%;
+.database-page :deep(.page-container__inner) {
   display: flex;
   flex-direction: column;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #dcdfe6;
-}
-
-.page-header h2 {
-  margin: 0;
-  color: #303133;
-}
-
-.db-info {
-  display: flex;
-  align-items: center;
+  gap: var(--app-space-4);
+  height: 100%;
 }
 
 .h2-console-wrapper {
   width: 100%;
   flex: 1;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  border: 1px solid var(--app-border-base);
+  border-radius: var(--app-radius-card);
   overflow: hidden;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: var(--app-shadow-card);
 }
 
 .h2-console-iframe {

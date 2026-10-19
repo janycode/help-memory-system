@@ -32,12 +32,21 @@ withDefaults(
 
 // 事件名与 el-pagination 保持一致，接入页面时既有处理函数无需改动
 const emit = defineEmits<{
+  (e: 'update:current-page', page: number): void
+  (e: 'update:page-size', size: number): void
   (e: 'current-change', page: number): void
   (e: 'size-change', size: number): void
 }>()
 
-const handleCurrentChange = (page: number) => emit('current-change', page)
-const handleSizeChange = (size: number) => emit('size-change', size)
+const handleCurrentChange = (page: number) => {
+  emit('update:current-page', page)
+  emit('current-change', page)
+}
+
+const handleSizeChange = (size: number) => {
+  emit('update:page-size', size)
+  emit('size-change', size)
+}
 </script>
 
 <style scoped>
