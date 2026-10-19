@@ -1,8 +1,6 @@
 <template>
-  <div class="search-page">
-    <div class="page-header">
-      <h2>全局搜索</h2>
-    </div>
+  <PageContainer>
+    <PageHeader title="全局搜索" />
 
     <!-- 搜索栏 -->
     <div class="search-container">
@@ -227,7 +225,7 @@
     <el-dialog
       v-model="environmentDialogVisible"
       title="环境详情"
-      width="700px"
+      width="800px"
       destroy-on-close
     >
       <el-form :model="selectedEnvironment" label-width="120px">
@@ -309,7 +307,7 @@
     <el-dialog
       v-model="componentDialogVisible"
       title="技术组件详情"
-      width="700px"
+      width="800px"
       destroy-on-close
     >
       <el-form :model="selectedComponent" label-width="120px">
@@ -415,7 +413,7 @@
     <el-dialog
       v-model="projectDialogVisible"
       title="代码仓库详情"
-      width="700px"
+      width="800px"
       destroy-on-close
     >
       <el-form :model="selectedProject" label-width="120px">
@@ -528,7 +526,7 @@
         <el-button @click="iterationDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -536,6 +534,8 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { Monitor, Connection, Document, Folder, List, ArrowRight, ArrowDown } from '@element-plus/icons-vue'
 import { useSearchStore } from '@/stores/search'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
 import { ElMessage } from 'element-plus'
@@ -917,19 +917,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.search-page {
-  padding: 20px;
-  height: 100%;
-  overflow-y: auto;
-}
-
-.page-header {
-  margin-bottom: 20px;
-}
-
-.page-header h2 {
-  margin: 0;
-}
 
 .search-container {
   max-width: 600px;

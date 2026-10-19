@@ -1,13 +1,10 @@
 <template>
-  <div class="github-issues">
-    <div class="page-header">
-      <div>
-        <h2 class="page-title">GitHub 指派任务</h2>
-        <p class="page-desc">
-          展示指派给当前 GitHub 账号的 Issue 与 Bug，生成可直接复制给 AI Agent 的提示词（每 5 分钟自动刷新）
-        </p>
-      </div>
-      <div class="header-actions">
+  <PageContainer>
+    <PageHeader
+      title="GitHub 指派任务"
+      description="展示指派给当前 GitHub 账号的 Issue 与 Bug，生成可直接复制给 AI Agent 的提示词（每 5 分钟自动刷新）"
+    >
+      <template #actions>
         <span v-if="lastRefreshAt" class="refresh-time">最近刷新：{{ lastRefreshAt }}</span>
         <el-select v-model="stateFilter" class="state-select" aria-label="状态筛选">
           <el-option label="全部" value="all" />
@@ -22,8 +19,8 @@
           <el-icon><Setting /></el-icon>
           配置
         </el-button>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <el-card shadow="never" class="table-card">
       <el-tabs v-model="activeTab" class="issue-tabs">
@@ -239,7 +236,7 @@
         />
       </div>
     </el-dialog>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -247,6 +244,8 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
 import MarkdownIt from 'markdown-it'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { useUserStore } from '@/stores/user'
 import {
   getGitHubConfig,
@@ -560,36 +559,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.github-issues {
-  padding: 24px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.page-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0 0 6px;
-}
-
-.page-desc {
-  color: #86909c;
-  font-size: 13px;
-  margin: 0;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
 
 .refresh-time {
   color: #86909c;

@@ -25,7 +25,11 @@ const MIGRATED_VIEWS = [
   'views/Database.vue',
   'views/IterationList.vue',
   'views/RocketMQ.vue',
-  'views/MqSend.vue'
+  'views/MqSend.vue',
+  'views/Dashboard.vue',
+  'views/Search.vue',
+  'views/BatchSo.vue',
+  'views/GitHubIssues.vue'
 ]
 
 // 共享展示层，逐令牌化
@@ -118,7 +122,8 @@ for (const file of vueFiles) {
   const text = readFileSync(file, 'utf8')
   for (const block of styleBlocks(text)) {
     for (const selector of LEGACY_SELECTORS) {
-      const matched = new RegExp(`\\${selector}\\s*[{,]`).exec(block.content)
+      // 只认行首规则，页面自有区块内的同名后代选择器不算违规
+      const matched = new RegExp(`^\\${selector}\\s*[{,]`, 'm').exec(block.content)
       if (matched) {
         failures.push({ rule: 2, file, line: lineAt(text, block.index + matched.index), message: `仍声明局部样式 ${selector}` })
       }

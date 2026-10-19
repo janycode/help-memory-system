@@ -1,13 +1,13 @@
 <template>
-  <div class="batch-so-container">
-    <div class="page-header">
-      <div class="header-actions">
+  <PageContainer class="batch-so-page" :scrollable="false">
+    <PageHeader title="SO 批量新建" description="按模板批量生成 SO 并提交">
+      <template #actions>
         <el-button size="small" @click="showHistory = true; hasNewHistory = false" class="history-btn">
           创建历史
           <el-badge v-if="hasNewHistory" :value="1" class="history-badge" />
         </el-button>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <div class="main-content">
       <div class="left-panel">
@@ -133,7 +133,7 @@
     </div>
 
     <!-- 历史记录弹窗 -->
-    <el-dialog v-model="showHistory" title="创建历史" width="600px">
+    <el-dialog v-model="showHistory" title="创建历史" width="640px">
       <div class="history-content">
         <div v-if="historyList.length === 0" class="empty-hint">暂无创建历史</div>
         <div v-for="(group, time) in groupedHistory" :key="time" class="history-group">
@@ -147,7 +147,7 @@
         </div>
       </div>
     </el-dialog>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -155,6 +155,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { CopyDocument, ArrowDown, ArrowRight } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import axios from 'axios'
 
 const userStore = useUserStore()
@@ -635,19 +637,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.batch-so-container {
-  padding: 10px 16px;
-  flex: 1;
-  min-height: 0;
+.batch-so-page :deep(.page-container__inner) {
   display: flex;
   flex-direction: column;
-}
-
-.page-header {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-bottom: 8px;
+  height: 100%;
 }
 
 .main-content {
