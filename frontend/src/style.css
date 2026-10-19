@@ -40,7 +40,7 @@ html.dark body {
 }
 
 .el-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: var(--app-shadow-card-hover) !important;
 }
 
 /* 搜索框区域 */

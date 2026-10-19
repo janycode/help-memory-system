@@ -1,5 +1,5 @@
 <template>
-  <PageContainer class="jenkins-monitor">
+  <PageContainer fill>
     <PageHeader
       title="Jenkins 监控"
       description="每 30 秒轮询一次 Jenkins 构建状态，检测到新的成功构建时自动推送企业微信机器人通知"
@@ -63,10 +63,9 @@
     <el-dialog
       v-model="dialogVisible"
       :title="isEdit ? '编辑监控配置' : '新增监控配置'"
-      width="640px"
+      width="var(--app-dialog-width-md)"
       :close-on-click-modal="false"
-      @closed="resetForm"
-    >
+      @closed="resetForm" destroy-on-close>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
         <el-form-item label="Job 名称" prop="jobName">
           <el-select
@@ -122,7 +121,7 @@
     </el-dialog>
 
     <!-- 测试结果弹窗 -->
-    <el-dialog v-model="testResultVisible" title="连接测试结果" width="480px">
+    <el-dialog v-model="testResultVisible" title="连接测试结果" width="var(--app-dialog-width-sm)" destroy-on-close>
       <el-alert
         v-if="testResult.ok"
         type="success"
@@ -335,13 +334,6 @@ onMounted(fetchConfigs)
 </script>
 
 <style scoped>
-.jenkins-monitor :deep(.page-container__inner) {
-  display: flex;
-  flex-direction: column;
-  gap: var(--app-space-4);
-  height: 100%;
-}
-
 .table-card {
   flex: 1;
   overflow: hidden;

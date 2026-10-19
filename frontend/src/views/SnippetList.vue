@@ -88,7 +88,7 @@
     <el-dialog
       v-model="dialogVisible"
       :title="viewMode ? '代码片段详情' : isEdit ? '编辑代码片段' : '新增代码片段'"
-      width="800px"
+      width="var(--app-dialog-width-lg)"
       destroy-on-close
     >
       <el-form :model="formData" :rules="viewMode ? {} : rules" ref="formRef" label-width="100px">

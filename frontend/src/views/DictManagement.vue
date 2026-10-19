@@ -34,7 +34,7 @@
     </el-card>
 
     <!-- 字典类型编辑对话框 -->
-    <el-dialog v-model="typeDialogVisible" :title="typeDialogTitle" width="480px">
+    <el-dialog v-model="typeDialogVisible" :title="typeDialogTitle" width="var(--app-dialog-width-sm)" destroy-on-close>
       <el-form :model="typeForm" :rules="typeRules" ref="typeFormRef" label-width="100px">
         <el-form-item label="类型编码" prop="typeCode">
           <el-input v-model="typeForm.typeCode" placeholder="请输入类型编码" />
@@ -58,7 +58,7 @@
     </el-dialog>
 
     <!-- 字典数据管理对话框 -->
-    <el-dialog v-model="dataDialogVisible" title="字典数据管理" width="800px">
+    <el-dialog v-model="dataDialogVisible" title="字典数据管理" width="var(--app-dialog-width-lg)" destroy-on-close>
       <template #header>
         <div class="dialog-header">
           <span>字典数据管理 - {{ currentType?.typeName }}</span>
@@ -88,7 +88,7 @@
     </el-dialog>
 
     <!-- 字典数据编辑对话框 -->
-    <el-dialog v-model="dataItemDialogVisible" :title="dataItemDialogTitle" width="480px">
+    <el-dialog v-model="dataItemDialogVisible" :title="dataItemDialogTitle" width="var(--app-dialog-width-sm)" destroy-on-close>
       <el-form :model="dataForm" :rules="dataRules" ref="dataFormRef" label-width="100px">
         <el-form-item label="数据值" prop="dataValue">
           <el-input v-model="dataForm.dataValue" placeholder="请输入数据值" />
@@ -309,7 +309,7 @@ const handleDeleteData = (data: SysDictData) => {
 }
 
 .content-card:hover {
-  box-shadow: var(--app-shadow-card);
+  box-shadow: var(--app-shadow-card-hover);
 }
 
 .card-header {

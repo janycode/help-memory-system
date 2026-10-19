@@ -225,7 +225,7 @@
     <el-dialog
       v-model="environmentDialogVisible"
       title="环境详情"
-      width="800px"
+      width="var(--app-dialog-width-lg)"
       destroy-on-close
     >
       <el-form :model="selectedEnvironment" label-width="120px">
@@ -272,7 +272,7 @@
     <el-dialog
       v-model="snippetDialogVisible"
       title="代码片段详情"
-      width="800px"
+      width="var(--app-dialog-width-lg)"
       destroy-on-close
     >
       <el-form :model="selectedSnippet" label-width="100px">
@@ -307,7 +307,7 @@
     <el-dialog
       v-model="componentDialogVisible"
       title="技术组件详情"
-      width="800px"
+      width="var(--app-dialog-width-lg)"
       destroy-on-close
     >
       <el-form :model="selectedComponent" label-width="120px">
@@ -360,7 +360,7 @@
     <el-dialog
       v-model="processDialogVisible"
       title="业务流程详情"
-      width="800px"
+      width="var(--app-dialog-width-lg)"
       destroy-on-close
     >
       <el-form :model="selectedProcess" label-width="120px">
@@ -413,7 +413,7 @@
     <el-dialog
       v-model="projectDialogVisible"
       title="代码仓库详情"
-      width="800px"
+      width="var(--app-dialog-width-lg)"
       destroy-on-close
     >
       <el-form :model="selectedProject" label-width="120px">
@@ -469,7 +469,7 @@
     <el-dialog
       v-model="iterationDialogVisible"
       title="迭代任务详情"
-      width="800px"
+      width="var(--app-dialog-width-lg)"
       destroy-on-close
     >
       <el-form :model="selectedIteration" label-width="120px">

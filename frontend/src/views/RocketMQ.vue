@@ -1,5 +1,5 @@
 <template>
-  <PageContainer class="rocketmq-page" :scrollable="false">
+  <PageContainer fill :scrollable="false">
     <PageHeader
       title="RocketMQ 消息发送"
       description="按环境向 RocketMQ 主题发送消息，支持请求体预览、历史记录与 Java 文件解析"
@@ -189,11 +189,11 @@
       </div>
     </div>
 
-    <el-dialog v-model="requestPreviewVisible" title="请求体完整预览" width="90%" :close-on-click-modal="false">
+    <el-dialog v-model="requestPreviewVisible" title="请求体完整预览" width="90%" :close-on-click-modal="false" destroy-on-close>
       <pre class="json-box request-preview-body" v-html="highlightJson(buildPayloadForDisplay())"></pre>
     </el-dialog>
 
-    <el-dialog v-model="historyDialogVisible" title="历史消息" width="80%" :close-on-click-modal="false">
+    <el-dialog v-model="historyDialogVisible" title="历史消息" width="80%" :close-on-click-modal="false" destroy-on-close>
       <div class="history-toolbar">
         <span class="history-count">共 {{ filteredHistoryList.length }}/{{ MAX_HISTORY }} 条记录</span>
         <el-button size="small" type="danger" @click="clearHistory" :disabled="filteredHistoryList.length === 0">清空历史</el-button>
@@ -242,7 +242,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog v-model="javaPreviewVisible" title="Java文件预览" width="80%" :close-on-click-modal="false">
+    <el-dialog v-model="javaPreviewVisible" title="Java文件预览" width="80%" :close-on-click-modal="false" destroy-on-close>
       <div class="java-preview-header">
         <span class="java-preview-path">{{ javaPreviewFilePath }}</span>
       </div>
@@ -844,11 +844,6 @@ watch(messageBodyJson, (val) => {
 </script>
 
 <style scoped>
-.rocketmq-page :deep(.page-container__inner) {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
 
 .main-content {
   display: flex;

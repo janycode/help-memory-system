@@ -115,7 +115,7 @@
     <el-dialog
       v-model="dialogVisible"
       :title="viewMode ? '技术组件详情' : isEdit ? '编辑组件' : '新增组件'"
-      width="640px"
+      width="var(--app-dialog-width-md)"
       destroy-on-close
     >
       <el-form :model="formData" :rules="viewMode ? {} : rules" ref="formRef" label-width="100px">

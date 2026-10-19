@@ -94,7 +94,7 @@
     <el-dialog
       v-model="dialogVisible"
       :title="viewMode ? '业务流程详情' : isEdit ? '编辑流程' : '新增流程'"
-      width="640px"
+      width="var(--app-dialog-width-md)"
       destroy-on-close
     >
       <el-form :model="formData" :rules="viewMode ? {} : rules" ref="formRef" label-width="100px">

@@ -142,7 +142,7 @@ onMounted(() => {
 }
 
 .content-card:hover {
-  box-shadow: var(--app-shadow-card);
+  box-shadow: var(--app-shadow-card-hover);
 }
 
 .toolbar {

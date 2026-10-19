@@ -60,7 +60,7 @@
       />
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑用户' : '新增用户'" width="640px" destroy-on-close>
+    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑用户' : '新增用户'" width="var(--app-dialog-width-md)" destroy-on-close>
       <el-form :model="formData" :rules="rules" ref="formRef" label-width="80px">
         <el-form-item label="用户名" prop="username" v-if="!isEdit">
           <el-input v-model="formData.username" placeholder="请输入用户名" />
@@ -96,7 +96,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="resetPasswordVisible" title="重置密码" width="480px">
+    <el-dialog v-model="resetPasswordVisible" title="重置密码" width="var(--app-dialog-width-sm)" destroy-on-close>
       <el-form :model="resetPasswordData" :rules="resetPasswordRules" ref="resetPasswordFormRef" label-width="80px">
         <el-form-item label="用户">
           <el-input :value="resetPasswordData.username" disabled />
@@ -303,6 +303,6 @@ onMounted(() => {
 }
 
 .content-card:hover {
-  box-shadow: var(--app-shadow-card);
+  box-shadow: var(--app-shadow-card-hover);
 }
 </style>

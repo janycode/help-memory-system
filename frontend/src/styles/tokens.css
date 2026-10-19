@@ -42,6 +42,7 @@
   --app-radius-card: 8px;
   --app-radius-control: 6px;
   --app-shadow-card: 0 2px 12px rgba(0, 0, 0, 0.04);
+  --app-shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.08);
 
   /* 语义颜色，全部指向 Element Plus 变量，暗色自动生效 */
   --app-bg-page: var(--el-bg-color-page);
@@ -73,4 +74,5 @@
 
 html.dark {
   --app-shadow-card: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --app-shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.45);
 }

@@ -1,5 +1,5 @@
 <template>
-  <PageContainer class="iteration-page">
+  <PageContainer fill>
     <PageHeader title="迭代管理" description="左侧选择开发记录，右侧查看与编辑需求详情" />
 
     <div class="iteration-board">
@@ -129,7 +129,7 @@
       <el-dialog
         v-model="dialogVisible"
         :title="isEdit ? '编辑需求' : '新建需求'"
-        width="480px"
+        width="var(--app-dialog-width-md)"
         destroy-on-close
         :close-on-click-modal="false"
       >
@@ -185,7 +185,7 @@
       <el-dialog
         v-model="importDialogVisible"
         title="从目录导入需求"
-        width="480px"
+        width="var(--app-dialog-width-sm)"
         destroy-on-close
       >
         <el-form label-width="90px">
@@ -574,12 +574,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.iteration-page :deep(.page-container__inner) {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
 .iteration-board {
   display: flex;
   flex: 1;

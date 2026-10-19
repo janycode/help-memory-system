@@ -1,5 +1,5 @@
 <template>
-  <PageContainer class="mq-send-page" :scrollable="false">
+  <PageContainer fill :scrollable="false">
     <PageHeader
       title="MQ 自动称重"
       description="构造并发送称重消息，支持多环境切换与请求体预览"
@@ -126,7 +126,7 @@
         </div>
       </div>
 
-    <el-dialog v-model="requestPreviewVisible" title="请求体完整预览" width="90%" :close-on-click-modal="false">
+    <el-dialog v-model="requestPreviewVisible" title="请求体完整预览" width="90%" :close-on-click-modal="false" destroy-on-close>
       <pre class="json-box request-preview-body" v-html="highlightJson(currentPayload)"></pre>
     </el-dialog>
     </div>
@@ -375,11 +375,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.mq-send-page :deep(.page-container__inner) {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
 
 .main-content {
   display: flex;

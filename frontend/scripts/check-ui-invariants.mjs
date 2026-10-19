@@ -169,10 +169,19 @@ for (const file of vueFiles) {
 for (const path of SHARED_LAYER_FILES) {
   const file = join(SRC, path)
   const text = readFileSync(file, 'utf8')
-  const hexRe = /#[0-9a-fA-F]{3,8}\b/g
+  const colorRe = /#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)/g
   let matched
-  while ((matched = hexRe.exec(text))) {
+  while ((matched = colorRe.exec(text))) {
     failures.push({ rule: 5, file, line: lineAt(text, matched.index), message: `裸颜色值 ${matched[0]}，应改用令牌` })
+  }
+}
+
+// 不变量 6：使用了页面容器的视图必须登记在迁移清单中，避免新页面默认豁免
+for (const file of vueFiles) {
+  if (isMigrated(file)) continue
+  const text = readFileSync(file, 'utf8')
+  if (text.includes("from '@/components/PageContainer.vue'")) {
+    failures.push({ rule: 6, file, line: 1, message: '使用了 PageContainer 但未登记到 MIGRATED_VIEWS' })
   }
 }
 
@@ -204,5 +213,5 @@ if (failures.length > 0) {
   failures.forEach((f) => console.log(label(f)))
   process.exitCode = 1
 } else {
-  console.log(`\n通过：${MIGRATED_VIEWS.length} 个已迁移视图，5 条不变量全部满足。`)
+  console.log(`\n通过：${MIGRATED_VIEWS.length} 个已迁移视图，6 条不变量全部满足。`)
 }

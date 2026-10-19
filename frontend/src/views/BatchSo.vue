@@ -1,5 +1,5 @@
 <template>
-  <PageContainer class="batch-so-page" :scrollable="false">
+  <PageContainer fill :scrollable="false">
     <PageHeader title="SO 批量新建" description="按模板批量生成 SO 并提交">
       <template #actions>
         <el-button size="small" @click="showHistory = true; hasNewHistory = false" class="history-btn">
@@ -133,7 +133,7 @@
     </div>
 
     <!-- 历史记录弹窗 -->
-    <el-dialog v-model="showHistory" title="创建历史" width="640px">
+    <el-dialog v-model="showHistory" title="创建历史" width="var(--app-dialog-width-md)" destroy-on-close>
       <div class="history-content">
         <div v-if="historyList.length === 0" class="empty-hint">暂无创建历史</div>
         <div v-for="(group, time) in groupedHistory" :key="time" class="history-group">
@@ -637,11 +637,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.batch-so-page :deep(.page-container__inner) {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
 
 .main-content {
   display: flex;

@@ -1,5 +1,5 @@
 <template>
-  <PageContainer class="database-page">
+  <PageContainer fill>
     <PageHeader title="本地数据库">
       <template #actions>
         <el-tag type="info">数据库文件路径: {{ databasePath }}</el-tag>
@@ -42,13 +42,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.database-page :deep(.page-container__inner) {
-  display: flex;
-  flex-direction: column;
-  gap: var(--app-space-4);
-  height: 100%;
-}
-
 .h2-console-wrapper {
   width: 100%;
   flex: 1;

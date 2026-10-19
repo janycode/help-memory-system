@@ -3,7 +3,7 @@
     <PageHeader title="首页" description="全局检索与最近动态" />
 
     <!-- 搜索区域 -->
-    <el-card class="global-search-card" :shadow="'never'">
+    <el-card class="global-search-card" shadow="never">
       <div class="search-layout">
         <div class="search-box-section">
           <el-input
@@ -155,7 +155,7 @@
     </div>
 
     <!-- 环境新增弹窗 -->
-    <el-dialog v-model="environmentDialog.visible" title="新增环境" width="640px" destroy-on-close>
+    <el-dialog v-model="environmentDialog.visible" title="新增环境" width="var(--app-dialog-width-md)" destroy-on-close>
       <el-form :model="environmentDialog.formData" :rules="environmentDialog.rules" ref="environmentDialog.formRef" label-width="100px">
         <el-form-item label="环境名称" prop="name">
           <el-input v-model="environmentDialog.formData.name" placeholder="请输入环境名称" />
@@ -185,7 +185,7 @@
     </el-dialog>
 
     <!-- 组件新增弹窗 -->
-  <el-dialog v-model="componentDialog.visible" title="新增组件" width="640px" destroy-on-close>
+  <el-dialog v-model="componentDialog.visible" title="新增组件" width="var(--app-dialog-width-md)" destroy-on-close>
     <el-form :model="componentDialog.formData" :rules="componentDialog.rules" ref="componentDialog.formRef" label-width="100px">
       <el-form-item label="组件名称" prop="name">
         <el-input v-model="componentDialog.formData.name" placeholder="请输入组件名称" />
@@ -223,7 +223,7 @@
   </el-dialog>
 
     <!-- 流程新增弹窗 -->
-  <el-dialog v-model="processDialog.visible" title="新增流程" width="640px" destroy-on-close>
+  <el-dialog v-model="processDialog.visible" title="新增流程" width="var(--app-dialog-width-md)" destroy-on-close>
     <el-form :model="processDialog.formData" :rules="processDialog.rules" ref="processDialog.formRef" label-width="100px">
       <el-row :gutter="20">
         <el-col :span="12">
@@ -271,7 +271,7 @@
   </el-dialog>
 
     <!-- 项目新增弹窗 -->
-  <el-dialog v-model="projectDialog.visible" title="新增代码仓库" width="640px" destroy-on-close>
+  <el-dialog v-model="projectDialog.visible" title="新增代码仓库" width="var(--app-dialog-width-md)" destroy-on-close>
     <el-form :model="projectDialog.formData" :rules="projectDialog.rules" ref="projectDialog.formRef" label-width="100px">
       <el-row :gutter="20">
         <el-col :span="12">
@@ -316,7 +316,7 @@
   </el-dialog>
 
     <!-- 代码片段新增弹窗 -->
-  <el-dialog v-model="snippetDialog.visible" title="新增代码片段" width="800px" destroy-on-close>
+  <el-dialog v-model="snippetDialog.visible" title="新增代码片段" width="var(--app-dialog-width-lg)" destroy-on-close>
     <el-form :model="snippetDialog.formData" :rules="snippetDialog.rules" ref="snippetDialog.formRef" label-width="100px">
       <el-form-item label="标题" prop="title">
         <el-input v-model="snippetDialog.formData.title" placeholder="请输入标题" />
@@ -346,7 +346,7 @@
   </el-dialog>
 
     <!-- 迭代新增弹窗 -->
-  <el-dialog v-model="iterationDialog.visible" title="新增迭代任务" width="640px" destroy-on-close>
+  <el-dialog v-model="iterationDialog.visible" title="新增迭代任务" width="var(--app-dialog-width-md)" destroy-on-close>
     <el-form :model="iterationDialog.formData" :rules="iterationDialog.rules" ref="iterationDialog.formRef" label-width="100px">
       <el-row :gutter="20">
         <el-col :span="12">
