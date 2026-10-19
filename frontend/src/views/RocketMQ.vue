@@ -884,7 +884,7 @@ watch(messageBodyJson, (val) => {
 .preview-panel,
 .send-panel,
 .result-panel {
-  background: #fff;
+  background: var(--app-bg-surface);
   border-radius: .375rem;
   padding: .625rem .75rem;
   box-shadow: 0 .0625rem .375rem 0 rgba(0, 0, 0, 0.08);
@@ -1293,7 +1293,7 @@ watch(messageBodyJson, (val) => {
   border: none;
   outline: none;
   box-sizing: border-box;
-  background: #fff;
+  background: var(--app-bg-surface);
 }
 
 .panel-title {
@@ -1415,7 +1415,7 @@ watch(messageBodyJson, (val) => {
 }
 
 .history-section {
-  background: #fff;
+  background: var(--app-bg-surface);
   border: .0625rem solid #ebeef5;
   border-radius: .25rem;
   padding: .375rem .5rem;
@@ -1483,7 +1483,7 @@ watch(messageBodyJson, (val) => {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: .75rem;
   line-height: 1.6;
-  background: #fff;
+  background: var(--app-bg-surface);
   white-space: pre;
   overflow-x: auto;
 }

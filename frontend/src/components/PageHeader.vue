@@ -54,4 +54,11 @@ defineProps<{
   gap: var(--app-space-2);
   flex-shrink: 0;
 }
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 </style>

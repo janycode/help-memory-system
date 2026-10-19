@@ -870,7 +870,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 16px;
   padding: 22px 24px;
-  background: #fff;
+  background: var(--app-bg-surface);
   border-radius: var(--card-border-radius);
   box-shadow: var(--card-shadow);
   cursor: pointer;
@@ -942,7 +942,7 @@ html.dark .stat-card {
 
 /* ===== 快速操作 ===== */
 .quick-actions {
-  background: #fff;
+  background: var(--app-bg-surface);
   border-radius: var(--card-border-radius);
   box-shadow: var(--card-shadow);
   padding: 20px 24px;
@@ -1007,7 +1007,7 @@ html.dark .quick-actions {
 
 /* ===== 最近活动 ===== */
 .recent-activities {
-  background: #fff;
+  background: var(--app-bg-surface);
   border-radius: var(--card-border-radius);
   box-shadow: var(--card-shadow);
   padding: 20px 24px;

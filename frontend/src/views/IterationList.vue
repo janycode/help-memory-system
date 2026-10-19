@@ -593,7 +593,7 @@ onUnmounted(() => {
 .board-left {
   width: 340px;
   min-width: 300px;
-  background: #fff;
+  background: var(--app-bg-surface);
   border-right: 1px solid #e4e7ed;
   display: flex;
   flex-direction: column;
@@ -721,7 +721,7 @@ onUnmounted(() => {
 /* 右侧面板 */
 .board-right {
   flex: 1;
-  background: #fff;
+  background: var(--app-bg-surface);
   overflow: hidden;
   display: flex;
   flex-direction: column;

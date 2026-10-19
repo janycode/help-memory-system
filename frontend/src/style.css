@@ -22,34 +22,12 @@ html.dark body {
   height: 100vh;
 }
 
-/* ===== 通用容器 ===== */
+/* 窄版页面的容器，仅登录与 404 等全屏页仍直接使用 */
 .container {
   padding: var(--app-page-padding-y) var(--app-page-padding-x);
   height: 100%;
   max-width: var(--app-page-max-width);
   margin: 0 auto;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.page-title {
-  font-size: var(--app-font-size-page-title);
-  font-weight: 600;
-  color: var(--app-text-primary);
-  margin: 0;
-}
-
-.page-description {
-  color: var(--app-text-secondary);
-  font-size: var(--app-font-size-body);
-  margin-top: var(--app-space-1);
 }
 
 /* ===== 卡片样式统一 ===== */
@@ -206,12 +184,7 @@ html.dark body {
 
 @media (max-width: 768px) {
   .container {
-    padding: 12px 16px;
-  }
-
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
+    padding: var(--app-space-3) var(--app-space-4);
   }
 
   .search-bar {
@@ -227,9 +200,5 @@ html.dark body {
   .filter-select {
     max-width: none;
     width: 100%;
-  }
-
-  .page-title {
-    font-size: 20px;
   }
 }

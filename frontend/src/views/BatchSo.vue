@@ -670,7 +670,7 @@ onMounted(() => {
   flex: 0 0 auto;
   max-height: 20%;
   overflow-y: auto;
-  background: #fff;
+  background: var(--app-bg-surface);
   border-radius: 6px;
   padding: 10px 12px;
   box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.08);
@@ -683,14 +683,14 @@ onMounted(() => {
   flex-direction: column;
   overflow: hidden;
   border-left: 3px solid #dcdfe6;
-  background: #fff;
+  background: var(--app-bg-surface);
   border-radius: 6px;
   padding: 10px 12px;
   box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.08);
 }
 
 .form-section {
-  background: #fff;
+  background: var(--app-bg-surface);
   border-radius: 6px;
   padding: 10px 12px;
   box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.08);
@@ -892,7 +892,7 @@ onMounted(() => {
 }
 
 .detail-json {
-  background: #fff;
+  background: var(--app-bg-surface);
   border: 1px solid #ebeef5;
   border-radius: 3px;
   padding: 6px 8px;

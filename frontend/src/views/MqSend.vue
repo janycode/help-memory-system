@@ -392,7 +392,7 @@ onMounted(() => {
 .config-panel,
 .preview-panel,
 .result-panel {
-  background: #fff;
+  background: var(--app-bg-surface);
   border-radius: 6px;
   padding: 10px 12px;
   box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.08);
