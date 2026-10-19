@@ -1,5 +1,22 @@
-/* 设计令牌层：只定义变量，不产生任何视觉副作用 */
+/* 设计令牌层：视觉值的唯一定义处，组件与页面只引用不写字面值 */
 :root {
+  /* Element Plus 调色板覆盖 */
+  --el-color-primary: #409eff;
+  --el-color-primary-light-3: #79bbff;
+  --el-color-success: #67c23a;
+  --el-color-warning: #e6a23c;
+  --el-color-danger: #f56c6c;
+  --el-color-info: #909399;
+
+  /* 布局外壳 */
+  --sidebar-bg: #1a1a2e;
+  --sidebar-text: #a0aec0;
+  --sidebar-active-text: #ffffff;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.06);
+  --sidebar-active-bg: rgba(64, 158, 255, 0.15);
+  --header-bg: #ffffff;
+  --content-bg: #f5f7fa;
+
   /* 间距刻度，4px 基数 */
   --app-space-1: 4px;
   --app-space-2: 8px;
@@ -48,6 +65,10 @@
   --app-dialog-width-md: 640px;
   --app-dialog-width-lg: 800px;
   --app-dialog-max-height: 85vh;
+
+  /* 兼容既有引用 */
+  --card-shadow: var(--app-shadow-card);
+  --card-border-radius: var(--app-radius-card);
 }
 
 html.dark {
