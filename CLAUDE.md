@@ -135,3 +135,17 @@ export JWT_SECRET="your-strong-jwt-secret-at-least-32-bytes"
 2. **最小代码** —— 用最少的代码解决问题；不添加未要求的功能或抽象
 3. **精确修改** —— 只改动必要部分；与现有风格保持一致；只清理自己遗留的孤立代码
 4. **目标驱动** —— 定义成功标准；验证通过后再宣告完成
+
+## Agent skills
+
+### Issue tracker
+
+Issue 与规格存放于本仓库的 GitHub Issues，通过 `gh` CLI 读写。详见 `docs/agents/issue-tracker.md`。
+
+### Triage labels
+
+沿用五个默认标签：`needs-triage`、`needs-info`、`ready-for-agent`、`ready-for-human`、`wontfix`。详见 `docs/agents/triage-labels.md`。
+
+### Domain docs
+
+单上下文布局：仓库根 `GLOSSARY.md` + `docs/adr/`。详见 `docs/agents/domain.md`。
