@@ -55,8 +55,9 @@ cd ../backend && mvn clean package -DskipTests
 ## 注意事项（Gotchas）
 
 - **前端构建进后端**：`pnpm build` 直接写入 `backend/src/main/resources/static/`。打包后端 JAR 前必须先构建前端。Dockerfile 假设前端已构建完成。
-- **CI 顺序陷阱**：`.github/workflows/auto-build.yml` 先打包后端、再构建前端，因此 CI 产出的 JAR **不含**前端资源；且其上传的 `frontend/dist` 路径不存在（vite 实际输出到 `backend/src/main/resources/static`），该上传步骤会失败。以本地构建为准。
-- **CI 使用 npm 而非 pnpm**：工作流前端用 `npm i && npm run build` —— 与本地 pnpm 配置不一致。
+- **CI 顺序与本地一致**：`.github/workflows/auto-build.yml` 已改为前端先行（pnpm 安装、架构不变量检查、构建），再打包后端，最后上传 `backend/target/*.jar` 与 `backend/src/main/resources/static`。此前存在的顺序颠倒、使用 npm、上传不存在的 `frontend/dist` 三个问题均已修复。
+- **CI 会跑架构闸门**：工作流在前端构建前执行 `pnpm check:ui`，不变量不通过则构建失败。新页面若使用 `PageContainer` 却未登记 `MIGRATED_VIEWS`，CI 会拦住。
+- **CI 通知依赖密钥**：企业微信通知读取 `secrets.QYWX_WEBHOOK_URL`，未配置时该步骤自动跳过，不会把构建判为失败。
 - **H2 相对路径**：JDBC URL `jdbc:h2:file:../data/mynewwork` 相对 `backend/` 目录，数据库文件在项目根目录 `data/`（已 gitignore）。删掉 `data/*` 可重置数据库。
 - **无测试套件**：前后端均无测试。`mvn test` 运行 0 个测试。
 - **首次启动初始化**：`DataInitializer.java` 创建 `admin/admin123` 与 `testuser/123456`，并初始化字典、菜单权限、系统配置。**注意**：admin 密码每次启动若与 `admin123` 不一致都会被重置。

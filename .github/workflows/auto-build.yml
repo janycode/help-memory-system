@@ -12,75 +12,82 @@ jobs:
         with:
           fetch-depth: 0
 
-      # ========== 第一步：构建后端（Java） ==========
+      # ========== 第一步：构建前端 ==========
+      # 顺序不可颠倒：前端产物写入 backend/src/main/resources/static，
+      # 必须先构建前端，后端打包时才能把它打进 JAR。
+      - name: 配置 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: 配置 Node.js 22（前端）
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: 前端安装依赖
+        run: pnpm install --frozen-lockfile
+        working-directory: ./frontend
+
+      - name: 前端架构不变量检查
+        run: pnpm check:ui
+        working-directory: ./frontend
+
+      - name: 前端构建
+        run: pnpm build
+        working-directory: ./frontend
+
+      # ========== 第二步：构建后端 ==========
       - name: 配置JDK 21（后端）
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: maven  # 后端Maven缓存（适配backend目录）
-          cache-dependency-path: backend/pom.xml  # 指定后端pom.xml路径
+          cache: maven
+          cache-dependency-path: backend/pom.xml
 
       - name: 后端Maven构建打包
         run: mvn clean package -DskipTests
-        working-directory: ./backend  # 进入后端目录执行构建
-
-      # ========== 第二步：构建前端 ==========
-      - name: 配置Node.js 20（前端）
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: 前端安装依赖并构建
-        run: npm i && npm run build
-        working-directory: ./frontend  # 进入前端目录执行构建
+        working-directory: ./backend
 
       # ========== 第三步：上传构建产物 ==========
       - name: 上传后端jar包
         uses: actions/upload-artifact@v4
         with:
           name: 后端构建包
-          path: backend/target/*.jar  # 后端产物路径
+          path: backend/target/*.jar
           retention-days: 30
 
       - name: 上传前端静态文件
         uses: actions/upload-artifact@v4
         with:
           name: 前端构建包
-          path: frontend/dist  # 前端产物路径（通用dist目录，可根据你的项目调整）
+          path: backend/src/main/resources/static
           retention-days: 30
+
+      # ========== 第四步：企业微信通知 ==========
       - name: 企业微信通知构建成功
         if: success()
+        env:
+          WEBHOOK: ${{ secrets.QYWX_WEBHOOK_URL }}
         run: |
+          if [ -z "$WEBHOOK" ]; then echo "未配置 QYWX_WEBHOOK_URL，跳过通知"; exit 0; fi
           COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --format='· %s (%an)' --no-merges 2>/dev/null || echo "· 无法获取提交记录")
-          CONTENT="✅ help-memory-system 助记单项目 自动构建完成"
-          CONTENT="${CONTENT}\n项目：${{ github.repository }}"
-          CONTENT="${CONTENT}\n分支：${{ github.ref_name }}"
-          CONTENT="${CONTENT}\n提交记录：\n${COMMITS}"
-          CONTENT="${CONTENT}\n构建产物下载：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          curl -X POST ${{ secrets.QYWX_WEBHOOK_URL }} \
-          -H "Content-Type: application/json" \
-          -d "{
-            \"msgtype\": \"text\",
-            \"text\": {
-              \"content\": \"${CONTENT}\"
-            }
-          }"
+          BODY=$(printf '✅ help-memory-system 助记单项目 自动构建完成\n项目：%s\n分支：%s\n提交记录：\n%s\n构建产物下载：https://github.com/%s/actions/runs/%s' \
+            "${{ github.repository }}" "${{ github.ref_name }}" "$COMMITS" "${{ github.repository }}" "${{ github.run_id }}")
+          jq -n --arg c "$BODY" '{msgtype:"text",text:{content:$c}}' > /tmp/payload.json
+          curl -sS -X POST "$WEBHOOK" -H "Content-Type: application/json" -d @/tmp/payload.json
 
       - name: 企业微信通知构建失败
         if: failure()
+        env:
+          WEBHOOK: ${{ secrets.QYWX_WEBHOOK_URL }}
         run: |
+          if [ -z "$WEBHOOK" ]; then echo "未配置 QYWX_WEBHOOK_URL，跳过通知"; exit 0; fi
           COMMITS=$(git log ${{ github.event.before }}..${{ github.sha }} --format='· %s (%an)' --no-merges 2>/dev/null || echo "· 无法获取提交记录")
-          CONTENT="❌ help-memory-system 助记单项目 自动构建失败"
-          CONTENT="${CONTENT}\n项目：${{ github.repository }}"
-          CONTENT="${CONTENT}\n分支：${{ github.ref_name }}"
-          CONTENT="${CONTENT}\n提交记录：\n${COMMITS}"
-          CONTENT="${CONTENT}\n查看日志：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          curl -X POST ${{ secrets.QYWX_WEBHOOK_URL }} \
-          -H "Content-Type: application/json" \
-          -d "{
-            \"msgtype\": \"text\",
-            \"text\": {
-              \"content\": \"${CONTENT}\"
-            }
-          }"
+          BODY=$(printf '❌ help-memory-system 助记单项目 自动构建失败\n项目：%s\n分支：%s\n提交记录：\n%s\n查看日志：https://github.com/%s/actions/runs/%s' \
+            "${{ github.repository }}" "${{ github.ref_name }}" "$COMMITS" "${{ github.repository }}" "${{ github.run_id }}")
+          jq -n --arg c "$BODY" '{msgtype:"text",text:{content:$c}}' > /tmp/payload.json
+          curl -sS -X POST "$WEBHOOK" -H "Content-Type: application/json" -d @/tmp/payload.json
