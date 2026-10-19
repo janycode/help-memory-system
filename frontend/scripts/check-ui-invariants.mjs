@@ -9,7 +9,13 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const SRC = join(ROOT, 'src')
 
 // 已迁移到统一骨架的视图，每批完成后在此追加
-const MIGRATED_VIEWS = []
+const MIGRATED_VIEWS = [
+  'views/EnvironmentList.vue',
+  'views/ComponentList.vue',
+  'views/ProcessList.vue',
+  'views/ProjectList.vue',
+  'views/SnippetList.vue'
+]
 
 // 共享展示层，逐令牌化
 const SHARED_LAYER_FILES = [

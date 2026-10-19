@@ -1,15 +1,14 @@
 <template>
-  <div class="process-list">
-    <div class="page-header">
-      <h2>业务流程</h2>
-      <div style="display: flex; gap: 8px; align-items: center;">
+  <PageContainer>
+    <PageHeader title="业务流程">
+      <template #actions>
         <ColumnSelector :columns="columnDefs" @toggle="toggle" @reset="reset" />
         <el-button type="primary" @click="handleAdd">
           <el-icon><Plus /></el-icon>
           新增流程
         </el-button>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- 搜索栏 -->
     <div class="search-bar">
@@ -45,59 +44,57 @@
     </div>
 
     <!-- 流程列表 -->
-    <el-table :data="processStore.processes" v-loading="processStore.isLoading" stripe>
-      <el-table-column prop="name" label="流程名称" min-width="100" v-if="isVisible('name')" />
-      <el-table-column prop="environmentType" label="环境" width="110" v-if="isVisible('environment')">
-        <template #default="{ row }">
-          <el-tag v-if="row.environmentType" :type="getEnvironmentTypeTagType(row.environmentType)">
-            {{ getEnvironmentTypeLabel(row.environmentType) }}
-          </el-tag>
-          <el-tag v-else-if="row.environmentId" :type="getEnvironmentTagType(row.environmentId)">
-            {{ getEnvironmentLabel(row.environmentId) }}
-          </el-tag>
-          <span v-else>不区分环境</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="category" label="分类" width="120" v-if="isVisible('category')">
-        <template #default="{ row }">
-          <el-tag :type="getCategoryTagType(row.category)">{{ getCategoryLabel(row.category) }}</el-tag>
-        </template>
-      </el-table-column>
-<!--      <el-table-column prop="priority" label="优先级" width="80" />-->
-      <el-table-column prop="description" label="描述" min-width="100" show-overflow-tooltip v-if="isVisible('description')" />
-      <el-table-column prop="processFlow" label="流程步骤" min-width="200" show-overflow-tooltip v-if="isVisible('processFlow')" />
-      <el-table-column label="操作" width="240" fixed="right">
-        <template #default="{ row }">
-          <el-button type="primary" link @click="handleView(row)">查看</el-button>
-          <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-          <el-button type="primary" link @click="copyProcessInfo(row)">文本复制</el-button>
-          <el-popconfirm title="确定删除该流程吗？" @confirm="handleDelete(row.id)">
-            <template #reference>
-              <el-button type="danger" link>删除</el-button>
-            </template>
-          </el-popconfirm>
-        </template>
-      </el-table-column>
-    </el-table>
+    <el-card class="table-card" shadow="never">
+      <el-table :data="processStore.processes" v-loading="processStore.isLoading" stripe>
+        <el-table-column prop="name" label="流程名称" min-width="100" v-if="isVisible('name')" />
+        <el-table-column prop="environmentType" label="环境" width="110" v-if="isVisible('environment')">
+          <template #default="{ row }">
+            <el-tag v-if="row.environmentType" :type="getEnvironmentTypeTagType(row.environmentType)">
+              {{ getEnvironmentTypeLabel(row.environmentType) }}
+            </el-tag>
+            <el-tag v-else-if="row.environmentId" :type="getEnvironmentTagType(row.environmentId)">
+              {{ getEnvironmentLabel(row.environmentId) }}
+            </el-tag>
+            <span v-else>不区分环境</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="category" label="分类" width="120" v-if="isVisible('category')">
+          <template #default="{ row }">
+            <el-tag :type="getCategoryTagType(row.category)">{{ getCategoryLabel(row.category) }}</el-tag>
+          </template>
+        </el-table-column>
+  <!--      <el-table-column prop="priority" label="优先级" width="80" />-->
+        <el-table-column prop="description" label="描述" min-width="100" show-overflow-tooltip v-if="isVisible('description')" />
+        <el-table-column prop="processFlow" label="流程步骤" min-width="200" show-overflow-tooltip v-if="isVisible('processFlow')" />
+        <el-table-column label="操作" width="240" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link @click="handleView(row)">查看</el-button>
+            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+            <el-button type="primary" link @click="copyProcessInfo(row)">文本复制</el-button>
+            <el-popconfirm title="确定删除该流程吗？" @confirm="handleDelete(row.id)">
+              <template #reference>
+                <el-button type="danger" link>删除</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
 
     <!-- 分页 -->
-    <div class="pagination-wrapper">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="processStore.pagination?.totalElements || 0"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handlePageChange"
-      />
-    </div>
+    <PaginationBar
+      :current-page="currentPage"
+      :page-size="pageSize"
+      :total="processStore.pagination?.totalElements || 0"
+      @size-change="handleSizeChange"
+      @current-change="handlePageChange"
+    />
 
     <!-- 新增/编辑/查看对话框 -->
     <el-dialog
       v-model="dialogVisible"
       :title="viewMode ? '业务流程详情' : isEdit ? '编辑流程' : '新增流程'"
-      width="700px"
+      width="640px"
       destroy-on-close
     >
       <el-form :model="formData" :rules="viewMode ? {} : rules" ref="formRef" label-width="100px">
@@ -162,7 +159,7 @@
         <el-button @click="dialogVisible = false" v-else>关闭</el-button>
       </template>
     </el-dialog>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -174,6 +171,9 @@ import { useEnvironmentStore } from '@/stores/environment'
 import { useDictStore } from '@/stores/dict'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import ColumnSelector from '@/components/ColumnSelector.vue'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
+import PaginationBar from '@/components/PaginationBar.vue'
 import { useColumnVisibility, type ColumnDef } from '@/composables/useColumnVisibility'
 import type { BusinessProcess } from '@/types/process'
 import type { Shortcut } from '@/composables/useKeyboardShortcuts'
@@ -474,24 +474,5 @@ useKeyboardShortcuts(pageShortcuts)
 </script>
 
 <style scoped>
-.process-list {
-  padding: 20px;
-}
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.page-header h2 {
-  margin: 0;
-}
-
-.pagination-wrapper {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
-}
 </style>

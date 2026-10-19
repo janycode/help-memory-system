@@ -1,15 +1,14 @@
 <template>
-  <div class="snippet-list">
-    <div class="page-header">
-      <h2>代码片段</h2>
-      <div style="display: flex; gap: 8px; align-items: center;">
+  <PageContainer>
+    <PageHeader title="代码片段">
+      <template #actions>
         <ColumnSelector :columns="columnDefs" @toggle="toggle" @reset="reset" />
         <el-button type="primary" @click="handleAdd">
           <el-icon><Plus /></el-icon>
           新增代码片段
         </el-button>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <div class="search-bar">
       <div class="search-inputs">
@@ -33,60 +32,58 @@
       </el-button>
     </div>
 
-    <el-table :data="snippetStore.snippets" v-loading="snippetStore.isLoading" stripe>
-      <el-table-column prop="title" label="标题" min-width="150" v-if="isVisible('title')" />
-      <el-table-column prop="language" label="语言" width="120" v-if="isVisible('language')">
-        <template #default="{ row }">
-          <el-tag :type="getLanguageTagType(row.language)">{{ getLanguageLabel(row.language) }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="tags" label="标签" width="150" show-overflow-tooltip v-if="isVisible('tags')" />
-      <el-table-column label="代码预览" width="200" v-if="isVisible('codePreview')">
-        <template #default="{ row }">
-          <el-popover
-            placement="top"
-            trigger="hover"
-            :width="500"
-            :show-after="300"
-            :hide-after="100"
-          >
-            <template #reference>
-              <div class="code-preview-cell">
-                {{ getCodePreview(row.code) }}
+    <el-card class="table-card" shadow="never">
+      <el-table :data="snippetStore.snippets" v-loading="snippetStore.isLoading" stripe>
+        <el-table-column prop="title" label="标题" min-width="150" v-if="isVisible('title')" />
+        <el-table-column prop="language" label="语言" width="120" v-if="isVisible('language')">
+          <template #default="{ row }">
+            <el-tag :type="getLanguageTagType(row.language)">{{ getLanguageLabel(row.language) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="tags" label="标签" width="150" show-overflow-tooltip v-if="isVisible('tags')" />
+        <el-table-column label="代码预览" width="200" v-if="isVisible('codePreview')">
+          <template #default="{ row }">
+            <el-popover
+              placement="top"
+              trigger="hover"
+              :width="500"
+              :show-after="300"
+              :hide-after="100"
+            >
+              <template #reference>
+                <div class="code-preview-cell">
+                  {{ getCodePreview(row.code) }}
+                </div>
+              </template>
+              <div class="code-popover">
+                <pre class="code-content"><code :class="`language-${row.language}`" v-html="getHighlightedCode(row.code, row.language)"></code></pre>
               </div>
-            </template>
-            <div class="code-popover">
-              <pre class="code-content"><code :class="`language-${row.language}`" v-html="getHighlightedCode(row.code, row.language)"></code></pre>
-            </div>
-          </el-popover>
-        </template>
-      </el-table-column>
-      <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip v-if="isVisible('description')" />
-      <el-table-column label="操作" width="280" fixed="right">
-        <template #default="{ row }">
-          <el-button type="primary" link @click="handleView(row)">查看</el-button>
-          <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-          <el-button type="primary" link @click="copyCode(row)">复制代码</el-button>
-          <el-popconfirm title="确定删除该代码片段吗？" @confirm="handleDelete(row.id)">
-            <template #reference>
-              <el-button type="danger" link>删除</el-button>
-            </template>
-          </el-popconfirm>
-        </template>
-      </el-table-column>
-    </el-table>
+            </el-popover>
+          </template>
+        </el-table-column>
+        <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip v-if="isVisible('description')" />
+        <el-table-column label="操作" width="280" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link @click="handleView(row)">查看</el-button>
+            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+            <el-button type="primary" link @click="copyCode(row)">复制代码</el-button>
+            <el-popconfirm title="确定删除该代码片段吗？" @confirm="handleDelete(row.id)">
+              <template #reference>
+                <el-button type="danger" link>删除</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
 
-    <div class="pagination-wrapper">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handlePageChange"
-      />
-    </div>
+    <PaginationBar
+      :current-page="currentPage"
+      :page-size="pageSize"
+      :total="total"
+      @size-change="handleSizeChange"
+      @current-change="handlePageChange"
+    />
 
     <el-dialog
       v-model="dialogVisible"
@@ -136,7 +133,7 @@
         <el-button @click="dialogVisible = false" v-else>关闭</el-button>
       </template>
     </el-dialog>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -144,6 +141,9 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, Search } from '@element-plus/icons-vue'
 import ColumnSelector from '@/components/ColumnSelector.vue'
+import PageContainer from '@/components/PageContainer.vue'
+import PageHeader from '@/components/PageHeader.vue'
+import PaginationBar from '@/components/PaginationBar.vue'
 import { useColumnVisibility, type ColumnDef } from '@/composables/useColumnVisibility'
 import { useSnippetStore } from '@/stores/snippet'
 import type { CodeSnippet } from '@/api/snippet'
@@ -389,26 +389,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.snippet-list {
-  padding: 20px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.page-header h2 {
-  margin: 0;
-}
-
-.pagination-wrapper {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
-}
 
 .full-width {
   width: 100%;
@@ -421,9 +401,9 @@ onMounted(() => {
 }
 
 .code-preview {
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  background-color: #f8f9fa;
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--app-radius-control);
+  background-color: var(--el-fill-color-light);
   max-height: 400px;
   overflow: auto;
 }
@@ -432,26 +412,26 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 16px;
-  background-color: #f1f3f4;
-  border-bottom: 1px solid #dcdfe6;
+  padding: var(--app-space-2) var(--app-space-4);
+  background-color: var(--el-fill-color);
+  border-bottom: 1px solid var(--el-border-color);
 }
 
 .language-tag {
-  font-size: 12px;
+  font-size: var(--app-font-size-secondary);
   font-weight: 500;
-  color: #606266;
-  background-color: #e9ecef;
-  padding: 2px 8px;
-  border-radius: 4px;
+  color: var(--app-text-regular);
+  background-color: var(--el-fill-color-dark);
+  padding: 2px var(--app-space-2);
+  border-radius: var(--app-radius-control);
 }
 
 .code-preview pre {
   margin: 0;
-  padding: 16px;
+  padding: var(--app-space-4);
   background: transparent;
   font-family: monospace;
-  font-size: 14px;
+  font-size: var(--app-font-size-body);
   line-height: 1.5;
 }
 
@@ -461,13 +441,13 @@ onMounted(() => {
 
 .code-preview-cell {
   font-family: monospace;
-  font-size: 12px;
-  color: #666;
+  font-size: var(--app-font-size-secondary);
+  color: var(--app-text-secondary);
   cursor: pointer;
-  padding: 4px 8px;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-  border: 1px solid #e0e0e0;
+  padding: var(--app-space-1) var(--app-space-2);
+  background-color: var(--el-fill-color-light);
+  border-radius: var(--app-radius-control);
+  border: 1px solid var(--el-border-color);
   max-height: 40px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -475,8 +455,8 @@ onMounted(() => {
 }
 
 .code-preview-cell:hover {
-  background-color: #e8f4fd;
-  border-color: #409eff;
+  background-color: var(--el-color-primary-light-9);
+  border-color: var(--el-color-primary);
 }
 
 .code-popover {
@@ -487,10 +467,10 @@ onMounted(() => {
 .code-content {
   margin: 0;
   font-family: monospace;
-  font-size: 12px;
+  font-size: var(--app-font-size-secondary);
   line-height: 1.4;
   white-space: pre-wrap;
   word-break: break-all;
-  color: #333;
+  color: var(--app-text-primary);
 }
 </style>
