@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * Jenkins 监控服务
@@ -49,6 +50,30 @@ import java.util.concurrent.TimeUnit;
 public class JenkinsMonitorService {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(10);
+
+    /** 最近提交展示条数 */
+    private static final int DISPLAY_COMMIT_LIMIT = 5;
+
+    /** 最近提交中无条件保留的最新条数 */
+    private static final int LATEST_COMMIT_COUNT = 2;
+
+    /** git log 候选池条数，需大于展示条数以便筛掉无效提交 */
+    private static final int COMMIT_CANDIDATE_LIMIT = 30;
+
+    /** 提交说明展示的最大字数，超出截断 */
+    private static final int COMMIT_MESSAGE_MAX_LENGTH = 80;
+
+    /** git log 字段分隔符，避免说明中的字符干扰解析 */
+    private static final String COMMIT_FIELD_SEPARATOR = "\u0001";
+
+    /** 有效提交：约定式类型前缀，如 feat、fix、fix(ui) */
+    private static final Pattern VALID_COMMIT_PATTERN =
+            Pattern.compile("^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\\([^)]*\\))?!?:",
+                    Pattern.CASE_INSENSITIVE);
+
+    /** 自动生成提交：merge 及 merged 开头 */
+    private static final Pattern MERGE_COMMIT_PATTERN =
+            Pattern.compile("^merged?\\b", Pattern.CASE_INSENSITIVE);
 
     private final JenkinsJobConfigRepository repository;
     private final ObjectMapper objectMapper;
@@ -109,17 +134,16 @@ public class JenkinsMonitorService {
      */
     private void sendWecomSuccess(JenkinsJobConfig config, long number, JsonNode node) throws Exception {
         StringBuilder content = new StringBuilder();
-        content.append("**").append(config.getJobName()).append("【Jenkins 构建成功】**\n");
+        content.append("**✅ ").append(config.getJobName()).append("【Jenkins 构建成功】**\n");
         content.append("> 环境：").append(StringUtils.hasText(config.getEnvironment()) ? config.getEnvironment() : "-").append("\n");
         String branch = resolveBranch(node);
         content.append("> 分支：").append(branch).append("\n");
         content.append("> 时间：").append(formatBuildTime(node.path("timestamp").asLong(0))).append("\n");
         content.append("> 构建号：#").append(number).append("\n");
-        // 最近 3 条 git 提交（配置了本地目录时展示，失败自动省略）
-        List<String> commits = fetchRecentCommits(config, "-".equals(branch) ? null : branch);
+        List<Commit> commits = fetchRecentCommits(config, "-".equals(branch) ? null : branch);
         if (!commits.isEmpty()) {
             content.append("> 最近提交：\n");
-            commits.forEach(c -> content.append("> ").append(c).append("\n"));
+            commits.forEach(c -> content.append("> ").append(formatCommit(c)).append("\n"));
         }
         long duration = node.path("duration").asLong(0);
         if (duration > 0) {
@@ -315,20 +339,21 @@ public class JenkinsMonitorService {
     }
 
     /**
-     * 通过本地 git 仓库取最近 3 条提交（已格式化），未配置目录或执行失败返回空列表
-     * 先 fetch 远程分支保证拿到最新提交，优先按构建分支查询，失败回退当前分支
+     * 通过本地 git 仓库取最近提交清单（已筛选），未配置目录或执行失败返回空列表
+     * 1. 先 fetch 远程分支，保证拿到最新提交
+     * 2. 优先按构建分支查询，失败回退当前分支
      */
-    private List<String> fetchRecentCommits(JenkinsJobConfig config, String branch) {
+    private List<Commit> fetchRecentCommits(JenkinsJobConfig config, String branch) {
         if (!StringUtils.hasText(config.getLocalDir())) {
             return List.of();
         }
         // 预先拉取远程分支最新代码，避免拿到陈旧的提交日志
         fetchRemote(config.getLocalDir(), branch);
-        List<String> commits = runGitLog(config.getLocalDir(), branch);
+        List<Commit> commits = runGitLog(config.getLocalDir(), branch);
         if (commits.isEmpty() && StringUtils.hasText(branch)) {
             commits = runGitLog(config.getLocalDir(), null);
         }
-        return commits;
+        return selectDisplayCommits(commits);
     }
 
     /**
@@ -345,17 +370,18 @@ public class JenkinsMonitorService {
     }
 
     /**
-     * 在指定目录执行 git log 取 3 条提交
-     * 有分支时基于已 fetch 的远程引用 origin/{branch} 查询，确保是最新提交
+     * 在指定目录执行 git log 取候选提交
+     * 1. 有分支时基于已 fetch 的 origin/{branch} 查询，确保是最新提交
+     * 2. 候选池上限 30 条，供后续筛选有效提交
      */
-    private List<String> runGitLog(String dir, String branch) {
+    private List<Commit> runGitLog(String dir, String branch) {
         List<String> args = new ArrayList<>();
         args.add("log");
         if (StringUtils.hasText(branch)) {
             args.add("origin/" + branch);
         }
-        args.add("-3");
-        args.add("--pretty=format:%h%x01%s%x01%an");
+        args.add("-" + COMMIT_CANDIDATE_LIMIT);
+        args.add("--pretty=format:%h" + COMMIT_FIELD_SEPARATOR + "%s" + COMMIT_FIELD_SEPARATOR + "%an");
         GitExecResult result = execGit(dir, args);
         if (result.exitCode() != 0) {
             log.debug("git log 执行失败: dir={}, ref={}", dir, branch);
@@ -364,9 +390,66 @@ public class JenkinsMonitorService {
         return result.output().lines()
                 .map(String::trim)
                 .filter(StringUtils::hasText)
-                .map(this::formatCommitLine)
-                .limit(3)
+                .map(this::parseCommit)
+                .limit(COMMIT_CANDIDATE_LIMIT)
                 .toList();
+    }
+
+    /**
+     * 挑选展示用提交
+     * 1. 前 2 条无条件取最新提交
+     * 2. 其余按时间顺序从有效提交中补足，总数不超过 5 条
+     */
+    private List<Commit> selectDisplayCommits(List<Commit> candidates) {
+        List<Commit> display = new ArrayList<>(
+                candidates.subList(0, Math.min(LATEST_COMMIT_COUNT, candidates.size())));
+        candidates.stream()
+                .skip(LATEST_COMMIT_COUNT)
+                .filter(this::isValidCommit)
+                .limit(DISPLAY_COMMIT_LIMIT - display.size())
+                .forEach(display::add);
+        return display;
+    }
+
+    /**
+     * 有效提交：非 merge 类自动生成提交，且说明以约定式类型前缀开头
+     */
+    private boolean isValidCommit(Commit commit) {
+        return !MERGE_COMMIT_PATTERN.matcher(commit.message()).find()
+                && VALID_COMMIT_PATTERN.matcher(commit.message()).find();
+    }
+
+    /**
+     * git log 行（短hash|首行说明|作者）解析为提交摘要
+     */
+    private Commit parseCommit(String line) {
+        String[] parts = line.split(COMMIT_FIELD_SEPARATOR, -1);
+        return new Commit(
+                parts[0],
+                parts.length > 1 ? parts[1] : "",
+                parts.length > 2 ? parts[2] : "");
+    }
+
+    /**
+     * 提交摘要格式化为消息展示文本
+     * 1. 说明超过 80 字截断，防刷屏
+     * 2. 作者用企业微信 warning 色（橙红）着色
+     */
+    private String formatCommit(Commit commit) {
+        String msg = commit.message();
+        if (msg.length() > COMMIT_MESSAGE_MAX_LENGTH) {
+            msg = msg.substring(0, COMMIT_MESSAGE_MAX_LENGTH) + "…";
+        }
+        return "「" + commit.hash() + "」 " + msg
+                + (StringUtils.hasText(commit.author())
+                ? " <font color=\"warning\">" + commit.author() + "</font>"
+                : "");
+    }
+
+    /**
+     * git 提交摘要
+     */
+    private record Commit(String hash, String message, String author) {
     }
 
     /**
@@ -399,20 +482,6 @@ public class JenkinsMonitorService {
             log.warn("git 命令执行失败: dir={}, 原因={}", dir, e.getMessage());
             return new GitExecResult(-1, "");
         }
-    }
-
-    /**
-     * git log 行（短hash|首行说明|作者）格式化为消息展示文本，提交说明截断防刷屏
-     */
-    private String formatCommitLine(String line) {
-        String[] parts = line.split("\u0001", -1);
-        String hash = parts.length > 0 ? parts[0] : "";
-        String msg = parts.length > 1 ? parts[1] : "";
-        String author = parts.length > 2 ? parts[2] : "";
-        if (msg.length() > 80) {
-            msg = msg.substring(0, 80) + "…";
-        }
-        return "「" + hash + "」 " + msg + (StringUtils.hasText(author) ? " " + author : "");
     }
 
     // ========== 配置管理（密码明文存储） ==========
