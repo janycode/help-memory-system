@@ -126,7 +126,7 @@
       <pre class="json-box request-preview-body" v-html="highlightJson(currentPayload)"></pre>
     </el-dialog>
 
-    <el-dialog v-model="resultDetailVisible" :title="`请求详情 - ${selectedResult?.plate ?? ''}`" width="85%" destroy-on-close>
+    <el-dialog v-model="resultDetailVisible" :title="`请求详情 - ${selectedResult?.plate ?? ''}`" width="90%" destroy-on-close>
       <div v-if="selectedResult" class="detail-dialog-body">
         <div class="detail-status-row">
           <el-tag :type="selectedResult.success ? 'success' : 'danger'" size="small">
