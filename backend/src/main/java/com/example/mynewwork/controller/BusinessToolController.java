@@ -374,21 +374,17 @@ public class BusinessToolController {
                     if (topicsObj == null) {
                         topicsObj = innerData.get("topicNameList");
                     }
+                    // 不再按环境前缀过滤，返回全量 topic，由前端下拉框输入过滤
                     if (topicsObj instanceof List) {
-                        @SuppressWarnings("unchecked")
-                        List<Object> topics = (List<Object>) topicsObj;
-                        String prefix = "dev".equalsIgnoreCase(env) ? "dev%" : "staging%";
-                        for (Object topic : topics) {
-                            String topicStr = String.valueOf(topic);
-                            if (topicStr.startsWith(prefix)) {
-                                topicList.add(topicStr);
-                            }
+                        for (Object topic : (List<?>) topicsObj) {
+                            topicList.add(String.valueOf(topic));
                         }
                     }
                 }
             }
 
-            Collections.sort(topicList);
+            // 倒序排列，避免 % 开头的系统 topic 置顶
+            topicList.sort(Comparator.reverseOrder());
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("topics", topicList);
             result.put("rawResponse", rawData);
@@ -575,6 +571,12 @@ public class BusinessToolController {
      */
     @PostMapping("/mq-send")
     public ApiResponse<?> sendMqMessage(@RequestBody Map<String, Object> request) {
+        // 1. targetUrl 为必填，缺失时直接返回明确提示，避免 URI.create 抛无意义的 NPE
+        String targetUrl = (String) request.get("targetUrl");
+        if (targetUrl == null || targetUrl.isBlank()) {
+            return ApiResponse.error("targetUrl 不能为空");
+        }
+
         try {
             @SuppressWarnings("unchecked")
             Map<String, String> proxyHeaders = (Map<String, String>) request.get("proxyHeaders");
@@ -583,7 +585,6 @@ public class BusinessToolController {
             String tag = (String) request.get("tag");
             String messageBody = (String) request.get("messageBody");
             boolean traceEnabled = request.get("traceEnabled") != null && (boolean) request.get("traceEnabled");
-            String targetUrl = (String) request.get("targetUrl");
 
             Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("topic", topic);

@@ -112,15 +112,11 @@
         <div class="panel-title">响应结果</div>
         <div class="result-list">
           <div v-if="resultList.length === 0" class="empty-hint">暂无响应</div>
-          <div v-for="(item, index) in resultList" :key="index" class="result-item" :class="{ success: item.success, fail: !item.success }" @click="item.expanded = !item.expanded">
+          <div v-for="(item, index) in resultList" :key="index" class="result-item" :class="{ success: item.success, fail: !item.success }" @click="openResultDetail(item)">
             <div class="result-item-header">
               <span class="result-item-icon">{{ item.success ? '✅' : '❌' }}</span>
               <span class="result-item-plate">{{ item.plate }}</span>
               <span class="result-item-summary">{{ item.summary }}</span>
-              <span class="result-item-toggle" :class="{ expanded: item.expanded }">▶</span>
-            </div>
-            <div v-if="item.expanded" class="result-item-body">
-              <pre class="json-box">{{ formatJson(item.data) }}</pre>
             </div>
           </div>
         </div>
@@ -128,6 +124,46 @@
 
     <el-dialog v-model="requestPreviewVisible" title="请求体完整预览" width="90%" :close-on-click-modal="false" destroy-on-close>
       <pre class="json-box request-preview-body" v-html="highlightJson(currentPayload)"></pre>
+    </el-dialog>
+
+    <el-dialog v-model="resultDetailVisible" :title="`请求详情 - ${selectedResult?.plate ?? ''}`" width="85%" destroy-on-close>
+      <div v-if="selectedResult" class="detail-dialog-body">
+        <div class="detail-status-row">
+          <el-tag :type="selectedResult.success ? 'success' : 'danger'" size="small">
+            {{ selectedResult.success ? '发送成功' : '发送失败' }}
+          </el-tag>
+          <span class="detail-summary">{{ selectedResult.summary }}</span>
+        </div>
+        <div class="detail-section">
+          <div class="detail-section-title">基本信息</div>
+          <div class="detail-grid">
+            <div><label>环境</label>{{ selectedResult.request.env.toUpperCase() }}</div>
+            <div><label>类型</label>{{ typeLabel(selectedResult.request.meta.type) }}</div>
+            <div><label>车牌</label>{{ selectedResult.plate }}</div>
+            <div><label>总重量</label>{{ selectedResult.request.meta.totalWeight }} kg</div>
+            <div><label>称重时间</label>{{ selectedResult.request.meta.weightDate }}</div>
+            <div><label>仓库编码</label>{{ selectedResult.request.meta.warehouseCode }}</div>
+            <div><label>Topic</label>{{ selectedResult.request.payload.topic }}</div>
+            <div><label>Tag</label>{{ selectedResult.request.payload.tag }}</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-section-title">请求</div>
+          <div class="detail-line"><label>URL</label><span class="detail-mono">{{ selectedResult.request.url }}</span></div>
+          <div class="detail-sub-title">请求头</div>
+          <pre class="json-box">{{ formatHeaders(selectedResult.request.headers) }}</pre>
+          <div class="detail-sub-title">请求体</div>
+          <pre class="json-box" v-html="highlightJson(selectedResult.request.payload)"></pre>
+        </div>
+        <div class="detail-section">
+          <div class="detail-section-title">响应</div>
+          <pre class="json-box" v-html="highlightJson(selectedResult.data)"></pre>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="resultDetailVisible = false">关闭</el-button>
+        <el-button type="primary" @click="copyResultDetail">复制全部信息</el-button>
+      </template>
     </el-dialog>
     </div>
   </PageContainer>
@@ -177,13 +213,29 @@ const token = ref('37DEF86CD498103D218962626EB2A25F')
 const isSending = ref(false)
 const currentPlateIndex = ref(0)
 const plateList = ref<string[]>([])
-const resultList = ref<Array<{
+
+interface MqSendResult {
   plate: string
   success: boolean
   summary: string
   data: any
-  expanded: boolean
-}>>([])
+  request: {
+    env: string
+    url: string
+    headers: Record<string, string>
+    payload: any
+    meta: {
+      type: string
+      totalWeight: number
+      weightDate: string
+      warehouseCode: string
+    }
+  }
+}
+
+const resultList = ref<MqSendResult[]>([])
+const resultDetailVisible = ref(false)
+const selectedResult = ref<MqSendResult | null>(null)
 
 // 计算属性
 const currentUrl = computed(() => (getEnvConfig() as Record<string, any>)[currentEnv.value].url)
@@ -294,6 +346,51 @@ const highlightJson = (obj: any) => {
   }
 }
 
+const typeLabel = (type: string) => (type === 'INBD' ? '入场' : '出场')
+
+const formatHeaders = (headers: Record<string, string>) => {
+  return Object.entries(headers).map(([key, value]) => `${key}: ${value}`).join('\n')
+}
+
+const openResultDetail = (item: MqSendResult) => {
+  selectedResult.value = item
+  resultDetailVisible.value = true
+}
+
+const buildResultDetailText = (item: MqSendResult) => {
+  return [
+    `车牌：${item.plate}`,
+    `结果：${item.success ? '发送成功' : '发送失败'}`,
+    `环境：${item.request.env.toUpperCase()}`,
+    `类型：${typeLabel(item.request.meta.type)}`,
+    `总重量：${item.request.meta.totalWeight} kg`,
+    `称重时间：${item.request.meta.weightDate}`,
+    `仓库编码：${item.request.meta.warehouseCode}`,
+    `Topic：${item.request.payload.topic}`,
+    `Tag：${item.request.payload.tag}`,
+    `URL：${item.request.url}`,
+    '',
+    '请求头：',
+    formatHeaders(item.request.headers),
+    '',
+    '请求体：',
+    formatJson(item.request.payload),
+    '',
+    '响应：',
+    formatJson(item.data)
+  ].join('\n')
+}
+
+const copyResultDetail = async () => {
+  if (!selectedResult.value) return
+  try {
+    await navigator.clipboard.writeText(buildResultDetailText(selectedResult.value))
+    ElMessage.success('已复制到剪贴板')
+  } catch {
+    ElMessage.error('复制失败，请手动复制')
+  }
+}
+
 const requestPreviewVisible = ref(false)
 
 const restoreDefaults = () => {
@@ -325,12 +422,23 @@ const handleSend = async () => {
   for (const plate of plateList.value) {
     const payload = buildPayload(plate)
 
-    const resultItem = {
+    const resultItem: MqSendResult = {
       plate,
       success: false,
       summary: '发送中...',
       data: null,
-      expanded: false
+      request: {
+        env: currentEnv.value,
+        url: currentUrl.value,
+        headers: { ...proxyHeaders.value },
+        payload,
+        meta: {
+          type: currentType.value,
+          totalWeight: totalWeight.value,
+          weightDate: weightDate.value,
+          warehouseCode: warehouseCode.value
+        }
+      }
     }
     resultList.value.push(resultItem)
 
@@ -346,6 +454,7 @@ const handleSend = async () => {
         headers,
         body: JSON.stringify({
           env: currentEnv.value,
+          targetUrl: currentUrl.value,
           proxyHeaders: proxyHeaders.value,
           ...payload
         })
@@ -357,10 +466,16 @@ const handleSend = async () => {
       resultItem.success = isSuccess
       resultItem.summary = isSuccess ? '请求成功' : '请求失败'
       resultItem.data = data
+      if (isSuccess) {
+        ElMessage.success(`车牌 ${plate} 发送成功`)
+      } else {
+        ElMessage.error(`车牌 ${plate} 发送失败`)
+      }
     } catch (err: any) {
       resultItem.success = false
       resultItem.summary = '请求失败'
       resultItem.data = { error: err.message }
+      ElMessage.error(`车牌 ${plate} 发送失败：${err.message}`)
     }
   }
 
@@ -650,18 +765,64 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-.result-item-toggle {
-  font-size: 9px;
-  color: #409eff;
-  transition: transform 0.2s;
+.detail-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.result-item-toggle.expanded {
-  transform: rotate(90deg);
+.detail-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.result-item-body {
-  margin-top: 6px;
+.detail-summary {
+  font-size: 12px;
+  color: #909399;
+}
+
+.detail-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #303133;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #ebeef5;
+  margin-bottom: 6px;
+}
+
+.detail-sub-title {
+  font-size: 11px;
+  color: #606266;
+  margin: 6px 0 4px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px 12px;
+  font-size: 12px;
+}
+
+.detail-grid label,
+.detail-line label {
+  font-size: 11px;
+  color: #909399;
+  margin-right: 4px;
+}
+
+.detail-line {
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.detail-mono {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.detail-dialog-body .json-box {
+  max-height: 240px;
+  font-size: 12px;
 }
 
 .empty-hint {
