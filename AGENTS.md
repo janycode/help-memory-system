@@ -38,7 +38,7 @@ cd frontend && pnpm install && pnpm build && cd ../backend && mvn spring-boot:ru
 
 ### 编译构建验证（用户约定，必须遵守）
 
-本项目的编译构建验证标准 = **先构建前端，再打包后端 jar**：
+本项目的编译构建验证标准 = **先构建前端，再打包后端 jar**，最后覆盖启动用 JAR：
 
 ```bash
 # 1. 先手动清空旧前端产物（safe-delete 会拦截 vite emptyDir 的批量删除）
@@ -49,8 +49,56 @@ cd frontend && pnpm build
 cd ../backend && mvn clean package -DskipTests
 ```
 
+```powershell
+# 4. 覆盖启动用 JAR，处理启动中被占用的情况
+$src = "D:\code\help-memory-system\backend\target\my-new-work-1.0.0.jar"
+$dst = "D:\work\98_jar\mynewwork.jar"
+$startScript = "D:\work\98_jar\start-mynewwork.ps1"
+
+# 4.1 只匹配从启动目录运行该 jar 的 java/javaw 进程，避免误杀 IDE 调试实例
+$running = Get-CimInstance Win32_Process -Filter "Name='java.exe' OR Name='javaw.exe'" |
+    Where-Object { $_.CommandLine -like "*D:\work\98_jar\mynewwork.jar*" }
+
+# 4.2 占用时先停服，等待文件句柄释放
+if ($running) {
+    $running | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+    $deadline = (Get-Date).AddSeconds(30)
+    do {
+        Start-Sleep -Milliseconds 500
+        $still = Get-CimInstance Win32_Process -Filter "Name='java.exe' OR Name='javaw.exe'" |
+            Where-Object { $_.CommandLine -like "*D:\work\98_jar\mynewwork.jar*" }
+    } while ($still -and (Get-Date) -lt $deadline)
+}
+
+# 4.3 覆盖拷贝，带重试兜底
+for ($i = 1; $i -le 10; $i++) {
+    try { Copy-Item -Path $src -Destination $dst -Force -ErrorAction Stop; break }
+    catch { if ($i -eq 10) { throw }; Start-Sleep -Seconds 2 }
+}
+
+# 4.4 覆盖后校验哈希，确保启动文件就是本次产物
+if ((Get-FileHash $src).Hash -ne (Get-FileHash $dst).Hash) { throw "覆盖校验失败" }
+
+# 4.5 原先在运行则用计划任务重新拉起，schtasks 脱离当前进程树
+if ($running) {
+    schtasks /run /tn "Start-MyNewWork-Jar"
+}
+
+# 4.6 轮询本机 8080，确认重启后服务可用，最大等待 90 秒
+$deadline = (Get-Date).AddSeconds(90)
+do {
+    Start-Sleep -Seconds 5
+    try { $code = (Invoke-WebRequest -Uri "http://127.0.0.1:8080/" -UseBasicParsing -NoProxy -TimeoutSec 8).StatusCode } catch { $code = 0 }
+} while ($code -eq 0 -and (Get-Date) -lt $deadline)
+if ($code -eq 0) { throw "重启后 8080 不可访问，请查看 D:\work\98_jar\logs" }
+```
+
 - **打包出 jar 即代表编译没问题** —— 无需再依赖其他验证手段。
 - 顺序不可颠倒：先构建前端再打包后端，否则 JAR 不含前端资源。
+- **必须覆盖启动用 JAR**：第 4 步不可省略。启动脚本运行的是 `D:\work\98_jar\mynewwork.jar`，不覆盖则启动的仍是旧包。仅当第 4 步成功（哈希校验通过，且原先在运行的实例已重启成功）才算本次构建交付完成。
+- **占用场景**：JAR 正在运行时会被进程占用，直接覆盖可能失败或让运行中的实例继续用旧类；因此先停服再覆盖。仅按命令行精确路径匹配，不误杀 IntelliJ 里跑的调试实例。
+- **重启必须走计划任务**：用 `schtasks /run /tn "Start-MyNewWork-Jar"` 触发 `start-mynewwork.ps1`。不要用 `Start-Process` 直接拉起该脚本，工具会话结束时子进程会被连带结束，应用随之退出。重启结果以本机 8080 返回 200 且日志出现「启动成功」为准；失败需单独向用户报出，不能默认成功。
+- **局域网校验差异**：工具沙箱内访问 `192.168.33.180:8080` 可能被拒，属沙箱网络限制；以 `127.0.0.1:8080` 判定可用性，启动脚本在计划任务上下文的局域网校验是准确的。
 
 ## 注意事项（Gotchas）
 

@@ -44,6 +44,57 @@ pnpm format      # prettier --write src/
 cd frontend && pnpm install && pnpm build && cd ../backend && mvn spring-boot:run
 ```
 
+### 构建交付（必须遵守）
+
+先构建前端再打包后端，打包成功后必须覆盖启动用 JAR。若该 JAR 正在运行会被进程占用，必须先停服再覆盖，覆盖后自动重启。
+
+```powershell
+$src = "D:\code\help-memory-system\backend\target\my-new-work-1.0.0.jar"
+$dst = "D:\work\98_jar\mynewwork.jar"
+$startScript = "D:\work\98_jar\start-mynewwork.ps1"
+
+# 1. 只匹配从启动目录运行该 jar 的 java/javaw 进程，避免误杀 IDE 调试实例
+$running = Get-CimInstance Win32_Process -Filter "Name='java.exe' OR Name='javaw.exe'" |
+    Where-Object { $_.CommandLine -like "*D:\work\98_jar\mynewwork.jar*" }
+
+# 2. 占用时先停服，等待文件句柄释放
+if ($running) {
+    $running | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+    $deadline = (Get-Date).AddSeconds(30)
+    do {
+        Start-Sleep -Milliseconds 500
+        $still = Get-CimInstance Win32_Process -Filter "Name='java.exe' OR Name='javaw.exe'" |
+            Where-Object { $_.CommandLine -like "*D:\work\98_jar\mynewwork.jar*" }
+    } while ($still -and (Get-Date) -lt $deadline)
+}
+
+# 3. 覆盖拷贝，带重试兜底
+for ($i = 1; $i -le 10; $i++) {
+    try { Copy-Item -Path $src -Destination $dst -Force -ErrorAction Stop; break }
+    catch { if ($i -eq 10) { throw }; Start-Sleep -Seconds 2 }
+}
+
+# 4. 覆盖后校验哈希，确保启动文件就是本次产物
+if ((Get-FileHash $src).Hash -ne (Get-FileHash $dst).Hash) { throw "覆盖校验失败" }
+
+# 5. 原先在运行则用计划任务重新拉起，schtasks 脱离当前进程树
+if ($running) {
+    schtasks /run /tn "Start-MyNewWork-Jar"
+}
+
+# 6. 轮询本机 8080，确认重启后服务可用，最大等待 90 秒
+$deadline = (Get-Date).AddSeconds(90)
+do {
+    Start-Sleep -Seconds 5
+    try { $code = (Invoke-WebRequest -Uri "http://127.0.0.1:8080/" -UseBasicParsing -NoProxy -TimeoutSec 8).StatusCode } catch { $code = 0 }
+} while ($code -eq 0 -and (Get-Date) -lt $deadline)
+if ($code -eq 0) { throw "重启后 8080 不可访问，请查看 D:\work\98_jar\logs" }
+```
+
+启动脚本运行的是 `D:\work\98_jar\mynewwork.jar`，不覆盖则启动的仍是旧包；不重启则运行中的实例仍用旧类。仅当哈希校验通过、原先在运行的实例已重启成功，才算本次构建交付完成；重启失败必须单独报出，不能默认成功。
+
+重启必须用 `schtasks /run /tn "Start-MyNewWork-Jar"` 触发启动脚本，不要用 `Start-Process` 直接拉起：工具会话结束时子进程会被连带结束，应用随之退出。可用性以 `127.0.0.1:8080` 返回 200 判定，工具沙箱内访问 `192.168.33.180:8080` 可能被拒，属沙箱网络限制。
+
 ### Docker
 
 ```bash
