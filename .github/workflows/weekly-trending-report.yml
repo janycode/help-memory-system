@@ -1,0 +1,41 @@
+name: 开源周报推送（每周五 18:00）
+on:
+  schedule:
+    # UTC 10:00 = 北京时间每周五 18:00；GitHub 高峰期可能有延迟
+    - cron: "0 10 * * 5"
+  workflow_dispatch:
+
+jobs:
+  weekly-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 安装脚本依赖
+        run: pip install --quiet requests beautifulsoup4
+
+      - name: 生成并推送周报
+        env:
+          WEBHOOK: ${{ secrets.QYWX_WEBHOOK_URL }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "未配置 QYWX_WEBHOOK_URL，跳过周报推送"
+            exit 0
+          fi
+          set +e
+          python .github/scripts/build_weekly_report.py --payload /tmp/payload.json
+          code=$?
+          set -e
+          if [ "$code" -eq 2 ]; then
+            jq -n '{msgtype:"text",text:{content:"⚠️ 开源周报抓取失败：GitHub Trending 与 HelloGitHub 均不可用，请检查 Actions 日志"}}' > /tmp/payload.json
+          elif [ "$code" -ne 0 ]; then
+            echo "周报脚本异常退出，退出码 $code"
+            exit "$code"
+          fi
+          curl -sS -X POST "$WEBHOOK" -H "Content-Type: application/json" --data-binary @/tmp/payload.json
