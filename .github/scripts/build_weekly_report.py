@@ -87,6 +87,17 @@ def clean_text(text):
     return re.sub(r"\s+", " ", text).strip()
 
 
+def core_summary(desc):
+    """取第一个完整句子作为核心简介，不做字符硬截断。"""
+    if not desc:
+        return ""
+    for sep in ["。", "！", "；", ";", "."]:
+        idx = desc.find(sep)
+        if idx > 0:
+            return desc[:idx].strip(" .;；")
+    return desc.strip()
+
+
 def parse_hello_github(content_md):
     """解析 HelloGitHub 某期正文，返回项目条目列表（项目名 + 一句话简介）。"""
     body = content_md.split("## 内容", 1)[-1]
@@ -98,7 +109,7 @@ def parse_hello_github(content_md):
         if not m:
             continue
         name = clean_text(m.group(1))
-        desc = clean_text(m.group(2))
+        desc = core_summary(clean_text(m.group(2)))
         items.append({"name": name, "desc": desc})
         if len(items) >= MAX_HELLOGITHUB:
             break
@@ -117,25 +128,36 @@ def translate_texts(texts, token, model="gpt-4o-mini"):
                 "model": model,
                 "messages": [
                     {"role": "system", "content": "你是翻译助手。把用户给的 JSON 数组中每条英文项目简介翻译成简洁中文，"
-                                                  "每条不超过 30 个汉字，保留原意，不要添加任何解释。"
+                                                  "每条一个完整短句、不超过 30 个汉字，保留原意，不要添加任何解释。"
                                                   "直接返回同长度的 JSON 字符串数组。"},
                     {"role": "user", "content": json.dumps(texts, ensure_ascii=False)},
                 ],
                 "temperature": 0.2,
+                "max_tokens": 2048,
             },
             timeout=60,
         )
-        resp.raise_for_status()
-        content = resp.json()["choices"][0]["message"]["content"].strip()
-        content = re.sub(r"^```(?:json)?\s*|\s*```$", "", content)
-        arr = json.loads(content)
+        raw = resp.text
+        print(f"GitHub Models HTTP {resp.status_code}", file=sys.stderr)
+        try:
+            data = resp.json()
+        except ValueError:
+            raise RuntimeError(f"HTTP {resp.status_code} 非 JSON 响应：{raw[:300]}")
+        if "error" in data:
+            raise RuntimeError(f"HTTP {resp.status_code} 接口错误：{json.dumps(data['error'], ensure_ascii=False)[:300]}")
+        content = (data["choices"][0]["message"]["content"] or "").strip()
+        print(f"GitHub Models 原始返回（前 200 字）：{content[:200]}", file=sys.stderr)
+        # 容错：模型可能用代码围栏或前后散文包裹 JSON 数组
+        candidate = re.sub(r"^```(?:json)?\s*|\s*```$", "", content)
+        m = re.search(r"\[[\s\S]*\]", candidate)
+        arr = json.loads(m.group(0) if m else candidate)
         return {i: str(s).strip() for i, s in enumerate(arr) if str(s).strip()}
     except Exception as e:  # noqa: BLE001 - 翻译失败只回退英文，不阻断周报
         print(f"翻译失败，回退英文原文：{e}", file=sys.stderr)
         return {}
 
 
-def render(trending, hg_volume, hg_items, today, trans, desc_len, t_count, h_count):
+def render(trending, hg_volume, hg_items, today, trans, t_count, h_count):
     lines = [f"🔥 开源周报 | {today}", ""]
 
     if trending:
@@ -146,8 +168,8 @@ def render(trending, hg_volume, hg_items, today, trans, desc_len, t_count, h_cou
                 line += f"（{it['stars']}）"
             lines.append(line)
             desc = trans.get(i - 1, it["desc"])
-            if desc and desc_len:
-                lines.append(f"   {desc[:desc_len]}")
+            if desc:
+                lines.append(f"   {desc}")
     else:
         lines.append("⚠️ GitHub Trending 本板块抓取失败")
 
@@ -159,8 +181,8 @@ def render(trending, hg_volume, hg_items, today, trans, desc_len, t_count, h_cou
         for j, it in enumerate(hg_items[:h_count], 1):
             lines.append(f"{j}. {it['name']}")
             desc = trans.get(base + j - 1, it["desc"])
-            if desc and desc_len:
-                lines.append(f"   {desc[:desc_len]}")
+            if desc:
+                lines.append(f"   {desc}")
     else:
         lines.append("⚠️ HelloGitHub 本板块抓取失败")
 
@@ -168,17 +190,12 @@ def render(trending, hg_volume, hg_items, today, trans, desc_len, t_count, h_cou
 
 
 def build_message(trending, hg_volume, hg_items, today, trans):
-    """按字节预算选择描述长度与条数组合，优先保条目数、压缩描述。"""
-    candidates = [
-        (40, 10, 10), (30, 10, 10), (24, 10, 10), (0, 10, 10),
-        (30, 8, 8), (24, 8, 8), (0, 8, 8),
-        (24, 6, 6), (0, 6, 6), (0, 4, 4),
-    ]
-    for desc_len, t_count, h_count in candidates:
-        msg = render(trending, hg_volume, hg_items, today, trans, desc_len, t_count, h_count)
+    """描述保持完整不截断，只按字节预算递减条目数量。"""
+    for t_count, h_count in [(10, 10), (8, 8), (6, 6), (5, 5), (4, 4), (3, 3)]:
+        msg = render(trending, hg_volume, hg_items, today, trans, t_count, h_count)
         if len(msg.encode("utf-8")) <= BYTE_BUDGET:
             return msg
-    return render(trending, hg_volume, hg_items, today, trans, 0, 1, 1)
+    return render(trending, hg_volume, hg_items, today, trans, 1, 1)
 
 
 def main():
