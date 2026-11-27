@@ -160,7 +160,7 @@ Environment、TechnicalComponent、BusinessProcess、Project、CodeSnippet、Use
 - **CORS**：在 `application.yml` 中硬编码为 `localhost:5173,localhost:3000`。新来源请添加到 `app.security.cors-allowed-origins`。
 - **SpaConfig**：`SpaConfig.java` 将非 API 路由转发到 `index.html`，以支持 Vue Router history 模式。不要删除它。
 - **操作日志**：所有 CRUD 控制器都应注入 `ActivityLogger` 记录操作。
-- **每周五 18:00 开源周报**：`.github/workflows/weekly-trending-report.yml`（cron `0 10 * * 5` UTC）抓取 GitHub Trending(weekly) 与 HelloGitHub 最新刊，组装 markdown 推送到 `secrets.QYWX_WEBHOOK_URL`；采集脚本在 `.github/scripts/build_weekly_report.py`，应用代码零改动。
+- **每周五 18:00 开源周报**：`.github/workflows/weekly-trending-report.yml`（cron `0 10 * * 5` UTC）抓取 GitHub Trending(weekly) 与 HelloGitHub 最新刊，组装纯文本周报（不含链接，英文简介经 GitHub Models 翻译为中文、失败回退英文）推送到 `secrets.QYWX_WEBHOOK_URL`；采集脚本在 `.github/scripts/build_weekly_report.py`，应用代码零改动。
 
 ## 配置
 

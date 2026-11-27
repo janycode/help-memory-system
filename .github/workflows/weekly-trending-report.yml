@@ -5,6 +5,9 @@ on:
     - cron: "0 10 * * 5"
   workflow_dispatch:
 
+permissions:
+  models: read   # 调用 GitHub Models 把英文项目简介翻译为中文
+
 jobs:
   weekly-report:
     runs-on: ubuntu-latest
@@ -23,13 +26,14 @@ jobs:
       - name: 生成并推送周报
         env:
           WEBHOOK: ${{ secrets.QYWX_WEBHOOK_URL }}
+          GH_MODELS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ -z "$WEBHOOK" ]; then
             echo "未配置 QYWX_WEBHOOK_URL，跳过周报推送"
             exit 0
           fi
           set +e
-          python .github/scripts/build_weekly_report.py --payload /tmp/payload.json
+          python .github/scripts/build_weekly_report.py --payload /tmp/payload.json --translate
           code=$?
           set -e
           if [ "$code" -eq 2 ]; then

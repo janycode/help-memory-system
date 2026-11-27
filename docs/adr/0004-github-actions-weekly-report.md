@@ -14,5 +14,6 @@
 
 - 功能完全活在 `.github/` 下，与应用代码解耦；抓取逻辑变更不影响 JAR 构建交付流程。
 - 推送依赖仓库 secret `QYWX_WEBHOOK_URL`，未配置时 workflow 跳过通知但不判失败，沿用 auto-build.yml 既有约定。
+- 消息为纯文本、不含链接（读者按项目名自行搜索）；Trending 英文简介由 GitHub Models（gpt-4o-mini）批量翻译成简洁中文，翻译失败回退英文原文，不阻断发送；workflow 因此声明 `permissions: models: read`。
 - GitHub Actions 的 cron 以 UTC 为准且高峰期可能延迟，"18:00" 是计划值而非精确值；这是选择零运维定时任务的固有代价。
 - 换取的是零部署成本与零应用改动；若未来需要周报留档或按用户维度订阅，再评估移入应用内，脚本与 payload 格式可直接复用。
